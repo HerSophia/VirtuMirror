@@ -1,0 +1,111 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Type check
+        run: npm run type-check
+      
+      - name: Lint
+        run: npm run lint
+      
+      - name: Run tests
+        run: npm run test -- --run
+      
+      - name: Build (dev)
+        run: npm run build
+
+  build-plugin:
+    runs-on: ubuntu-latest
+    needs: lint-and-test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build plugin
+        run: npm run build:plugin
+      
+      - name: Create plugin package
+        run: |
+          mkdir -p release/phone_simulator_vue
+          cp dist/plugin/script.js release/phone_simulator_vue/
+          cp dist/plugin/style.css release/phone_simulator_vue/
+          cp src/plugin/manifest.json release/phone_simulator_vue/
+          cp src/plugin/panel.html release/phone_simulator_vue/
+          cd release && zip -r phone_simulator_vue.zip phone_simulator_vue
+      
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: phone-simulator-plugin
+          path: release/phone_simulator_vue.zip
+          retention-days: 30
+
+  release:
+    runs-on: ubuntu-latest
+    needs: build-plugin
+    if: startsWith(github.ref, 'refs/tags/v')
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Build plugin
+        run: npm run build:plugin
+      
+      - name: Create plugin package
+        run: |
+          mkdir -p release/phone_simulator_vue
+          cp dist/plugin/script.js release/phone_simulator_vue/
+          cp dist/plugin/style.css release/phone_simulator_vue/
+          cp src/plugin/manifest.json release/phone_simulator_vue/
+          cp src/plugin/panel.html release/phone_simulator_vue/
+          cd release && zip -r phone_simulator_vue.zip phone_simulator_vue
+      
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: release/phone_simulator_vue.zip
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

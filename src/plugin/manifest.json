@@ -1,0 +1,10 @@
+{
+    "display_name": "手机模拟器 (Vue)",
+    "author": "PhoneSim Dev Team",
+    "version": "1.0.0",
+    "description": "Vue3 + TailwindCSS 重构版手机模拟器，提供微信、朋友圈、电话、邮件、浏览器、论坛、直播等功能模拟",
+    "loading_order": 100,
+    "js": "script.js",
+    "css": "style.css",
+    "html": "panel.html"
+}

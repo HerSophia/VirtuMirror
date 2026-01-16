@@ -1,0 +1,382 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* 设备模式样式 */
+@import './device.css';
+
+/* 基础层样式 */
+@layer base {
+  * {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-text);
+    font-family: var(--font-family, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif);
+  }
+
+  /* 修复手机模拟器中输入框无法选择文本和无法获取焦点的问题 */
+  input, textarea, [contenteditable], .form-input {
+    user-select: text !important;
+    -webkit-user-select: text !important;
+    -webkit-user-modify: read-write-plaintext-only !important;
+    cursor: text !important;
+    pointer-events: auto !important;
+    touch-action: auto !important;
+    -webkit-touch-callout: default !important;
+  }
+
+  /* select 下拉框需要不同的 cursor */
+  select, .form-select {
+    user-select: none !important;
+    -webkit-user-select: none !important;
+    cursor: pointer !important;
+    pointer-events: auto !important;
+    touch-action: auto !important;
+  }
+
+  /* 确保 label 点击可以正常触发关联输入框的聚焦 */
+  label {
+    cursor: pointer;
+    pointer-events: auto !important;
+  }
+
+  /* 滚动条样式 */
+  ::-webkit-scrollbar {
+    width: 4px;
+    height: 4px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--color-border);
+    border-radius: 9999px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-text-secondary);
+  }
+}
+
+/* 组件层样式 */
+@layer components {
+  /* 手机容器 */
+  .phone-container {
+    @apply relative w-[375px] h-[812px] bg-black rounded-phone overflow-hidden shadow-phone;
+  }
+
+  /* 刘海 */
+  .phone-notch {
+    @apply absolute top-0 left-1/2 -translate-x-1/2 w-[200px] h-[30px] bg-black rounded-b-notch z-50;
+  }
+
+  /* 状态栏 */
+  .status-bar {
+    @apply absolute top-0 left-0 right-0 h-[44px] px-6 flex items-center justify-between z-40;
+    @apply bg-transparent text-white text-xs font-medium;
+  }
+
+  /* 视图容器 */
+  .views-container {
+    @apply absolute inset-0 pb-0 overflow-hidden;
+  }
+
+  /* 基础视图 - Vue Router 自动管理视图切换，不需要 opacity 控制 */
+  .view {
+    @apply absolute inset-0 overflow-y-auto overflow-x-hidden;
+  }
+
+  /* 应用头部 */
+  .app-header {
+    @apply sticky top-0 h-[44px] px-4 flex items-center justify-between z-30;
+    background-color: color-mix(in srgb, var(--color-background) 95%, transparent);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .app-header h3 {
+    @apply text-lg font-semibold;
+    color: var(--color-text);
+  }
+
+  .app-back-btn {
+    @apply w-8 h-8 flex items-center justify-center rounded-full transition-colors;
+    color: var(--color-primary);
+  }
+
+  .app-back-btn:hover {
+    background-color: var(--color-surface-variant);
+  }
+
+  /* 聊天气泡 */
+  .chat-bubble {
+    @apply max-w-[70%] px-3 py-2 rounded-bubble text-sm leading-relaxed;
+  }
+
+  .chat-bubble.sent {
+    @apply ml-auto rounded-br-sm;
+    background-color: var(--color-primary);
+    color: white;
+  }
+
+  .chat-bubble.received {
+    @apply mr-auto rounded-bl-sm;
+    background-color: var(--color-surface);
+    color: var(--color-text);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  }
+
+  /* 底部导航 */
+  .bottom-nav {
+    @apply absolute bottom-0 left-0 right-0 h-[83px] pb-safe-bottom;
+    @apply flex items-start justify-around pt-2;
+    background-color: color-mix(in srgb, var(--color-surface-variant) 95%, transparent);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-top: 1px solid var(--color-border);
+  }
+
+  .nav-item {
+    @apply flex flex-col items-center gap-0.5 px-4 py-1;
+    @apply text-[10px] font-medium transition-colors cursor-pointer;
+    color: var(--color-text-secondary);
+  }
+
+  .nav-item.active {
+    color: var(--color-primary);
+  }
+
+  .nav-item i {
+    @apply text-xl;
+  }
+
+  /* 应用图标网格 */
+  .app-grid {
+    display: grid;
+    grid-template-columns: repeat(var(--grid-columns, 4), 1fr);
+    gap: var(--grid-gap, 16px);
+    @apply p-6 pt-8;
+  }
+
+  .app-block {
+    @apply flex flex-col items-center gap-1 cursor-pointer;
+    @apply transition-transform active:scale-95;
+  }
+
+  .app-icon {
+    width: var(--icon-size, 60px);
+    height: var(--icon-size, 60px);
+    @apply rounded-app flex items-center justify-center;
+    @apply text-white text-2xl shadow-app;
+  }
+
+  .app-name {
+    @apply text-xs font-medium truncate text-center;
+    max-width: var(--icon-size, 60px);
+    color: var(--color-text);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+  }
+
+  /* 列表项 */
+  .list-item {
+    @apply flex items-center gap-3 px-4 py-3 cursor-pointer transition-colors;
+    background-color: var(--color-surface);
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .list-item:hover {
+    background-color: var(--color-surface-variant);
+  }
+
+  .list-item-avatar {
+    @apply w-12 h-12 rounded-full object-cover flex-shrink-0;
+  }
+
+  .list-item-content {
+    @apply flex-1 min-w-0;
+  }
+
+  .list-item-title {
+    @apply text-base font-medium truncate;
+    color: var(--color-text);
+  }
+
+  .list-item-subtitle {
+    @apply text-sm truncate;
+    color: var(--color-text-secondary);
+  }
+
+  .list-item-time {
+    @apply text-xs flex-shrink-0;
+    color: var(--color-text-secondary);
+  }
+
+  /* 输入框 */
+  .input-field {
+    @apply w-full px-3 py-2 rounded-lg text-sm transition-colors;
+    background-color: var(--color-surface);
+    border: 1px solid var(--color-border);
+    color: var(--color-text);
+  }
+
+  .input-field::placeholder {
+    color: var(--color-text-secondary);
+  }
+
+  .input-field:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 20%, transparent);
+  }
+
+  /* 按钮 */
+  .btn {
+    @apply px-4 py-2 rounded-lg font-medium text-sm;
+    @apply transition-all active:scale-95;
+  }
+
+  .btn-primary {
+    background-color: var(--color-primary);
+    color: white;
+  }
+
+  .btn-primary:hover {
+    background-color: color-mix(in srgb, var(--color-primary) 90%, black);
+  }
+
+  .btn-secondary {
+    background-color: var(--color-surface-variant);
+    color: var(--color-text);
+  }
+
+  .btn-secondary:hover {
+    background-color: var(--color-border);
+  }
+
+  .btn-danger {
+    background-color: var(--color-error);
+    color: white;
+  }
+
+  .btn-danger:hover {
+    background-color: color-mix(in srgb, var(--color-error) 90%, black);
+  }
+
+  /* 徽章 */
+  .badge {
+    @apply inline-flex items-center justify-center min-w-[18px] h-[18px] px-1;
+    @apply text-xs font-bold rounded-full;
+    background-color: var(--color-error);
+    color: white;
+  }
+
+  /* 模态框遮罩 */
+  .modal-overlay {
+    @apply fixed inset-0 z-phone-overlay;
+    @apply flex items-center justify-center p-4;
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+
+  .modal-content {
+    @apply rounded-2xl w-full max-w-sm overflow-hidden;
+    @apply animate-zoom-in;
+    background-color: var(--color-surface);
+  }
+
+  /* Toast提示 */
+  .toast {
+    @apply fixed top-20 left-1/2 -translate-x-1/2 z-phone-toast;
+    @apply px-4 py-2 text-sm rounded-full;
+    @apply animate-fade-in;
+    background-color: color-mix(in srgb, var(--color-text) 90%, transparent);
+    color: var(--color-background);
+  }
+}
+
+/* 实用工具层 */
+@layer utilities {
+  /* 安全区域 */
+  .pt-safe {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  /* 文本截断 */
+  .line-clamp-1 {
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* 隐藏滚动条但保留功能 */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* 触摸反馈 */
+  .touch-feedback {
+    @apply transition-colors;
+  }
+
+  .touch-feedback:active {
+    background-color: var(--color-surface-variant);
+  }
+
+  /* 主题相关的实用类 */
+  .bg-theme-primary {
+    background-color: var(--color-primary);
+  }
+
+  .bg-theme-surface {
+    background-color: var(--color-surface);
+  }
+
+  .bg-theme-background {
+    background-color: var(--color-background);
+  }
+
+  .text-theme-primary {
+    color: var(--color-primary);
+  }
+
+  .text-theme {
+    color: var(--color-text);
+  }
+
+  .text-theme-secondary {
+    color: var(--color-text-secondary);
+  }
+
+  .border-theme {
+    border-color: var(--color-border);
+  }
+}
