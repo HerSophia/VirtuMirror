@@ -72,7 +72,7 @@
 |------|----------|------|------|
 | **Session Context Service** | `session-context-service.md` | 📋 设计完成 | 会话隔离、来源追踪 |
 | **Media Service** | `media-service.md` | 📋 设计完成 | 统一媒体库、跨应用共享 |
-| **Follower Growth Engine** | `follower-growth-engine.md` | 📋 设计完成 | 六大涨粉渠道、数值算法 |
+| **Fans Service** | `fans-service/README.md` | 📋 设计完成 | 粉丝管理、增长算法、画像生成 |
 | **IM Service** | `im-service.md` | 📋 设计完成 | 私信引擎、Private Director |
 | **User Profile Extension** | `user-profile-extension.md` | 📋 设计完成 | 详细画像、平台差异化 |
 
@@ -155,7 +155,7 @@ class InteractionService {
   async getUserFavorites(userId: string, platformId?: string): Promise<string[]>;
   async getViewHistory(userId: string, limit?: number): Promise<ViewRecord[]>;
   
-  // 事件广播（供涨粉引擎等订阅）
+  // 事件广播（供粉丝服务等订阅）
   onInteraction(callback: (event: InteractionEvent) => void): () => void;
 }
 
@@ -170,7 +170,7 @@ interface InteractionEvent {
 
 **价值**：
 - 微博的点赞/收藏逻辑可复用到 B站、知乎
-- 涨粉引擎可以统一监听互动事件
+- 粉丝服务可以统一监听互动事件
 - 通知系统可以统一处理互动通知
 
 **实现优先级**：🔴 高（平台化基础）
@@ -316,22 +316,25 @@ interface FeedOptions {
 
 ---
 
-#### Follower Growth Engine 📋 已设计
+#### Fans Service（粉丝服务）📋 已设计
 
-> 详见 [follower-growth-engine.md](../follower-growth-engine.md)
+> 详见 [fans-service/README.md](../fans-service/README.md)
 
-**设计要点**：
-- 六大涨粉渠道（内容曝光、热搜流量、互动转化、转发扩散、大V导流、平台推荐）
-- 时间维度模型（冷启动期→增长期→平台期）
-- LLM 集成（涨粉故事、粉丝画像生成）
+粉丝服务是社交媒体模拟系统的核心服务之一，负责管理账号的粉丝关系、模拟粉丝增长、生成粉丝画像，并追踪粉丝互动行为。
 
-**实现计划**：
-| Phase | 内容 | 状态 |
-|-------|------|------|
-| Phase 1 | 基础算法（内容曝光、热搜涨粉） | 📋 待实现 |
-| Phase 2 | 互动与扩散 | 📋 待实现 |
-| Phase 3 | LLM 增强 | 📋 待实现 |
-| Phase 4 | UI 集成 | 📋 待实现 |
+**核心能力**：
+| 能力模块 | 说明 |
+|----------|------|
+| **粉丝管理** | 关注/取关、粉丝列表、互粉检测 |
+| **增长引擎** | 六大涨粉渠道、数值算法 |
+| **画像系统** | 粉丝特征、兴趣标签、活跃度 |
+| **互动追踪** | 粉丝评论、点赞、转发追踪 |
+| **数据统计** | 涨粉趋势、来源分析、里程碑 |
+
+**设计原则**：
+- 真实感优先：粉丝增长曲线符合真实社交媒体规律
+- 可解释性：每次涨粉都能追溯到具体原因
+- LLM 增强：关键节点使用 LLM 生成内容
 
 **实现优先级**：🟡 中（体验增强）
 
@@ -537,7 +540,7 @@ graph TD
         Account[账号服务 ✅]
         SocialGraph[社交图谱 🆕]
         Profile[用户画像 📋]
-        Growth[涨粉引擎 📋]
+        Fans[粉丝服务 📋]
     end
     
     subgraph "媒体服务"
@@ -561,7 +564,7 @@ graph TD
     %% 应用层依赖
     Weibo --> ContentModel
     Weibo --> Account
-    Weibo --> Growth
+    Weibo --> Fans
     Bilibili --> ContentModel
     Bilibili --> Account
     
@@ -574,9 +577,9 @@ graph TD
     Account --> Session
     SocialGraph --> Account
     Profile --> Account
-    Growth --> SocialGraph
-    Growth --> Interaction
-    Growth --> LLMTask
+    Fans --> SocialGraph
+    Fans --> Interaction
+    Fans --> LLMTask
     
     ImageGen --> AI
     
@@ -604,7 +607,7 @@ graph TD
 
 | 服务 | 原因 | 预估工作量 |
 |------|------|------------|
-| **Follower Growth Engine** | 社交模拟真实感 | 8-10h |
+| **Fans Service（粉丝服务）** | 粉丝管理、增长模拟 | 22-29h |
 | **Media Service** | 图片/视频管理 | 4-6h |
 | **Social Graph Service** | 关系管理优化 | 4-5h |
 | **Feed Algorithm Service** | 高级推荐 | 6-8h |
@@ -635,9 +638,9 @@ graph TD
 
 ### 7.2 中期（1 个月）
 
-3. **实现 Follower Growth Engine**
-   - 按设计文档逐步实现 Phase 1-2
-   - 与 Interaction Service 联动
+3. **实现 Fans Service（粉丝服务）**
+   - 参考 fans-service/ 设计文档逐步实现
+   - 与 Interaction Service、Account Service 联动
 
 4. **实现 Media Service**
    - 统一媒体管理
@@ -841,7 +844,7 @@ interface InteractionService {
 | **Trending Service** | 热点管理 | 热搜榜、热门话题 | 🆕 建议抽取 |
 | **Search Service** | 搜索能力 | 内容搜索、用户搜索 | 💡 可选 |
 | **Traffic Engine** | 流量分配 | 曝光量、热度计算 | ✅ 已实现 |
-| **Growth Engine** | 粉丝增长 | 涨粉算法、冷启动 | 📋 已设计 |
+| **Fans Service** | 粉丝服务 | 粉丝管理、增长算法、画像生成 | 📋 已设计 |
 
 **Trending Service 设计要点**：
 
@@ -1220,7 +1223,7 @@ type SystemEvent =
 **典型使用场景**：
 
 ```typescript
-// 涨粉引擎监听互动事件
+// 粉丝服务监听互动事件
 eventBus.on('interaction:like', ({ contentId, userId }) => {
   growthEngine.processInteraction('like', contentId, userId);
 });
@@ -1720,7 +1723,7 @@ interface LogViewer {
 | **传播域** | Feed Service | 🟡 | 🆕 | 信息流 |
 | | **Trending Service** | 🟡 | 🆕 | 热搜服务（从微博抽取）|
 | | Traffic Engine | - | ✅ | 流量引擎 |
-| | Growth Engine | 🟡 | 📋 | 涨粉算法 |
+| | Fans Service | 🟡 | 📋 | 粉丝管理、增长算法 |
 | **能力层** | **Session Context** | 🔴 | 📋 | 会话上下文（高优先级）|
 | | **Context Sharing** | 🟡 | 📋 | 上下文共享（优先级提升）|
 | | **Search Service** | 🟡 | 🆕 | 全文/语义搜索 |
@@ -1879,7 +1882,7 @@ Phase 3: 基础设施抽取 (1-2周)
 └── Rate Limiter Service
 
 Phase 4: 体验增强 (1-2月)
-├── Growth Engine 实现
+├── Fans Service 实现
 ├── Media Service 实现
 ├── Profile Service 实现
 └── Vector Store (语义搜索)
@@ -1897,7 +1900,7 @@ Phase 5: 验证与迭代
 | Phase 1 | 平台化基础 | 新 App 可以开始开发 |
 | Phase 2 | 核心能力 | 内容生成、搜索、调度完备 |
 | Phase 3 | 代码重构 | 将散落的能力收敛为服务 |
-| Phase 4 | 体验提升 | 涨粉、媒体、智能推荐 |
+| Phase 4 | 体验提升 | 粉丝服务、媒体、智能推荐 |
 | Phase 5 | 验证迭代 | 通过新 App 验证架构 |
 
 ---
@@ -1923,7 +1926,7 @@ Phase 5: 验证与迭代
 - [统一内容模型](../已完成的/social-content-types.md)
 - [LLM 任务服务](../llm-task-service/README.md)
 - [会话上下文服务](../session-context-service.md)
-- [涨粉算法引擎](../follower-growth-engine.md)
+- [粉丝服务](../fans-service/README.md)
 - [媒体服务](../media-service.md)
 - [即时通讯服务](../im-service.md)
 - [通知系统](../notification-system.md)
