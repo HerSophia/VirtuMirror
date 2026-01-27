@@ -1,4 +1,4 @@
-import { registerApp } from '@/services/appRegistryService'
+import { registerApp } from '@/services/icon'
 
 /**
  * 注册账号管理 App

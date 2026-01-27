@@ -77,6 +77,13 @@ export function useAppStorage(): ScopedStorage {
 }
 
 /**
+ * 获取系统 API（便捷方法）
+ */
+export function useAppSystem() {
+  return useAppRuntime().system
+}
+
+/**
  * 尝试获取 AppRuntime，如果不存在返回 null
  * 
  * 安全地在任何上下文中使用：

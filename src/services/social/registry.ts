@@ -1,41 +1,41 @@
-import { PlatformConfig } from '../../types/social';
-import { PromptService } from '../promptService';
-import { socialEnginePrompts } from './prompts';
+import { PlatformConfig } from '../../types/social'
+import { PromptService } from '../prompt/promptService'
+import { socialEnginePrompts } from './prompts'
 
 export class PlatformRegistry {
-  private static instance: PlatformRegistry;
-  private platforms: Map<string, PlatformConfig> = new Map();
+  private static instance: PlatformRegistry
+  private platforms: Map<string, PlatformConfig> = new Map()
 
   private constructor() {
-    this.registerBuiltinPlatforms();
-    this.registerPrompts();
+    this.registerBuiltinPlatforms()
+    this.registerPrompts()
   }
 
   private registerPrompts() {
     try {
-      PromptService.registerAppPrompts('social-engine', socialEnginePrompts);
+      PromptService.registerAppPrompts('social-engine', socialEnginePrompts)
     } catch (error) {
-      console.warn('[SocialEngine] Failed to register prompts:', error);
+      console.warn('[SocialEngine] Failed to register prompts:', error)
     }
   }
 
   public static getInstance(): PlatformRegistry {
     if (!PlatformRegistry.instance) {
-      PlatformRegistry.instance = new PlatformRegistry();
+      PlatformRegistry.instance = new PlatformRegistry()
     }
-    return PlatformRegistry.instance;
+    return PlatformRegistry.instance
   }
 
   public getPlatform(id: string): PlatformConfig | undefined {
-    return this.platforms.get(id);
+    return this.platforms.get(id)
   }
 
   public getAllPlatforms(): PlatformConfig[] {
-    return Array.from(this.platforms.values());
+    return Array.from(this.platforms.values())
   }
 
   public registerPlatform(config: PlatformConfig): void {
-    this.platforms.set(config.id, config);
+    this.platforms.set(config.id, config)
   }
 
   private registerBuiltinPlatforms() {
@@ -62,7 +62,7 @@ export class PlatformRegistry {
         allowStranger: true,
         foldUnknown: true,
       },
-    });
+    })
 
     // 2. Bilibili (B站)
     this.registerPlatform({
@@ -87,7 +87,7 @@ export class PlatformRegistry {
         allowStranger: false,
         foldUnknown: false,
       },
-    });
+    })
 
     // 3. Zhihu (知乎)
     this.registerPlatform({
@@ -112,8 +112,8 @@ export class PlatformRegistry {
         allowStranger: true,
         foldUnknown: true,
       },
-    });
-    
+    })
+
     // 4. RedBook (小红书)
     this.registerPlatform({
       id: 'redbook',
@@ -137,6 +137,6 @@ export class PlatformRegistry {
         allowStranger: true,
         foldUnknown: false,
       },
-    });
+    })
   }
 }

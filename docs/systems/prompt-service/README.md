@@ -1,6 +1,6 @@
 # 提示词服务 (Prompt Service)
 
-> **版本**: 1.0  
+> **版本**: 1.1  
 > **状态**: ✅ 已实现  
 > **最后更新**: 2026-01-08
 
@@ -49,8 +49,10 @@
 │                                 │                                        │
 │                                 ▼                                        │
 │                    ┌──────────────────────┐                              │
-│                    │PromptChainExecutor   │                              │
-│                    │  (链执行引擎)          │                              │
+│                    │   chainExecutor/     │                              │
+│                    │  ├── executor.ts     │                              │
+│                    │  ├── stepExecutors   │                              │
+│                    │  └── utils.ts        │                              │
 │                    └──────────┬───────────┘                              │
 └───────────────────────────────┼──────────────────────────────────────────┘
                                 │
@@ -63,9 +65,25 @@
 └─────────────────────────────────────────────────────────────────────────┘
 ```
 
-## 3. 服务组成
+## 3. 文件结构
 
-### 3.1 PromptService
+```
+src/services/prompt/
+├── index.ts                    # 统一导出入口
+├── promptService.ts            # 提示词模板管理
+├── systemPromptService.ts      # 系统提示词组装
+├── promptChainService.ts       # 链管理服务
+├── promptChainExecutor.ts      # 向后兼容的重导出文件
+└── chainExecutor/              # 执行器模块目录
+    ├── index.ts               # 执行器模块导出
+    ├── executor.ts            # PromptChainExecutor 核心类
+    ├── stepExecutors.ts       # 各类步骤执行器
+    └── utils.ts               # 工具函数（模板渲染、表达式求值等）
+```
+
+## 4. 服务组成
+
+### 4.1 PromptService
 
 **职责**: 提示词模板的核心管理服务
 
@@ -82,7 +100,7 @@
 
 **详见**: [architecture.md](./architecture.md)
 
-### 3.2 SystemPromptService
+### 4.2 SystemPromptService
 
 **职责**: 管理全局和 App 级系统提示词
 
@@ -95,7 +113,7 @@
 
 **详见**: [system-prompts.md](./system-prompts.md)
 
-### 3.3 PromptChainService
+### 4.3 PromptChainService
 
 **职责**: 提示词链的 CRUD 和持久化
 
@@ -110,19 +128,20 @@
 
 **详见**: [prompt-chain.md](./prompt-chain.md)
 
-### 3.4 PromptChainExecutor
+### 4.4 chainExecutor 模块
 
-**职责**: 链的执行引擎
+**职责**: 链的执行引擎（已拆分为模块化结构）
 
-| 功能 | 方法 | 说明 |
-|------|------|------|
-| 执行 | `execute(chain, inputs, callback)` | 执行链 |
-| 控制 | `abort(executionId)` | 中止执行 |
-| | `abortAll()` | 中止所有执行 |
+| 文件 | 职责 | 主要导出 |
+|------|------|----------|
+| `executor.ts` | 核心执行器类 | `PromptChainExecutor`, `promptChainExecutor` |
+| `stepExecutors.ts` | 各类步骤执行器 | `executePromptStep`, `executeTransformStep`, `executeLoopStep` |
+| `utils.ts` | 工具函数 | `renderTemplate`, `parseJSON`, `evaluateExpression` 等 |
+| `index.ts` | 统一导出 | 所有上述导出 |
 
 **详见**: [executor.md](./executor.md)
 
-## 4. 文档导航
+## 5. 文档导航
 
 | 文档 | 说明 |
 |------|------|
@@ -133,12 +152,34 @@
 | [类型定义](./types.md) | 完整的 TypeScript 类型 |
 | [集成指南](./integration.md) | App 如何注册和使用提示词 |
 
-## 5. 快速开始
+## 6. 快速开始
 
-### 5.1 注册 App 提示词
+### 6.1 导入服务
+
+推荐使用统一入口导入：
 
 ```typescript
-import { PromptService } from '@/services/promptService';
+// 推荐：从统一入口导入
+import {
+  PromptService,
+  SystemPromptService,
+  PromptChainService,
+  PromptChainExecutor,
+  promptChainExecutor,
+} from '@/services/prompt'
+
+// 导入工具函数
+import {
+  renderTemplate,
+  parseJSON,
+  evaluateExpression,
+} from '@/services/prompt/chainExecutor'
+```
+
+### 6.2 注册 App 提示词
+
+```typescript
+import { PromptService } from '@/services/prompt';
 import type { AppPromptDefinition } from '@/types/prompts';
 
 // 定义提示词
@@ -159,10 +200,10 @@ const myPrompts: AppPromptDefinition[] = [
 PromptService.registerAppPrompts('myapp', myPrompts);
 ```
 
-### 5.2 使用提示词生成内容
+### 6.3 使用提示词生成内容
 
 ```typescript
-import { PromptService } from '@/services/promptService';
+import { PromptService } from '@/services/prompt';
 import { AIGenerateService } from '@/services/aiGenerateService';
 
 // 获取并渲染提示词
@@ -183,10 +224,10 @@ if (template) {
 }
 ```
 
-### 5.3 执行提示词链
+### 6.4 执行提示词链
 
 ```typescript
-import { promptChainService, promptChainExecutor } from '@/services';
+import { promptChainService, promptChainExecutor } from '@/services/prompt';
 
 // 获取链
 const chain = await promptChainService.getChainById('chain.xxx');
@@ -203,7 +244,7 @@ const result = await promptChainExecutor.execute(
 console.log('输出:', result.outputs);
 ```
 
-## 6. 相关服务
+## 7. 相关服务
 
 | 服务 | 路径 | 说明 |
 |------|------|------|
@@ -211,8 +252,9 @@ console.log('输出:', result.outputs);
 | `LLMTaskService` | `@/services/llmTask` | LLM 任务调度服务 |
 | `NarrativeService` | `@/services/narrativeService` | 酒馆叙事获取服务 |
 
-## 7. 版本历史
+## 8. 版本历史
 
 | 版本 | 日期 | 变更内容 |
 |------|------|----------|
+| 1.1 | 2026-01-08 | 重组文件结构，拆分执行器为模块化架构，添加统一导出入口 |
 | 1.0 | 2026-01-08 | 初始版本，包含完整的提示词管理能力 |

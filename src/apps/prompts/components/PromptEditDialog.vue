@@ -3,75 +3,79 @@
  * 提示词编辑对话框
  * @description 用于编辑已有提示词的对话框组件
  */
-import { ref, computed, watch } from 'vue';
-import { PromptService } from '@/services/promptService';
-import { PROMPT_CATEGORIES } from '@/types/prompts';
-import type { PromptTemplate, PromptVariable, PromptCategory } from '@/types/prompts';
-import VariableEditor from './VariableEditor.vue';
+import { PromptService } from '@/services/prompt/promptService'
+import type { PromptTemplate, PromptVariable } from '@/types/prompts'
+import { PROMPT_CATEGORIES } from '@/types/prompts'
+import { computed, ref, watch } from 'vue'
+import VariableEditor from './VariableEditor.vue'
 
 const props = defineProps<{
-  prompt: PromptTemplate;
-}>();
+  prompt: PromptTemplate
+}>()
 
 const emit = defineEmits<{
-  save: [prompt: PromptTemplate];
-  close: [];
-}>();
+  save: [prompt: PromptTemplate]
+  close: []
+}>()
 
 // 编辑表单数据
-const formData = ref<PromptTemplate>({ ...props.prompt });
+const formData = ref<PromptTemplate>({ ...props.prompt })
 
 // 获取编辑权限
-const permission = computed(() => PromptService.isPromptEditable(props.prompt));
+const permission = computed(() => PromptService.isPromptEditable(props.prompt))
 
 // 是否可编辑字段
 const canEditField = (field: string): boolean => {
   if (permission.value.editableFields.includes('*')) {
-    return true;
+    return true
   }
-  return permission.value.editableFields.includes(field);
-};
+  return permission.value.editableFields.includes(field)
+}
 
 // 分类选项
-const categoryOptions = PROMPT_CATEGORIES.filter(c => c.id !== 'all');
+const categoryOptions = PROMPT_CATEGORIES.filter((c) => c.id !== 'all')
 
 // 当前活动的编辑 tab
-const activeTab = ref<'basic' | 'template' | 'variables'>('basic');
+const activeTab = ref<'basic' | 'template' | 'variables'>('basic')
 
 // 更新表单数据
-watch(() => props.prompt, (newVal) => {
-  formData.value = { ...newVal };
-}, { deep: true });
+watch(
+  () => props.prompt,
+  (newVal) => {
+    formData.value = { ...newVal }
+  },
+  { deep: true }
+)
 
 // 保存
 const handleSave = () => {
   // 更新时间戳
-  formData.value.updatedAt = new Date().toISOString();
-  emit('save', formData.value);
-};
+  formData.value.updatedAt = new Date().toISOString()
+  emit('save', formData.value)
+}
 
 // 关闭
 const handleClose = () => {
-  emit('close');
-};
+  emit('close')
+}
 
 // 更新变量
 const handleVariablesUpdate = (variables: PromptVariable[]) => {
-  formData.value.availableVariables = variables;
-};
+  formData.value.availableVariables = variables
+}
 
 // 阻止点击冒泡
 const stopPropagation = (e: Event) => {
-  e.stopPropagation();
-};
+  e.stopPropagation()
+}
 
 // 格式化变量名（用于显示双花括号）
 const formatVarName = (name: string): string => {
-  return `{{${name}}}`;
-};
+  return `{{${name}}}`
+}
 
 // 变量提示文本
-const varHintText = '（使用 {{变量名}} 插入变量）';
+const varHintText = '（使用 {{变量名}} 插入变量）'
 </script>
 
 <template>
@@ -84,29 +88,29 @@ const varHintText = '（使用 {{变量名}} 插入变量）';
           <i class="fas fa-times"></i>
         </button>
       </header>
-      
+
       <!-- 标签页 -->
       <div class="dialog-tabs">
-        <button 
+        <button
           :class="['tab-btn', { active: activeTab === 'basic' }]"
           @click="activeTab = 'basic'"
         >
           基本信息
         </button>
-        <button 
+        <button
           :class="['tab-btn', { active: activeTab === 'template' }]"
           @click="activeTab = 'template'"
         >
           提示词模板
         </button>
-        <button 
+        <button
           :class="['tab-btn', { active: activeTab === 'variables' }]"
           @click="activeTab = 'variables'"
         >
           变量定义
         </button>
       </div>
-      
+
       <!-- 内容区 -->
       <div class="dialog-content">
         <!-- 基本信息 -->
@@ -121,7 +125,7 @@ const varHintText = '（使用 {{变量名}} 插入变量）';
               :disabled="!canEditField('name')"
             />
           </div>
-          
+
           <div class="form-group">
             <label class="form-label">描述</label>
             <textarea
@@ -132,7 +136,7 @@ const varHintText = '（使用 {{变量名}} 插入变量）';
               :disabled="!canEditField('description')"
             ></textarea>
           </div>
-          
+
           <div class="form-row">
             <div class="form-group flex-1">
               <label class="form-label">分类</label>
@@ -146,7 +150,7 @@ const varHintText = '（使用 {{变量名}} 插入变量）';
                 </option>
               </select>
             </div>
-            
+
             <div class="form-group flex-1">
               <label class="form-label">场景标识</label>
               <input
@@ -158,7 +162,7 @@ const varHintText = '（使用 {{变量名}} 插入变量）';
               />
             </div>
           </div>
-          
+
           <div class="form-row">
             <div class="form-group flex-1">
               <label class="form-label">优先级</label>
@@ -170,7 +174,7 @@ const varHintText = '（使用 {{变量名}} 插入变量）';
                 :disabled="!canEditField('priority')"
               />
             </div>
-            
+
             <div class="form-group flex-1">
               <label class="form-label">启用状态</label>
               <div class="toggle-wrapper">
@@ -188,7 +192,7 @@ const varHintText = '（使用 {{变量名}} 插入变量）';
             </div>
           </div>
         </div>
-        
+
         <!-- 提示词模板 -->
         <div v-show="activeTab === 'template'" class="tab-panel">
           <div class="form-group">
@@ -204,7 +208,7 @@ const varHintText = '（使用 {{变量名}} 插入变量）';
               :disabled="!canEditField('systemPrompt')"
             ></textarea>
           </div>
-          
+
           <div class="form-group">
             <label class="form-label">
               用户提示词模板
@@ -218,7 +222,7 @@ const varHintText = '（使用 {{变量名}} 插入变量）';
               :disabled="!canEditField('template')"
             ></textarea>
           </div>
-          
+
           <!-- 可用变量提示 -->
           <div v-if="formData.availableVariables.length > 0" class="variables-hint">
             <p class="hint-title">可用变量：</p>
@@ -234,7 +238,7 @@ const varHintText = '（使用 {{变量名}} 插入变量）';
             </div>
           </div>
         </div>
-        
+
         <!-- 变量定义 -->
         <div v-show="activeTab === 'variables'" class="tab-panel">
           <VariableEditor
@@ -244,7 +248,7 @@ const varHintText = '（使用 {{变量名}} 插入变量）';
           />
         </div>
       </div>
-      
+
       <!-- 底部按钮 -->
       <footer class="dialog-footer">
         <div class="footer-info">
@@ -267,7 +271,7 @@ const varHintText = '（使用 {{变量名}} 插入变量）';
 }
 
 .dialog-container {
-  @apply w-full max-w-2xl max-h-[90vh] flex flex-col rounded-2xl overflow-hidden;
+  @apply flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-2xl;
   background: var(--color-surface);
   margin: 16px;
 }
@@ -284,7 +288,7 @@ const varHintText = '（使用 {{变量名}} 插入变量）';
 }
 
 .close-btn {
-  @apply w-8 h-8 flex items-center justify-center rounded-full;
+  @apply flex h-8 w-8 items-center justify-center rounded-full;
   @apply transition-colors;
   color: var(--color-text-secondary);
 }
@@ -300,7 +304,7 @@ const varHintText = '（使用 {{变量名}} 插入变量）';
 }
 
 .tab-btn {
-  @apply px-4 py-2 rounded-lg text-sm font-medium;
+  @apply rounded-lg px-4 py-2 text-sm font-medium;
   @apply transition-colors;
   color: var(--color-text-secondary);
 }
@@ -345,7 +349,7 @@ const varHintText = '（使用 {{变量名}} 插入变量）';
 .form-input,
 .form-textarea,
 .form-select {
-  @apply px-3 py-2 rounded-lg border;
+  @apply rounded-lg border px-3 py-2;
   @apply transition-colors;
   background: var(--color-background);
   border-color: var(--color-border);
@@ -384,7 +388,7 @@ const varHintText = '（使用 {{变量名}} 插入变量）';
 }
 
 .toggle-track {
-  @apply relative w-10 h-5 rounded-full;
+  @apply relative h-5 w-10 rounded-full;
   @apply transition-colors;
   background: var(--color-border);
 }
@@ -394,7 +398,7 @@ const varHintText = '（使用 {{变量名}} 插入变量）';
 }
 
 .toggle-thumb {
-  @apply absolute top-0.5 left-0.5 w-4 h-4 rounded-full;
+  @apply absolute left-0.5 top-0.5 h-4 w-4 rounded-full;
   @apply transition-transform;
   background: white;
 }
@@ -410,12 +414,12 @@ const varHintText = '（使用 {{变量名}} 插入变量）';
 
 /* 变量提示 */
 .variables-hint {
-  @apply p-3 rounded-lg;
+  @apply rounded-lg p-3;
   background: var(--color-surface-variant);
 }
 
 .hint-title {
-  @apply text-sm font-medium mb-2;
+  @apply mb-2 text-sm font-medium;
   color: var(--color-text);
 }
 
@@ -424,7 +428,7 @@ const varHintText = '（使用 {{变量名}} 插入变量）';
 }
 
 .var-tag {
-  @apply px-2 py-1 rounded text-xs font-mono cursor-help;
+  @apply cursor-help rounded px-2 py-1 font-mono text-xs;
   background: var(--color-background);
   color: var(--color-primary);
 }
@@ -445,7 +449,7 @@ const varHintText = '（使用 {{变量名}} 插入变量）';
 }
 
 .btn {
-  @apply px-4 py-2 rounded-lg text-sm font-medium;
+  @apply rounded-lg px-4 py-2 text-sm font-medium;
   @apply transition-colors;
 }
 

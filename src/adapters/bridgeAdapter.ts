@@ -1,7 +1,7 @@
 /**
  * Bridge 适配器
  * 通过 Socket.IO 连接到 Bridge Server，实现与酒馆等平台的数据同步
- * 
+ *
  * 状态管理设计：
  * - 使用 sessionId (UUID) 来唯一标识一个聊天会话
  * - sessionId 存储在酒馆的聊天级别变量中 (_phone_bridge.sessionId)
@@ -10,18 +10,18 @@
  * - 组合使用 sessionId + message_id 可以唯一定位一条消息
  */
 
-import { io, Socket } from 'socket.io-client'
-import { timeService } from '@/services/timeService'
-import type {
-  HostAdapter,
-  VariableOption,
-  GenerateOptions,
-  ChatMessage,
-  UnsubscribeFn,
-} from './types'
-import type { PhoneChatData } from '@/types/persistedData'
+import { timeService } from '@/services/time/timeService'
 import type { PhoneGlobalConfig } from '@/types/globalConfig'
-import type { SwipeChangedEvent, MessageDeletedEvent } from '@/types/swipe'
+import type { PhoneChatData } from '@/types/persistedData'
+import type { MessageDeletedEvent, SwipeChangedEvent } from '@/types/swipe'
+import { io, Socket } from 'socket.io-client'
+import type {
+  ChatMessage,
+  GenerateOptions,
+  HostAdapter,
+  UnsubscribeFn,
+  VariableOption,
+} from './types'
 
 // ============ 类型定义 ============
 
@@ -36,7 +36,7 @@ export interface SyncMessage {
     | 'message_swiped'
     | 'chat_changed'
   platform: string
-  chatId: string         // 聊天文件唯一标识
+  chatId: string // 聊天文件唯一标识
   characterName: string
   playerName: string
   timestamp: number
@@ -56,8 +56,8 @@ export interface SyncPayload {
 
 /** 同步的消息（来自酒馆，使用 snake_case） */
 export interface SyncedMessage {
-  message_id: number    // 酒馆楼层号
-  sessionId: string     // 所属会话ID (UUID)
+  message_id: number // 酒馆楼层号
+  sessionId: string // 所属会话ID (UUID)
   name: string
   role: 'system' | 'assistant' | 'user'
   is_hidden: boolean
@@ -65,15 +65,15 @@ export interface SyncedMessage {
   data: Record<string, unknown>
   extra: Record<string, unknown>
   // Swipe 相关字段
-  swipe_id?: number     // 当前显示的 swipe ID
-  swipes?: string[]     // 所有 swipe 内容
+  swipe_id?: number // 当前显示的 swipe ID
+  swipes?: string[] // 所有 swipe 内容
 }
 
 /** 平台信息 */
 export interface PlatformInfo {
-  id: string            // platform:sessionId
+  id: string // platform:sessionId
   platform: string
-  chatId: string        // 实际上是 sessionId (UUID)
+  chatId: string // 实际上是 sessionId (UUID)
   characterName: string
   playerName: string
 }
@@ -99,8 +99,8 @@ export interface BridgeStatus {
   connected: boolean
   serverUrl: string
   currentPlatform: string | null
-  currentSessionId: string | null  // 当前会话的 UUID
-  platform: PlatformInfo | null     // 单一平台
+  currentSessionId: string | null // 当前会话的 UUID
+  platform: PlatformInfo | null // 单一平台
   lastSyncTime: number | null
   lastPingTime: number | null
   lastPongTime: number | null
@@ -110,7 +110,7 @@ export interface BridgeStatus {
 
 export interface BridgeAdapterOptions {
   serverUrl?: string
-  apiKey?: string         // API Key 用于鉴权
+  apiKey?: string // API Key 用于鉴权
   autoConnect?: boolean
   reconnection?: boolean
   reconnectionAttempts?: number
@@ -143,8 +143,8 @@ export class BridgeAdapter implements HostAdapter {
 
   // 状态
   private _connected = false
-  private _platform: PlatformInfo | null = null  // 单一平台
-  private _currentSessionId: string | null = null  // 当前会话 UUID
+  private _platform: PlatformInfo | null = null // 单一平台
+  private _currentSessionId: string | null = null // 当前会话 UUID
   private _characterName = 'Character'
   private _playerName = 'Player'
   private _lastSyncTime: number | null = null
@@ -152,7 +152,7 @@ export class BridgeAdapter implements HostAdapter {
   private _lastPongTime: number | null = null
   private _latency: number | null = null
   private _heartbeatCheckTimer: ReturnType<typeof setInterval> | null = null
-  
+
   // 共享配置（双向同步）
   private _sharedConfig: SharedConfig = { ...DEFAULT_CONFIG }
 
@@ -193,13 +193,13 @@ export class BridgeAdapter implements HostAdapter {
       reconnectionAttempts: this.options.reconnectionAttempts,
       reconnectionDelay: this.options.reconnectionDelay,
     }
-    
+
     // 如果有 API Key，添加鉴权信息
     if (this.options.apiKey) {
       socketOptions.auth = { apiKey: this.options.apiKey }
       console.log('[BridgeAdapter] 使用 API Key 鉴权')
     }
-    
+
     this.socket = io(this.options.serverUrl, socketOptions)
 
     this.setupSocketHandlers()
@@ -274,7 +274,7 @@ export class BridgeAdapter implements HostAdapter {
   /** 更新配置并同步到服务器 */
   updateConfig(config: Partial<SharedConfig>): void {
     this._sharedConfig = { ...this._sharedConfig, ...config }
-    
+
     if (this._connected && this.socket) {
       this.socket.emit('config_update', {
         type: 'config_update',
@@ -284,7 +284,7 @@ export class BridgeAdapter implements HostAdapter {
       })
       console.log('[BridgeAdapter] 已发送配置更新:', config)
     }
-    
+
     this.emit('bridge:config_updated', this._sharedConfig)
   }
 
@@ -316,16 +316,16 @@ export class BridgeAdapter implements HostAdapter {
     // 单一平台模式：接收平台列表（0或1个）
     this.socket.on('connected_platforms', (platforms: PlatformInfo[]) => {
       console.log('[BridgeAdapter] 已连接平台:', platforms)
-      
+
       if (platforms.length > 0) {
         this._platform = platforms[0]
-        this._currentSessionId = platforms[0].chatId  // chatId 实际上是 sessionId (UUID)
+        this._currentSessionId = platforms[0].chatId // chatId 实际上是 sessionId (UUID)
         this._characterName = platforms[0].characterName || 'Character'
         this._playerName = platforms[0].playerName || 'Player'
       } else {
         this._platform = null
       }
-      
+
       this.emit('bridge:platforms', platforms)
       this.emit('bridge:platform_changed', this._platform)
     })
@@ -345,12 +345,15 @@ export class BridgeAdapter implements HostAdapter {
       this.emit('bridge:platform_changed', this._platform)
     })
 
-    this.socket.on('platform_disconnected', (info: { platform: string; chatId: string; reason?: string }) => {
-      console.log('[BridgeAdapter] 平台断开:', info)
-      this._platform = null
-      this.emit('bridge:platform_disconnected', info)
-      this.emit('bridge:platform_changed', null)
-    })
+    this.socket.on(
+      'platform_disconnected',
+      (info: { platform: string; chatId: string; reason?: string }) => {
+        console.log('[BridgeAdapter] 平台断开:', info)
+        this._platform = null
+        this.emit('bridge:platform_disconnected', info)
+        this.emit('bridge:platform_changed', null)
+      }
+    )
 
     // 同步处理
     this.socket.on('sync', (data: SyncMessage) => {
@@ -399,7 +402,7 @@ export class BridgeAdapter implements HostAdapter {
     // 更新上下文信息
     this._characterName = data.characterName || this._characterName
     this._playerName = data.playerName || this._playerName
-    this._currentSessionId = data.chatId  // chatId 实际上是 sessionId
+    this._currentSessionId = data.chatId // chatId 实际上是 sessionId
     this._lastSyncTime = Date.now()
 
     // 更新平台信息
@@ -417,10 +420,10 @@ export class BridgeAdapter implements HostAdapter {
       case 'message_received':
         // 尝试从新消息中同步时间（如果启用了模拟时间模式）
         if (data.payload.messages && data.payload.messages.length > 0) {
-            const lastMsg = data.payload.messages[data.payload.messages.length - 1]
-            if (lastMsg.message) {
-                timeService.syncFromContent(lastMsg.message)
-            }
+          const lastMsg = data.payload.messages[data.payload.messages.length - 1]
+          if (lastMsg.message) {
+            timeService.syncFromContent(lastMsg.message)
+          }
         }
         this.emit('message_received', data.payload)
         break
@@ -474,7 +477,7 @@ export class BridgeAdapter implements HostAdapter {
    * 获取指定 sessionId 的所有消息
    */
   getMessagesBySessionId(sessionId: string): SyncedMessage[] {
-    return this._chatHistory.filter(msg => msg.sessionId === sessionId)
+    return this._chatHistory.filter((msg) => msg.sessionId === sessionId)
   }
 
   /**

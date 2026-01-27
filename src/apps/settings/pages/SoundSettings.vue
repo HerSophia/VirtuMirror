@@ -1,7 +1,7 @@
 <script setup lang="ts">
+import { audioService } from '@/services/audio/audioService'
 import { useAudioStore } from '@/stores/audioStore'
 import { SettingsGroup, SettingsItem, SliderControl, ToggleSwitch } from '../components'
-import { audioService } from '@/services/audioService'
 
 const audioStore = useAudioStore()
 
@@ -17,7 +17,7 @@ function playTestSound(channel: 'ringtone' | 'notification' | 'alarm') {
     audioService.play({
       source: 'https://assets.mixkit.co/active_storage/sfx/1359/1359-preview.mp3', // 示例铃声
       channel: 'ringtone',
-      volume: 1.0
+      volume: 1.0,
     })
   } else if (channel === 'notification') {
     audioService.playSystemSound('NOTIFICATION')
@@ -25,7 +25,7 @@ function playTestSound(channel: 'ringtone' | 'notification' | 'alarm') {
     audioService.play({
       source: 'https://assets.mixkit.co/active_storage/sfx/995/995-preview.mp3', // 示例闹铃
       channel: 'alarm',
-      volume: 1.0
+      volume: 1.0,
     })
   }
 }
@@ -36,13 +36,13 @@ function playTestSound(channel: 'ringtone' | 'notification' | 'alarm') {
     <div class="header">
       <h3>声音与触感</h3>
     </div>
-    
+
     <div class="content">
       <!-- 整体控制 -->
       <SettingsGroup title="全局控制">
         <SettingsItem label="静音模式">
           <template #right>
-            <ToggleSwitch 
+            <ToggleSwitch
               :model-value="audioStore.muted['master']"
               @update:model-value="audioStore.toggleMute('master')"
             />
@@ -66,8 +66,8 @@ function playTestSound(channel: 'ringtone' | 'notification' | 'alarm') {
         </SettingsItem>
 
         <!-- 铃声音量 -->
-        <SettingsItem 
-          label="铃声" 
+        <SettingsItem
+          label="铃声"
           :subtitle="`${Math.round(audioStore.volumes.ringtone * 100)}%`"
           @click="playTestSound('ringtone')"
         >
@@ -83,8 +83,8 @@ function playTestSound(channel: 'ringtone' | 'notification' | 'alarm') {
         </SettingsItem>
 
         <!-- 通知音量 -->
-        <SettingsItem 
-          label="通知" 
+        <SettingsItem
+          label="通知"
           :subtitle="`${Math.round(audioStore.volumes.notification * 100)}%`"
           @click="playTestSound('notification')"
         >
@@ -100,8 +100,8 @@ function playTestSound(channel: 'ringtone' | 'notification' | 'alarm') {
         </SettingsItem>
 
         <!-- 闹钟音量 -->
-        <SettingsItem 
-          label="闹钟" 
+        <SettingsItem
+          label="闹钟"
           :subtitle="`${Math.round(audioStore.volumes.alarm * 100)}%`"
           @click="playTestSound('alarm')"
         >
@@ -116,12 +116,12 @@ function playTestSound(channel: 'ringtone' | 'notification' | 'alarm') {
           </template>
         </SettingsItem>
       </SettingsGroup>
-      
+
       <!-- 系统反馈 -->
       <SettingsGroup title="系统反馈">
         <SettingsItem label="系统提示音" subtitle="点击声、锁屏音等">
           <template #right>
-             <ToggleSwitch 
+            <ToggleSwitch
               :model-value="!audioStore.muted['system']"
               @update:model-value="audioStore.toggleMute('system')"
             />
@@ -134,12 +134,12 @@ function playTestSound(channel: 'ringtone' | 'notification' | 'alarm') {
 
 <style scoped>
 .sound-settings {
-  @apply h-full flex flex-col;
+  @apply flex h-full flex-col;
   background-color: var(--color-background);
 }
 
 .header {
-  @apply px-4 pt-4 pb-2;
+  @apply px-4 pb-2 pt-4;
 }
 
 .header h3 {

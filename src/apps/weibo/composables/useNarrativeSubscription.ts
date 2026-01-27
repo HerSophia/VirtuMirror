@@ -1,27 +1,27 @@
 /**
  * 微博叙事订阅 Composable
- * 
+ *
  * 负责订阅来自酒馆的叙事内容，分析是否需要生成微博相关内容
- * 
+ *
  * 使用方式：
  * 1. 在 WeiboApp.vue 的 onMounted 中调用 startSubscription()
  * 2. 在 onUnmounted 中调用 stopSubscription()
  */
 
-import { ref, onUnmounted } from 'vue'
-import {
-  narrativeService,
-  createNarrativeVariables,
-  type NarrativeEvent,
-} from '@/services/narrativeService'
 import { AIGenerateService } from '@/services/aiGenerateService'
-import { useWeiboStore } from '@/stores/weiboStore'
-import { useLLMTaskStore } from '../stores'
+import { tryUseAppRuntime } from '@/services/appRuntime'
 import { db } from '@/services/database'
 import { writeQueue } from '@/services/database/writeQueue'
-import { tryUseAppRuntime } from '@/services/appRuntime'
-import { v4 as uuidv4 } from 'uuid'
+import {
+  createNarrativeVariables,
+  narrativeService,
+  type NarrativeEvent,
+} from '@/services/narrative/narrativeService'
+import { useWeiboStore } from '@/stores/weiboStore'
 import type { ContentSourceTracking } from '@/types/social'
+import { v4 as uuidv4 } from 'uuid'
+import { onUnmounted, ref } from 'vue'
+import { useLLMTaskStore } from '../stores'
 
 /**
  * 叙事分析结果
@@ -144,9 +144,7 @@ export function useNarrativeSubscription() {
   /**
    * 分析叙事内容
    */
-  async function analyzeNarrative(
-    event: NarrativeEvent
-  ): Promise<NarrativeAnalysisResult> {
+  async function analyzeNarrative(event: NarrativeEvent): Promise<NarrativeAnalysisResult> {
     try {
       // 转换为标准变量并展开为 Record<string, unknown>
       const narrativeVars = createNarrativeVariables(event)
@@ -271,10 +269,7 @@ export function useNarrativeSubscription() {
   /**
    * 触发帖子生成任务
    */
-  async function triggerPostGeneration(
-    narrativeContent: string,
-    source: ContentSourceTracking
-  ) {
+  async function triggerPostGeneration(narrativeContent: string, source: ContentSourceTracking) {
     try {
       // 使用内置任务生成微博
       const task = llmTaskStore.createTask({

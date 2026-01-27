@@ -8,7 +8,7 @@ import type { AppSourceInfo } from '@/types/appIdentity'
 import type { AppRuntime, AppIdentity } from './types'
 import { createScopedStorage } from './scopedStorage'
 import { createSystemAPI } from './systemAPI'
-import { calculateDataNamespace } from '@/services/appIdentityService'
+import { calculateDataNamespace } from './identityService'
 import type { PhoneAppPackage } from '@/types/appPackage'
 
 /**

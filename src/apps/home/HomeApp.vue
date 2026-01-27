@@ -15,8 +15,8 @@ import { DesktopGrid, DockBar, PageIndicator, RemoveAppDialog, AppContextMenu } 
 import { useIconPosition, useDesktopOrganize } from './composables'
 import type { DesktopItem, AppItem, DesktopPage, AppQuickAction, DockAppItem } from './types'
 import { useIconStore } from '@/stores/iconStore'
-import { getIconRegistryService } from '@/services/iconRegistryService'
-import { appRegistry } from '@/services/appRegistryService'
+import { getIconRegistryService } from '@/services/icon'
+import { appRegistry } from '@/services/icon'
 
 const router = useRouter()
 const phoneStore = usePhoneStore()

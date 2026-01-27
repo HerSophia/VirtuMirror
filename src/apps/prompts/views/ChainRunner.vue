@@ -3,121 +3,121 @@
  * 提示词链执行监控
  * 执行链并实时显示进度和结果
  */
-import { ref, computed, onMounted, onUnmounted } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
-import { promptChainService } from '@/services/promptChainService';
-import { promptChainExecutor } from '@/services/promptChainExecutor';
+import { promptChainExecutor } from '@/services/prompt'
+import { promptChainService } from '@/services/prompt/promptChainService'
 import type {
-  PromptChain,
+  ChainExecutionEvent,
   ChainExecutionResult,
+  PromptChain,
   StepExecutionResult,
-  ChainExecutionEvent
-} from '@/types/promptChain';
+} from '@/types/promptChain'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
-const router = useRouter();
-const route = useRoute();
+const router = useRouter()
+const route = useRoute()
 
 // 状态
-const chain = ref<PromptChain | null>(null);
-const loading = ref(true);
-const executing = ref(false);
-const executionId = ref<string | null>(null);
-const result = ref<ChainExecutionResult | null>(null);
+const chain = ref<PromptChain | null>(null)
+const loading = ref(true)
+const executing = ref(false)
+const executionId = ref<string | null>(null)
+const result = ref<ChainExecutionResult | null>(null)
 
 // 输入表单
-const inputValues = ref<Record<string, unknown>>({});
+const inputValues = ref<Record<string, unknown>>({})
 
 // 实时进度
-const currentStepIndex = ref(-1);
-const stepStatuses = ref<Map<string, 'pending' | 'running' | 'completed' | 'failed'>>(new Map());
-const stepOutputs = ref<Map<string, unknown>>(new Map());
-const logs = ref<string[]>([]);
+const currentStepIndex = ref(-1)
+const stepStatuses = ref<Map<string, 'pending' | 'running' | 'completed' | 'failed'>>(new Map())
+const stepOutputs = ref<Map<string, unknown>>(new Map())
+const logs = ref<string[]>([])
 
 // 计算属性
 const canExecute = computed(() => {
-  if (!chain.value) return false;
+  if (!chain.value) return false
   // 检查必填输入
   for (const input of chain.value.inputs) {
     if (input.required && !inputValues.value[input.name]) {
-      return false;
+      return false
     }
   }
-  return true;
-});
+  return true
+})
 
 const progress = computed(() => {
-  if (!chain.value || chain.value.steps.length === 0) return 0;
+  if (!chain.value || chain.value.steps.length === 0) return 0
   const completed = Array.from(stepStatuses.value.values()).filter(
-    s => s === 'completed' || s === 'failed'
-  ).length;
-  return Math.round((completed / chain.value.steps.length) * 100);
-});
+    (s) => s === 'completed' || s === 'failed'
+  ).length
+  return Math.round((completed / chain.value.steps.length) * 100)
+})
 
 // 加载链
 async function loadChain() {
-  loading.value = true;
+  loading.value = true
   try {
-    const id = route.params.id as string;
-    chain.value = await promptChainService.getChainById(id) || null;
-    
+    const id = route.params.id as string
+    chain.value = (await promptChainService.getChainById(id)) || null
+
     if (chain.value) {
       // 初始化输入值
       for (const input of chain.value.inputs) {
-        inputValues.value[input.name] = input.defaultValue ?? '';
+        inputValues.value[input.name] = input.defaultValue ?? ''
       }
-      
+
       // 初始化步骤状态
       for (const step of chain.value.steps) {
-        stepStatuses.value.set(step.id, 'pending');
+        stepStatuses.value.set(step.id, 'pending')
       }
     }
   } catch (error) {
-    console.error('加载链失败:', error);
+    console.error('加载链失败:', error)
   } finally {
-    loading.value = false;
+    loading.value = false
   }
 }
 
 // 执行链
 async function executeChain() {
-  if (!chain.value || executing.value) return;
-  
-  executing.value = true;
-  result.value = null;
-  logs.value = [];
-  currentStepIndex.value = -1;
-  
+  if (!chain.value || executing.value) return
+
+  executing.value = true
+  result.value = null
+  logs.value = []
+  currentStepIndex.value = -1
+
   // 重置状态
   for (const step of chain.value.steps) {
-    stepStatuses.value.set(step.id, 'pending');
-    stepOutputs.value.delete(step.id);
+    stepStatuses.value.set(step.id, 'pending')
+    stepOutputs.value.delete(step.id)
   }
-  
-  addLog(`开始执行链: ${chain.value.name}`);
-  addLog(`执行模式: ${chain.value.executionMode === 'single-shot' ? '单次' : '多步'}`);
-  
+
+  addLog(`开始执行链: ${chain.value.name}`)
+  addLog(`执行模式: ${chain.value.executionMode === 'single-shot' ? '单次' : '多步'}`)
+
   try {
     const execResult = await promptChainExecutor.execute(
       chain.value,
       inputValues.value,
       handleExecutionEvent
-    );
-    
-    result.value = execResult;
-    executionId.value = execResult.executionId;
-    
+    )
+
+    result.value = execResult
+    executionId.value = execResult.executionId
+
     if (execResult.status === 'completed') {
-      addLog(`✅ 执行完成，耗时 ${execResult.totalDuration}ms`);
-      addLog(`Token 用量: ${execResult.totalUsage.totalTokens}`);
+      addLog(`✅ 执行完成，耗时 ${execResult.totalDuration}ms`)
+      addLog(`Token 用量: ${execResult.totalUsage.totalTokens}`)
     } else if (execResult.status === 'failed') {
-      addLog(`❌ 执行失败: ${execResult.error}`);
+      addLog(`❌ 执行失败: ${execResult.error}`)
     } else if (execResult.status === 'aborted') {
-      addLog(`⚠️ 执行已中止`);
+      addLog(`⚠️ 执行已中止`)
     }
   } catch (error) {
-    addLog(`❌ 执行出错: ${error instanceof Error ? error.message : '未知错误'}`);
+    addLog(`❌ 执行出错: ${error instanceof Error ? error.message : '未知错误'}`)
   } finally {
-    executing.value = false;
+    executing.value = false
   }
 }
 
@@ -125,87 +125,90 @@ async function executeChain() {
 function handleExecutionEvent(event: ChainExecutionEvent) {
   switch (event.type) {
     case 'start':
-      addLog(`执行 ID: ${event.executionId}`);
-      break;
-      
+      addLog(`执行 ID: ${event.executionId}`)
+      break
+
     case 'step-start':
       if (event.stepId) {
-        stepStatuses.value.set(event.stepId, 'running');
-        currentStepIndex.value = event.stepIndex ?? -1;
-        const step = chain.value?.steps.find(s => s.id === event.stepId);
-        addLog(`▶ 步骤 ${(event.stepIndex ?? 0) + 1}: ${step?.name || event.stepId}`);
+        stepStatuses.value.set(event.stepId, 'running')
+        currentStepIndex.value = event.stepIndex ?? -1
+        const step = chain.value?.steps.find((s) => s.id === event.stepId)
+        addLog(`▶ 步骤 ${(event.stepIndex ?? 0) + 1}: ${step?.name || event.stepId}`)
       }
-      break;
-      
+      break
+
     case 'step-complete':
       if (event.stepId) {
-        const stepResult = event.data as StepExecutionResult;
-        stepStatuses.value.set(event.stepId, stepResult.status === 'completed' ? 'completed' : 'failed');
+        const stepResult = event.data as StepExecutionResult
+        stepStatuses.value.set(
+          event.stepId,
+          stepResult.status === 'completed' ? 'completed' : 'failed'
+        )
         if (stepResult.output !== undefined) {
-          stepOutputs.value.set(event.stepId, stepResult.output);
+          stepOutputs.value.set(event.stepId, stepResult.output)
         }
-        addLog(`  ✓ 完成 (${stepResult.duration}ms)`);
+        addLog(`  ✓ 完成 (${stepResult.duration}ms)`)
       }
-      break;
-      
+      break
+
     case 'step-error':
       if (event.stepId) {
-        stepStatuses.value.set(event.stepId, 'failed');
-        addLog(`  ✗ 失败: ${event.error}`);
+        stepStatuses.value.set(event.stepId, 'failed')
+        addLog(`  ✗ 失败: ${event.error}`)
       }
-      break;
-      
+      break
+
     case 'error':
-      addLog(`错误: ${event.error}`);
-      break;
-      
+      addLog(`错误: ${event.error}`)
+      break
+
     case 'abort':
-      addLog(`执行已中止`);
-      break;
+      addLog(`执行已中止`)
+      break
   }
 }
 
 // 中止执行
 function abortExecution() {
   if (executionId.value) {
-    promptChainExecutor.abort(executionId.value);
-    addLog(`正在中止...`);
+    promptChainExecutor.abort(executionId.value)
+    addLog(`正在中止...`)
   }
 }
 
 // 添加日志
 function addLog(message: string) {
-  const time = new Date().toLocaleTimeString();
-  logs.value.push(`[${time}] ${message}`);
+  const time = new Date().toLocaleTimeString()
+  logs.value.push(`[${time}] ${message}`)
 }
 
 // 格式化输出
 function formatOutput(value: unknown): string {
-  if (value === undefined) return '(无输出)';
-  if (typeof value === 'string') return value;
-  return JSON.stringify(value, null, 2);
+  if (value === undefined) return '(无输出)'
+  if (typeof value === 'string') return value
+  return JSON.stringify(value, null, 2)
 }
 
 // 返回
 function goBack() {
-  router.push(`/prompts/chains/${route.params.id}`);
+  router.push(`/prompts/chains/${route.params.id}`)
 }
 
 // 返回列表
 function goToList() {
-  router.push('/prompts/chains');
+  router.push('/prompts/chains')
 }
 
 onMounted(() => {
-  loadChain();
-});
+  loadChain()
+})
 
 onUnmounted(() => {
   // 组件卸载时中止执行
   if (executing.value && executionId.value) {
-    promptChainExecutor.abort(executionId.value);
+    promptChainExecutor.abort(executionId.value)
   }
-});
+})
 </script>
 
 <template>
@@ -220,12 +223,12 @@ onUnmounted(() => {
         <i class="fas fa-list"></i>
       </button>
     </header>
-    
+
     <div v-if="loading" class="loading">
       <i class="fas fa-spinner fa-spin"></i>
       <span>加载中...</span>
     </div>
-    
+
     <template v-else-if="chain">
       <!-- 输入表单 -->
       <section class="inputs-section">
@@ -233,11 +236,9 @@ onUnmounted(() => {
           <i class="fas fa-keyboard"></i>
           输入参数
         </h2>
-        
-        <div v-if="chain.inputs.length === 0" class="empty-inputs">
-          此链无需输入参数
-        </div>
-        
+
+        <div v-if="chain.inputs.length === 0" class="empty-inputs">此链无需输入参数</div>
+
         <div v-else class="inputs-form">
           <div v-for="input in chain.inputs" :key="input.name" class="input-field">
             <label>
@@ -248,7 +249,7 @@ onUnmounted(() => {
             <input
               v-if="input.type === 'string' || input.type === 'number'"
               :value="String(inputValues[input.name] ?? '')"
-              @input="(e) => inputValues[input.name] = (e.target as HTMLInputElement).value"
+              @input="(e) => (inputValues[input.name] = (e.target as HTMLInputElement).value)"
               :type="input.type === 'number' ? 'number' : 'text'"
               :placeholder="`输入 ${input.name}`"
               :disabled="executing"
@@ -256,7 +257,7 @@ onUnmounted(() => {
             <textarea
               v-else-if="input.type === 'object' || input.type === 'array'"
               :value="String(inputValues[input.name] ?? '')"
-              @input="(e) => inputValues[input.name] = (e.target as HTMLTextAreaElement).value"
+              @input="(e) => (inputValues[input.name] = (e.target as HTMLTextAreaElement).value)"
               :placeholder="`输入 JSON 格式的 ${input.name}`"
               :disabled="executing"
               rows="3"
@@ -265,14 +266,14 @@ onUnmounted(() => {
               <input
                 type="checkbox"
                 :checked="Boolean(inputValues[input.name])"
-                @change="(e) => inputValues[input.name] = (e.target as HTMLInputElement).checked"
+                @change="(e) => (inputValues[input.name] = (e.target as HTMLInputElement).checked)"
                 :disabled="executing"
               />
               {{ input.name }}
             </label>
           </div>
         </div>
-        
+
         <div class="actions">
           <button
             v-if="!executing"
@@ -289,50 +290,58 @@ onUnmounted(() => {
           </button>
         </div>
       </section>
-      
+
       <!-- 进度 -->
       <section v-if="executing || result" class="progress-section">
         <h2 class="section-title">
           <i class="fas fa-tasks"></i>
           执行进度
         </h2>
-        
+
         <div class="progress-bar">
           <div class="progress-fill" :style="{ width: progress + '%' }"></div>
           <span class="progress-text">{{ progress }}%</span>
         </div>
-        
+
         <div class="steps-progress">
           <div
             v-for="(step, index) in chain.steps"
             :key="step.id"
             class="step-progress"
-            :class="[
-              stepStatuses.get(step.id),
-              { current: index === currentStepIndex }
-            ]"
+            :class="[stepStatuses.get(step.id), { current: index === currentStepIndex }]"
           >
             <div class="step-indicator">
               <i v-if="stepStatuses.get(step.id) === 'completed'" class="fas fa-check"></i>
               <i v-else-if="stepStatuses.get(step.id) === 'failed'" class="fas fa-times"></i>
-              <i v-else-if="stepStatuses.get(step.id) === 'running'" class="fas fa-spinner fa-spin"></i>
+              <i
+                v-else-if="stepStatuses.get(step.id) === 'running'"
+                class="fas fa-spinner fa-spin"
+              ></i>
               <span v-else>{{ index + 1 }}</span>
             </div>
             <div class="step-label">{{ step.name }}</div>
           </div>
         </div>
       </section>
-      
+
       <!-- 结果 -->
       <section v-if="result" class="result-section">
         <h2 class="section-title">
-          <i :class="result.status === 'completed' ? 'fas fa-check-circle' : 'fas fa-times-circle'"></i>
+          <i
+            :class="result.status === 'completed' ? 'fas fa-check-circle' : 'fas fa-times-circle'"
+          ></i>
           执行结果
         </h2>
-        
+
         <div class="result-meta">
           <span class="status" :class="result.status">
-            {{ result.status === 'completed' ? '成功' : result.status === 'failed' ? '失败' : '已中止' }}
+            {{
+              result.status === 'completed'
+                ? '成功'
+                : result.status === 'failed'
+                  ? '失败'
+                  : '已中止'
+            }}
           </span>
           <span class="duration">
             <i class="fas fa-clock"></i>
@@ -343,23 +352,29 @@ onUnmounted(() => {
             {{ result.totalUsage.totalTokens }} tokens
           </span>
         </div>
-        
+
         <div v-if="result.error" class="error-message">
           <i class="fas fa-exclamation-triangle"></i>
           {{ result.error }}
         </div>
-        
+
         <div class="outputs">
           <h3>输出</h3>
           <pre class="output-content">{{ formatOutput(result.outputs) }}</pre>
         </div>
-        
+
         <!-- 步骤详情 -->
         <details class="step-details">
           <summary>步骤详情 ({{ result.stepResults.length }})</summary>
-          <div v-for="stepResult in result.stepResults" :key="stepResult.stepId" class="step-result">
+          <div
+            v-for="stepResult in result.stepResults"
+            :key="stepResult.stepId"
+            class="step-result"
+          >
             <div class="step-result-header">
-              <span class="step-name">{{ chain.steps.find(s => s.id === stepResult.stepId)?.name || stepResult.stepId }}</span>
+              <span class="step-name">{{
+                chain.steps.find((s) => s.id === stepResult.stepId)?.name || stepResult.stepId
+              }}</span>
               <span class="step-status" :class="stepResult.status">
                 {{ stepResult.status }}
               </span>
@@ -378,7 +393,7 @@ onUnmounted(() => {
           </div>
         </details>
       </section>
-      
+
       <!-- 日志 -->
       <section class="logs-section">
         <h2 class="section-title">
@@ -389,9 +404,7 @@ onUnmounted(() => {
           <div v-for="(log, index) in logs" :key="index" class="log-line">
             {{ log }}
           </div>
-          <div v-if="logs.length === 0" class="no-logs">
-            点击「执行链」开始
-          </div>
+          <div v-if="logs.length === 0" class="no-logs">点击「执行链」开始</div>
         </div>
       </section>
     </template>
@@ -499,8 +512,8 @@ section {
   color: var(--text-tertiary, #999);
 }
 
-.input-field input[type="text"],
-.input-field input[type="number"],
+.input-field input[type='text'],
+.input-field input[type='number'],
 .input-field textarea {
   width: 100%;
   padding: 10px 12px;

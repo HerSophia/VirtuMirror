@@ -1,5 +1,5 @@
-import type { AppPromptDefinition } from '@/types/prompts';
-import { NARRATIVE_VARIABLE_DEFINITIONS } from '@/services/narrativeService';
+import { NARRATIVE_VARIABLE_DEFINITIONS } from '@/services/narrative/narrativeService'
+import type { AppPromptDefinition } from '@/types/prompts'
 
 export const weiboPrompts: AppPromptDefinition[] = [
   // 0. 叙事内容分析 (用于订阅酒馆内容)

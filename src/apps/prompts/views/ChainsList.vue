@@ -3,102 +3,103 @@
  * 提示词链列表页
  * 展示所有提示词链，支持筛选、创建、删除等操作
  */
-import { ref, computed, onMounted } from 'vue';
-import { useRouter } from 'vue-router';
-import { promptChainService } from '@/services/promptChainService';
-import type { PromptChain } from '@/types/promptChain';
+import { promptChainService } from '@/services/prompt/promptChainService'
+import type { PromptChain } from '@/types/promptChain'
+import { computed, onMounted, ref } from 'vue'
+import { useRouter } from 'vue-router'
 
-const router = useRouter();
+const router = useRouter()
 
 // 状态
-const chains = ref<PromptChain[]>([]);
-const loading = ref(true);
-const searchQuery = ref('');
-const filterSource = ref<'all' | 'user' | 'builtin' | 'imported' | 'app'>('all');
+const chains = ref<PromptChain[]>([])
+const loading = ref(true)
+const searchQuery = ref('')
+const filterSource = ref<'all' | 'user' | 'builtin' | 'imported' | 'app'>('all')
 
 // 筛选后的链
 const filteredChains = computed(() => {
-  let result = chains.value;
-  
+  let result = chains.value
+
   // 来源筛选
   if (filterSource.value !== 'all') {
-    result = result.filter(c => c.source === filterSource.value);
+    result = result.filter((c) => c.source === filterSource.value)
   }
-  
+
   // 搜索筛选
   if (searchQuery.value) {
-    const query = searchQuery.value.toLowerCase();
-    result = result.filter(c =>
-      c.name.toLowerCase().includes(query) ||
-      c.description.toLowerCase().includes(query) ||
-      c.tags?.some(t => t.toLowerCase().includes(query))
-    );
+    const query = searchQuery.value.toLowerCase()
+    result = result.filter(
+      (c) =>
+        c.name.toLowerCase().includes(query) ||
+        c.description.toLowerCase().includes(query) ||
+        c.tags?.some((t) => t.toLowerCase().includes(query))
+    )
   }
-  
-  return result;
-});
+
+  return result
+})
 
 // 加载数据
 async function loadChains() {
-  loading.value = true;
+  loading.value = true
   try {
-    chains.value = await promptChainService.getAllChains();
+    chains.value = await promptChainService.getAllChains()
   } catch (error) {
-    console.error('加载链列表失败:', error);
+    console.error('加载链列表失败:', error)
   } finally {
-    loading.value = false;
+    loading.value = false
   }
 }
 
 // 创建新链
 async function createChain() {
-  const emptyChain = promptChainService.createEmptyChain();
-  const newChain = await promptChainService.createChain(emptyChain);
-  router.push(`/prompts/chains/${newChain.id}`);
+  const emptyChain = promptChainService.createEmptyChain()
+  const newChain = await promptChainService.createChain(emptyChain)
+  router.push(`/prompts/chains/${newChain.id}`)
 }
 
 // 编辑链
 function editChain(chain: PromptChain) {
-  router.push(`/prompts/chains/${chain.id}`);
+  router.push(`/prompts/chains/${chain.id}`)
 }
 
 // 运行链
 function runChain(chain: PromptChain) {
-  router.push(`/prompts/chains/${chain.id}/run`);
+  router.push(`/prompts/chains/${chain.id}/run`)
 }
 
 // 复制链
 async function duplicateChain(chain: PromptChain) {
-  const newChain = await promptChainService.duplicateChain(chain.id);
+  const newChain = await promptChainService.duplicateChain(chain.id)
   if (newChain) {
-    chains.value.push(newChain);
+    chains.value.push(newChain)
   }
 }
 
 // 删除链
 async function deleteChain(chain: PromptChain) {
-  if (!confirm(`确定要删除「${chain.name}」吗？`)) return;
-  
-  const success = await promptChainService.deleteChain(chain.id);
+  if (!confirm(`确定要删除「${chain.name}」吗？`)) return
+
+  const success = await promptChainService.deleteChain(chain.id)
   if (success) {
-    chains.value = chains.value.filter(c => c.id !== chain.id);
+    chains.value = chains.value.filter((c) => c.id !== chain.id)
   }
 }
 
 // 切换启用状态
 async function toggleChain(chain: PromptChain) {
-  await promptChainService.toggleChain(chain.id);
-  chain.enabled = !chain.enabled;
+  await promptChainService.toggleChain(chain.id)
+  chain.enabled = !chain.enabled
 }
 
 // 返回
 function goBack() {
-  router.push('/prompts');
+  router.push('/prompts')
 }
 
 // 获取执行模式标签
 function getModeLabel(mode: string) {
-  return mode === 'single-shot' ? '单次' : '多步';
+  return mode === 'single-shot' ? '单次' : '多步'
 }
 
 // 获取来源标签
@@ -108,18 +109,18 @@ function getSourceLabel(source: string, appId?: string) {
     user: '自定义',
     imported: '导入',
     app: appId ? `应用: ${appId}` : '应用',
-  };
-  return labels[source] || source;
+  }
+  return labels[source] || source
 }
 
 // 判断链是否可编辑（App 链也可编辑）
 function isChainEditable(chain: PromptChain) {
-  return chain.source === 'user' || chain.source === 'imported' || chain.source === 'app';
+  return chain.source === 'user' || chain.source === 'imported' || chain.source === 'app'
 }
 
 onMounted(() => {
-  loadChains();
-});
+  loadChains()
+})
 </script>
 
 <template>
@@ -134,65 +135,46 @@ onMounted(() => {
         <i class="fas fa-plus"></i>
       </button>
     </header>
-    
+
     <!-- 搜索和筛选 -->
     <div class="filters">
       <div class="search-box">
         <i class="fas fa-search"></i>
-        <input
-          v-model="searchQuery"
-          type="text"
-          placeholder="搜索链名称、描述或标签..."
-        />
+        <input v-model="searchQuery" type="text" placeholder="搜索链名称、描述或标签..." />
       </div>
-      
+
       <div class="filter-tabs">
-        <button
-          :class="{ active: filterSource === 'all' }"
-          @click="filterSource = 'all'"
-        >
+        <button :class="{ active: filterSource === 'all' }" @click="filterSource = 'all'">
           全部
         </button>
-        <button
-          :class="{ active: filterSource === 'user' }"
-          @click="filterSource = 'user'"
-        >
+        <button :class="{ active: filterSource === 'user' }" @click="filterSource = 'user'">
           自定义
         </button>
-        <button
-          :class="{ active: filterSource === 'builtin' }"
-          @click="filterSource = 'builtin'"
-        >
+        <button :class="{ active: filterSource === 'builtin' }" @click="filterSource = 'builtin'">
           内置
         </button>
-        <button
-          :class="{ active: filterSource === 'imported' }"
-          @click="filterSource = 'imported'"
-        >
+        <button :class="{ active: filterSource === 'imported' }" @click="filterSource = 'imported'">
           导入
         </button>
-        <button
-          :class="{ active: filterSource === 'app' }"
-          @click="filterSource = 'app'"
-        >
+        <button :class="{ active: filterSource === 'app' }" @click="filterSource = 'app'">
           应用
         </button>
       </div>
     </div>
-    
+
     <!-- 列表 -->
     <div class="list-container">
       <div v-if="loading" class="loading">
         <i class="fas fa-spinner fa-spin"></i>
         <span>加载中...</span>
       </div>
-      
+
       <div v-else-if="filteredChains.length === 0" class="empty">
         <i class="fas fa-link"></i>
         <p>暂无提示词链</p>
         <button @click="createChain">创建第一个链</button>
       </div>
-      
+
       <div v-else class="chain-list">
         <div
           v-for="chain in filteredChains"
@@ -216,7 +198,7 @@ onMounted(() => {
               <i :class="chain.enabled ? 'fas fa-toggle-on' : 'fas fa-toggle-off'"></i>
             </button>
           </div>
-          
+
           <div class="chain-meta">
             <span class="meta-item mode">
               <i class="fas fa-play-circle"></i>
@@ -230,31 +212,26 @@ onMounted(() => {
               {{ getSourceLabel(chain.source, chain.appId) }}
             </span>
           </div>
-          
+
           <div v-if="chain.tags?.length" class="chain-tags">
             <span v-for="tag in chain.tags" :key="tag" class="tag">
               {{ tag }}
             </span>
           </div>
-          
+
           <div class="chain-actions">
             <button class="action-btn run" @click="runChain(chain)" title="运行">
               <i class="fas fa-play"></i>
             </button>
-            <button 
+            <button
               v-if="isChainEditable(chain)"
-              class="action-btn edit" 
-              @click="editChain(chain)" 
+              class="action-btn edit"
+              @click="editChain(chain)"
               title="编辑"
             >
               <i class="fas fa-edit"></i>
             </button>
-            <button 
-              v-else
-              class="action-btn view" 
-              @click="editChain(chain)" 
-              title="查看"
-            >
+            <button v-else class="action-btn view" @click="editChain(chain)" title="查看">
               <i class="fas fa-eye"></i>
             </button>
             <button class="action-btn copy" @click="duplicateChain(chain)" title="复制">

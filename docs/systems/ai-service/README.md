@@ -10,6 +10,7 @@
 | [核心接口](./api-reference.md) | 类型定义、接口说明 |
 | [Provider 管理](./provider.md) | Provider 工厂、管理器、切换机制 |
 | [请求管理](./request.md) | 请求队列、优先级调度、并发控制 |
+| [模型列表](./model-list.md) | 模型列表获取、缓存机制 |
 | [使用指南](./usage.md) | 使用示例、最佳实践 |
 
 ## 快速开始
@@ -86,6 +87,7 @@ console.log(aiStore.providerInfo);  // 当前 Provider 信息
 | 请求队列 (`requestQueue.ts`) | ✅ 已完成 | 优先级调度和并发控制 |
 | 速率限制 (`rateLimiter.ts`) | ✅ 已完成 | 429 错误自动重试 |
 | 酒馆适配器 (`tavernAdapter.ts`) | ✅ 已完成 | TavernHelper API 封装 |
+| 模型列表服务 (`modelList.ts`) | ✅ 已完成 | 多 Provider 模型列表获取 |
 | AI Service (`aiService.ts`) | ✅ 已完成 | 核心服务实现 |
 | AI Store (`aiStore.ts`) | ✅ 已完成 | Pinia 状态管理 |
 
@@ -103,6 +105,7 @@ src/services/ai/
 ├── requestQueue.ts       # 请求队列
 ├── rateLimiter.ts        # 速率限制处理
 ├── tavernAdapter.ts      # 酒馆 API 适配器
+├── modelList.ts          # 模型列表服务
 └── utils.ts              # 工具函数
 
 src/stores/

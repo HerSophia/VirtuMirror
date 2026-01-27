@@ -4,7 +4,7 @@
  * 定义所有内置 App 的图标注册信息。
  * 在应用初始化时调用 registerBuiltinApps() 注册。
  */
-import { getIconRegistryService, type RegisteredAppIcon, type AppCategory } from './iconRegistryService'
+import { getIconRegistryService, type RegisteredAppIcon, type AppCategory } from './icon'
 
 /**
  * 内置 App 配置列表

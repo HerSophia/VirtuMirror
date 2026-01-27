@@ -2,9 +2,6 @@
  * Bridge 连接管理 Composable
  * 提供响应式的 Bridge 连接状态和操作方法
  */
-import { ref, readonly, onMounted } from 'vue'
-import { notificationService } from '@/services/notification/notificationService'
-import { narrativeService } from '@/services/narrativeService'
 import {
   BridgeAdapter,
   createBridgeAdapter,
@@ -13,6 +10,9 @@ import {
   type PlatformInfo,
   type SharedConfig,
 } from '@/adapters/bridgeAdapter'
+import { narrativeService } from '@/services/narrative/narrativeService'
+import { notificationService } from '@/services/notification/notificationService'
+import { onMounted, readonly, ref } from 'vue'
 
 // 默认配置
 const DEFAULT_SHARED_CONFIG: SharedConfig = {
@@ -88,19 +88,19 @@ function initAdapter(): BridgeAdapter {
       if (isAutoConnecting.value && !hasNotifiedFailure.value) {
         retryCount.value++
         console.warn(`[Bridge] 自动连接尝试失败 (${retryCount.value}/3)`)
-        
+
         if (retryCount.value >= 3) {
           console.error('[Bridge] 自动连接失败次数过多，发送紧急通知')
           hasNotifiedFailure.value = true
           isAutoConnecting.value = false
-          
+
           notificationService.push({
             appId: 'bridge',
             appName: '系统桥接',
             appIcon: {
               type: 'fontawesome',
               value: 'fas fa-link-slash',
-              backgroundColor: '#EF4444'
+              backgroundColor: '#EF4444',
             },
             title: '桥接连接失败',
             body: '无法连接到 Bridge Server，请检查服务器状态。',
@@ -109,9 +109,9 @@ function initAdapter(): BridgeAdapter {
             actions: [
               {
                 id: 'retry',
-                label: '重试'
-              }
-            ]
+                label: '重试',
+              },
+            ],
           })
         }
       }
@@ -168,11 +168,11 @@ function initAdapter(): BridgeAdapter {
   )
 
   isInitialized.value = true
-  
+
   // 初始化叙事服务（监听来自酒馆的聊天内容）
   narrativeService.setupBridgeListener()
   console.log('[Bridge] 叙事服务已初始化')
-  
+
   return adapter
 }
 
@@ -258,12 +258,12 @@ function clearError(): void {
  */
 function autoConnect(): void {
   if (status.value.connected) return
-  
+
   // 初始化状态
   isAutoConnecting.value = true
   retryCount.value = 0
   hasNotifiedFailure.value = false
-  
+
   // 开始连接
   connect()
 }

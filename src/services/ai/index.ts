@@ -37,6 +37,19 @@ export {
   PROVIDER_NAMES,
 } from './constants';
 
+// 模型列表服务
+export {
+  ModelListService,
+  getModelListService,
+  resetModelListService,
+  fetchModels,
+  fetchOpenAIModels,
+  fetchAnthropicModels,
+  fetchGoogleModels,
+  ANTHROPIC_MODELS,
+} from './modelList';
+export type { ModelInfo, FetchModelsResult, FetchModelsOptions } from './modelList';
+
 // 枚举（必须作为值导出，不能用 export type）
 export { RequestPriority } from './types';
 

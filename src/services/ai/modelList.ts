@@ -1,32 +1,36 @@
 /**
- * 模型列表获取服务
+ * 模型列表服务
  * 用于从各种 AI API 获取可用模型列表
+ *
+ * @module ai/modelList
  */
 
-import type { CustomApiConfig } from '@/types/globalConfig'
+import type { ProviderSource, ApiConfig } from './types';
+
+// ==================== 类型定义 ====================
 
 /**
  * 模型信息
  */
 export interface ModelInfo {
   /** 模型 ID */
-  id: string
+  id: string;
   /** 模型名称（可选，用于显示） */
-  name?: string
+  name?: string;
   /** 模型描述（可选） */
-  description?: string
+  description?: string;
   /** 模型所有者/创建者（可选） */
-  ownedBy?: string
+  ownedBy?: string;
   /** 创建时间戳（可选） */
-  created?: number
+  created?: number;
   /** 模型类型（可选） */
-  type?: 'chat' | 'completion' | 'embedding' | 'image' | 'audio' | 'other'
+  type?: 'chat' | 'completion' | 'embedding' | 'image' | 'audio' | 'other';
   /** 是否支持多模态（可选） */
-  multimodal?: boolean
+  multimodal?: boolean;
   /** 上下文长度（可选） */
-  contextLength?: number
+  contextLength?: number;
   /** 原始数据 */
-  raw?: Record<string, unknown>
+  raw?: Record<string, unknown>;
 }
 
 /**
@@ -34,13 +38,13 @@ export interface ModelInfo {
  */
 export interface FetchModelsResult {
   /** 是否成功 */
-  success: boolean
+  success: boolean;
   /** 模型列表 */
-  models: ModelInfo[]
+  models: ModelInfo[];
   /** 错误信息（如果失败） */
-  error?: string
+  error?: string;
   /** 响应时间（毫秒） */
-  responseTime?: number
+  responseTime?: number;
 }
 
 /**
@@ -48,16 +52,21 @@ export interface FetchModelsResult {
  */
 export interface FetchModelsOptions {
   /** API 地址 */
-  apiUrl: string
+  apiUrl: string;
   /** API 密钥 */
-  apiKey?: string
+  apiKey?: string;
   /** API 来源类型 */
-  source?: 'openai' | 'anthropic' | 'google' | 'custom'
+  source?: ProviderSource | 'custom';
   /** 超时时间（毫秒），默认 10000 */
-  timeout?: number
+  timeout?: number;
   /** 是否只返回聊天模型 */
-  chatModelsOnly?: boolean
+  chatModelsOnly?: boolean;
 }
+
+// ==================== 常量 ====================
+
+/** 默认超时时间 */
+const DEFAULT_FETCH_TIMEOUT = 10000;
 
 // ==================== OpenAI Compatible API ====================
 
@@ -66,8 +75,8 @@ export interface FetchModelsOptions {
  * @see https://platform.openai.com/docs/api-reference/models/list
  */
 interface OpenAIModelsResponse {
-  object: 'list'
-  data: OpenAIModelObject[]
+  object: 'list';
+  data: OpenAIModelObject[];
 }
 
 /**
@@ -75,13 +84,13 @@ interface OpenAIModelsResponse {
  */
 interface OpenAIModelObject {
   /** 模型 ID */
-  id: string
+  id: string;
   /** 对象类型，总是 "model" */
-  object: 'model'
+  object: 'model';
   /** 创建时间戳 */
-  created: number
+  created: number;
   /** 所有者 */
-  owned_by: string
+  owned_by: string;
 }
 
 /**
@@ -117,53 +126,53 @@ export async function fetchOpenAIModels(
   const {
     apiUrl,
     apiKey,
-    timeout = 10000,
+    timeout = DEFAULT_FETCH_TIMEOUT,
     chatModelsOnly = false,
-  } = options
+  } = options;
 
-  const startTime = Date.now()
+  const startTime = Date.now();
 
   try {
     // 规范化 URL
-    let baseUrl = apiUrl.trim()
+    let baseUrl = apiUrl.trim();
     // 移除末尾斜杠
-    baseUrl = baseUrl.replace(/\/$/, '')
+    baseUrl = baseUrl.replace(/\/$/, '');
     // 如果用户填写了完整的 chat/completions URL，提取 base URL
-    baseUrl = baseUrl.replace(/\/chat\/completions$/, '')
+    baseUrl = baseUrl.replace(/\/chat\/completions$/, '');
 
     // 构建请求头
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-    }
+    };
 
     if (apiKey) {
-      headers['Authorization'] = `Bearer ${apiKey}`
+      headers['Authorization'] = `Bearer ${apiKey}`;
     }
 
     // 创建 AbortController 用于超时控制
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), timeout)
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
 
     try {
       const response = await fetch(`${baseUrl}/models`, {
         method: 'GET',
         headers,
         signal: controller.signal,
-      })
+      });
 
-      clearTimeout(timeoutId)
+      clearTimeout(timeoutId);
 
-      const responseTime = Date.now() - startTime
+      const responseTime = Date.now() - startTime;
 
       if (!response.ok) {
         // 尝试解析错误信息
-        let errorMessage = `HTTP ${response.status}: ${response.statusText}`
+        let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
         try {
-          const errorData = await response.json()
+          const errorData = await response.json();
           if (errorData.error?.message) {
-            errorMessage = errorData.error.message
+            errorMessage = errorData.error.message;
           } else if (typeof errorData.message === 'string') {
-            errorMessage = errorData.message
+            errorMessage = errorData.message;
           }
         } catch {
           // 忽略 JSON 解析错误
@@ -174,19 +183,19 @@ export async function fetchOpenAIModels(
           models: [],
           error: errorMessage,
           responseTime,
-        }
+        };
       }
 
-      const data: OpenAIModelsResponse = await response.json()
+      const data: OpenAIModelsResponse = await response.json();
 
       // 调试：打印原始响应
-      console.log('[ModelList] 原始响应:', JSON.stringify(data, null, 2))
+      console.log('[ModelList] 原始响应:', JSON.stringify(data, null, 2));
 
       if (!data.data || !Array.isArray(data.data)) {
         // 某些 API 可能返回不同的格式，尝试兼容处理
         if (Array.isArray(data)) {
           // 直接是数组的情况
-          console.log('[ModelList] 检测到数组格式响应')
+          console.log('[ModelList] 检测到数组格式响应');
           const models: ModelInfo[] = (data as unknown as OpenAIModelObject[]).map((model) => ({
             id: model.id,
             name: model.id,
@@ -194,25 +203,25 @@ export async function fetchOpenAIModels(
             created: model.created,
             type: inferModelType(model.id),
             raw: model as unknown as Record<string, unknown>,
-          }))
+          }));
           return {
             success: true,
             models,
             responseTime,
-          }
+          };
         }
-        
+
         return {
           success: false,
           models: [],
           error: `响应格式无效：${JSON.stringify(data).slice(0, 100)}...`,
           responseTime,
-        }
+        };
       }
-      
+
       // 如果 data.data 是空数组，给出提示
       if (data.data.length === 0) {
-        console.warn('[ModelList] API 返回了空的模型列表，该 API 可能不支持 /models 端点')
+        console.warn('[ModelList] API 返回了空的模型列表，该 API 可能不支持 /models 端点');
       }
 
       // 转换为统一的 ModelInfo 格式
@@ -223,26 +232,26 @@ export async function fetchOpenAIModels(
         created: model.created,
         type: inferModelType(model.id),
         raw: model as unknown as Record<string, unknown>,
-      }))
+      }));
 
       // 如果只需要聊天模型，进行过滤
       if (chatModelsOnly) {
-        models = models.filter((m) => m.type === 'chat' || m.type === 'other')
+        models = models.filter((m) => m.type === 'chat' || m.type === 'other');
       }
 
       // 按 ID 排序
-      models.sort((a, b) => a.id.localeCompare(b.id))
+      models.sort((a, b) => a.id.localeCompare(b.id));
 
       return {
         success: true,
         models,
         responseTime,
-      }
+      };
     } finally {
-      clearTimeout(timeoutId)
+      clearTimeout(timeoutId);
     }
   } catch (error) {
-    const responseTime = Date.now() - startTime
+    const responseTime = Date.now() - startTime;
 
     if (error instanceof Error) {
       if (error.name === 'AbortError') {
@@ -251,14 +260,14 @@ export async function fetchOpenAIModels(
           models: [],
           error: `请求超时 (${timeout}ms)`,
           responseTime,
-        }
+        };
       }
       return {
         success: false,
         models: [],
         error: error.message,
         responseTime,
-      }
+      };
     }
 
     return {
@@ -266,7 +275,7 @@ export async function fetchOpenAIModels(
       models: [],
       error: '未知错误',
       responseTime,
-    }
+    };
   }
 }
 
@@ -274,26 +283,26 @@ export async function fetchOpenAIModels(
  * 根据模型 ID 推断模型类型
  */
 function inferModelType(modelId: string): ModelInfo['type'] {
-  const id = modelId.toLowerCase()
+  const id = modelId.toLowerCase();
 
   // 嵌入模型
   if (id.includes('embed') || id.includes('embedding')) {
-    return 'embedding'
+    return 'embedding';
   }
 
   // 图像模型
   if (id.includes('dall-e') || id.includes('image') || id.includes('vision-gen')) {
-    return 'image'
+    return 'image';
   }
 
   // 音频模型
   if (id.includes('whisper') || id.includes('tts') || id.includes('audio')) {
-    return 'audio'
+    return 'audio';
   }
 
   // 补全模型（旧版）
   if (id.includes('instruct') && !id.includes('gpt-3.5-turbo-instruct')) {
-    return 'completion'
+    return 'completion';
   }
 
   // 聊天模型（大多数现代模型）
@@ -310,10 +319,10 @@ function inferModelType(modelId: string): ModelInfo['type'] {
     id.includes('moonshot') ||
     id.includes('chat')
   ) {
-    return 'chat'
+    return 'chat';
   }
 
-  return 'other'
+  return 'other';
 }
 
 // ==================== Anthropic API ====================
@@ -402,7 +411,7 @@ export const ANTHROPIC_MODELS: ModelInfo[] = [
     multimodal: true,
     contextLength: 200000,
   },
-]
+];
 
 /**
  * 获取 Anthropic 模型列表
@@ -416,7 +425,7 @@ export async function fetchAnthropicModels(
     success: true,
     models: ANTHROPIC_MODELS,
     responseTime: 0,
-  }
+  };
 }
 
 // ==================== Google Gemini API ====================
@@ -426,8 +435,8 @@ export async function fetchAnthropicModels(
  * @see https://ai.google.dev/api/models#method:-models.list
  */
 interface GoogleModelsResponse {
-  models: GoogleModelObject[]
-  nextPageToken?: string
+  models: GoogleModelObject[];
+  nextPageToken?: string;
 }
 
 /**
@@ -435,29 +444,29 @@ interface GoogleModelsResponse {
  */
 interface GoogleModelObject {
   /** 模型资源名称，格式: models/{model} */
-  name: string
+  name: string;
   /** 模型基础 ID */
-  baseModelId?: string
+  baseModelId?: string;
   /** 模型版本 */
-  version: string
+  version: string;
   /** 显示名称 */
-  displayName: string
+  displayName: string;
   /** 描述 */
-  description: string
+  description: string;
   /** 输入 token 限制 */
-  inputTokenLimit: number
+  inputTokenLimit: number;
   /** 输出 token 限制 */
-  outputTokenLimit: number
+  outputTokenLimit: number;
   /** 支持的生成方法 */
-  supportedGenerationMethods: string[]
+  supportedGenerationMethods: string[];
   /** 温度 */
-  temperature?: number
+  temperature?: number;
   /** 最大温度 */
-  maxTemperature?: number
+  maxTemperature?: number;
   /** Top P */
-  topP?: number
+  topP?: number;
   /** Top K */
-  topK?: number
+  topK?: number;
 }
 
 /**
@@ -480,27 +489,27 @@ export async function fetchGoogleModels(
   const {
     apiUrl,
     apiKey,
-    timeout = 10000,
+    timeout = DEFAULT_FETCH_TIMEOUT,
     chatModelsOnly = false,
-  } = options
+  } = options;
 
   if (!apiKey) {
     return {
       success: false,
       models: [],
       error: 'Google API 需要 API Key',
-    }
+    };
   }
 
-  const startTime = Date.now()
+  const startTime = Date.now();
 
   try {
     // 规范化 URL
-    let baseUrl = apiUrl.trim().replace(/\/$/, '')
+    const baseUrl = apiUrl.trim().replace(/\/$/, '');
 
     // 创建 AbortController 用于超时控制
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), timeout)
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
 
     try {
       // Google API 将 key 放在 URL 参数中
@@ -510,18 +519,18 @@ export async function fetchGoogleModels(
           'Content-Type': 'application/json',
         },
         signal: controller.signal,
-      })
+      });
 
-      clearTimeout(timeoutId)
+      clearTimeout(timeoutId);
 
-      const responseTime = Date.now() - startTime
+      const responseTime = Date.now() - startTime;
 
       if (!response.ok) {
-        let errorMessage = `HTTP ${response.status}: ${response.statusText}`
+        let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
         try {
-          const errorData = await response.json()
+          const errorData = await response.json();
           if (errorData.error?.message) {
-            errorMessage = errorData.error.message
+            errorMessage = errorData.error.message;
           }
         } catch {
           // 忽略 JSON 解析错误
@@ -532,10 +541,10 @@ export async function fetchGoogleModels(
           models: [],
           error: errorMessage,
           responseTime,
-        }
+        };
       }
 
-      const data: GoogleModelsResponse = await response.json()
+      const data: GoogleModelsResponse = await response.json();
 
       if (!data.models || !Array.isArray(data.models)) {
         return {
@@ -543,16 +552,16 @@ export async function fetchGoogleModels(
           models: [],
           error: '响应格式无效：缺少 models 数组',
           responseTime,
-        }
+        };
       }
 
       // 转换为统一的 ModelInfo 格式
       let models: ModelInfo[] = data.models.map((model) => {
         // 从 "models/gemini-1.5-pro" 提取 "gemini-1.5-pro"
-        const id = model.name.replace('models/', '')
+        const id = model.name.replace('models/', '');
 
         // 判断是否为聊天模型
-        const isChat = model.supportedGenerationMethods?.includes('generateContent')
+        const isChat = model.supportedGenerationMethods?.includes('generateContent');
 
         return {
           id,
@@ -562,8 +571,8 @@ export async function fetchGoogleModels(
           type: isChat ? 'chat' : 'other',
           contextLength: model.inputTokenLimit,
           raw: model as unknown as Record<string, unknown>,
-        }
-      })
+        };
+      });
 
       // 如果只需要聊天模型，进行过滤（只保留 gemini 模型）
       if (chatModelsOnly) {
@@ -571,22 +580,22 @@ export async function fetchGoogleModels(
           (m) =>
             m.type === 'chat' &&
             (m.id.includes('gemini') || m.id.includes('learnlm'))
-        )
+        );
       }
 
       // 按 ID 排序
-      models.sort((a, b) => a.id.localeCompare(b.id))
+      models.sort((a, b) => a.id.localeCompare(b.id));
 
       return {
         success: true,
         models,
         responseTime,
-      }
+      };
     } finally {
-      clearTimeout(timeoutId)
+      clearTimeout(timeoutId);
     }
   } catch (error) {
-    const responseTime = Date.now() - startTime
+    const responseTime = Date.now() - startTime;
 
     if (error instanceof Error) {
       if (error.name === 'AbortError') {
@@ -595,14 +604,14 @@ export async function fetchGoogleModels(
           models: [],
           error: `请求超时 (${timeout}ms)`,
           responseTime,
-        }
+        };
       }
       return {
         success: false,
         models: [],
         error: error.message,
         responseTime,
-      }
+      };
     }
 
     return {
@@ -610,7 +619,7 @@ export async function fetchGoogleModels(
       models: [],
       error: '未知错误',
       responseTime,
-    }
+    };
   }
 }
 
@@ -626,7 +635,7 @@ export async function fetchGoogleModels(
  *
  * @example
  * ```typescript
- * import { fetchModels } from '@/services/modelListService'
+ * import { fetchModels } from '@/services/ai/modelList'
  *
  * const result = await fetchModels({
  *   apiUrl: 'https://api.openai.com/v1',
@@ -642,127 +651,130 @@ export async function fetchGoogleModels(
  * ```
  */
 export async function fetchModels(
-  config: CustomApiConfig | FetchModelsOptions,
+  config: Partial<ApiConfig> | FetchModelsOptions,
   options?: Partial<FetchModelsOptions>
 ): Promise<FetchModelsResult> {
   const mergedOptions: FetchModelsOptions = {
-    apiUrl: config.apiUrl,
+    apiUrl: config.apiUrl || '',
     apiKey: config.apiKey,
     source: config.source || 'openai',
     ...options,
-  }
+  };
 
   switch (mergedOptions.source) {
     case 'anthropic':
-      return fetchAnthropicModels(mergedOptions)
+      return fetchAnthropicModels(mergedOptions);
 
     case 'google':
-      return fetchGoogleModels(mergedOptions)
+      return fetchGoogleModels(mergedOptions);
 
     case 'openai':
+    case 'deepseek':
     case 'custom':
     default:
       // OpenAI 兼容 API
-      return fetchOpenAIModels(mergedOptions)
+      return fetchOpenAIModels(mergedOptions);
   }
 }
 
+// ==================== ModelListService 类 ====================
+
 /**
  * ModelListService 类
- * 提供模型列表获取的面向对象接口
+ * 提供模型列表获取的面向对象接口，带缓存
  */
 export class ModelListService {
-  private cache: Map<string, { models: ModelInfo[]; timestamp: number }> =
-    new Map()
-  private cacheTTL: number
+  private cache: Map<string, { models: ModelInfo[]; timestamp: number }> = new Map();
+  private cacheTTL: number;
 
   /**
    * @param cacheTTL 缓存有效期（毫秒），默认 5 分钟
    */
   constructor(cacheTTL = 5 * 60 * 1000) {
-    this.cacheTTL = cacheTTL
+    this.cacheTTL = cacheTTL;
   }
 
   /**
    * 生成缓存键
    */
   private getCacheKey(options: FetchModelsOptions): string {
-    return `${options.source || 'openai'}:${options.apiUrl}:${options.apiKey?.slice(-8) || 'no-key'}`
+    return `${options.source || 'openai'}:${options.apiUrl}:${options.apiKey?.slice(-8) || 'no-key'}`;
   }
 
   /**
    * 获取模型列表（带缓存）
    */
   async getModels(
-    config: CustomApiConfig | FetchModelsOptions,
+    config: Partial<ApiConfig> | FetchModelsOptions,
     options?: Partial<FetchModelsOptions> & { forceRefresh?: boolean }
   ): Promise<FetchModelsResult> {
     const mergedOptions: FetchModelsOptions = {
-      apiUrl: config.apiUrl,
+      apiUrl: config.apiUrl || '',
       apiKey: config.apiKey,
       source: config.source || 'openai',
       ...options,
-    }
+    };
 
-    const cacheKey = this.getCacheKey(mergedOptions)
+    const cacheKey = this.getCacheKey(mergedOptions);
 
     // 检查缓存
     if (!options?.forceRefresh) {
-      const cached = this.cache.get(cacheKey)
+      const cached = this.cache.get(cacheKey);
       if (cached && Date.now() - cached.timestamp < this.cacheTTL) {
         return {
           success: true,
           models: cached.models,
           responseTime: 0,
-        }
+        };
       }
     }
 
     // 获取新数据
-    const result = await fetchModels(mergedOptions)
+    const result = await fetchModels(mergedOptions);
 
     // 缓存成功结果
     if (result.success) {
       this.cache.set(cacheKey, {
         models: result.models,
         timestamp: Date.now(),
-      })
+      });
     }
 
-    return result
+    return result;
   }
 
   /**
-   * 清除缓存
+   * 清除所有缓存
    */
   clearCache(): void {
-    this.cache.clear()
+    this.cache.clear();
   }
 
   /**
    * 清除特定配置的缓存
    */
-  clearCacheFor(config: CustomApiConfig | FetchModelsOptions): void {
+  clearCacheFor(config: Partial<ApiConfig> | FetchModelsOptions): void {
     const cacheKey = this.getCacheKey({
-      apiUrl: config.apiUrl,
+      apiUrl: config.apiUrl || '',
       apiKey: config.apiKey,
       source: config.source || 'openai',
-    })
-    this.cache.delete(cacheKey)
+    });
+    this.cache.delete(cacheKey);
   }
 }
 
-// 单例实例
-let modelListServiceInstance: ModelListService | null = null
+// ==================== 单例 ====================
+
+let modelListServiceInstance: ModelListService | null = null;
 
 /**
  * 获取 ModelListService 单例
  */
 export function getModelListService(): ModelListService {
   if (!modelListServiceInstance) {
-    modelListServiceInstance = new ModelListService()
+    modelListServiceInstance = new ModelListService();
   }
-  return modelListServiceInstance
+  return modelListServiceInstance;
 }
 
 /**
@@ -770,7 +782,7 @@ export function getModelListService(): ModelListService {
  */
 export function resetModelListService(): void {
   if (modelListServiceInstance) {
-    modelListServiceInstance.clearCache()
+    modelListServiceInstance.clearCache();
   }
-  modelListServiceInstance = null
+  modelListServiceInstance = null;
 }

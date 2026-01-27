@@ -1,21 +1,21 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, computed } from 'vue'
-import { usePhoneStore } from '@/stores/phoneStore'
-import { useUIStore } from '@/stores/uiStore'
-import { useAppStateStore } from '@/stores/appStateStore'
+import CommitButton from '@/components/CommitButton.vue'
+import { GlobalDialog } from '@/components/common'
+import DevToolbar from '@/components/dev/DevToolbar.vue'
 import PhoneContainer from '@/components/PhoneContainer.vue'
 import ToggleButton from '@/components/ToggleButton.vue'
-import CommitButton from '@/components/CommitButton.vue'
-import DevToolbar from '@/components/dev/DevToolbar.vue'
-import { GlobalDialog } from '@/components/common'
+import { useAppStateStore } from '@/stores/appStateStore'
+import { usePhoneStore } from '@/stores/phoneStore'
+import { useUIStore } from '@/stores/uiStore'
+import { computed, onMounted, onUnmounted } from 'vue'
 
 // 导入适配器服务提供者
-import { provideAdapterServices } from '@/composables/useAdapter'
-import { useEnvironment } from '@/composables'
-import { useTheme } from '@/composables/useTheme'
-import { timeService } from '@/services/timeService'
-import { useTimeStore } from '@/stores/timeStore'
 import { useBridge } from '@/apps/bridge/composables/useBridge'
+import { useEnvironment } from '@/composables'
+import { provideAdapterServices } from '@/composables/useAdapter'
+import { useTheme } from '@/composables/useTheme'
+import { timeService } from '@/services/time/timeService'
+import { useTimeStore } from '@/stores/timeStore'
 
 const phoneStore = usePhoneStore()
 const uiStore = useUIStore()
@@ -37,13 +37,13 @@ onMounted(async () => {
   // 初始化主题
   initTheme()
   console.log(`[App] Theme initialized: ${currentTheme.value.name}`)
-  
+
   // 初始化时间服务
   timeService.init()
   // 确保 TimeStore 被初始化，以便应用持久化的设置
   // 访问一次 mode 属性以触发 store 的初始化逻辑
   console.log(`[App] Time service initialized (Mode: ${timeStore.mode})`)
-  
+
   await phoneStore.initialize()
   appStateStore.initApp()
   console.log('[App] Phone simulator initialized')
@@ -67,18 +67,18 @@ onUnmounted(() => {
   <div class="app-container">
     <!-- 开发模式工具栏 -->
     <DevToolbar v-if="isDev" />
-    
+
     <!-- 手机面板切换按钮 -->
     <ToggleButton />
-    
+
     <!-- 手机模拟器主体 -->
     <Transition name="phone">
       <PhoneContainer v-if="uiStore.isPanelVisible" />
     </Transition>
-    
+
     <!-- 提交按钮 -->
     <CommitButton />
-    
+
     <!-- 全局对话框 -->
     <GlobalDialog />
   </div>
@@ -86,7 +86,7 @@ onUnmounted(() => {
 
 <style scoped>
 .app-container {
-  @apply w-full h-full relative;
+  @apply relative h-full w-full;
 }
 
 /* 手机面板动画 */
@@ -97,6 +97,6 @@ onUnmounted(() => {
 
 .phone-enter-from,
 .phone-leave-to {
-  @apply opacity-0 scale-95;
+  @apply scale-95 opacity-0;
 }
 </style>

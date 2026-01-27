@@ -6,7 +6,7 @@
 import { computed, ref, watch, nextTick } from 'vue'
 import type { ApiConfigFormData, TestResult } from '../types'
 import { API_SOURCE_OPTIONS } from '../types'
-import { getModelListService, type ModelInfo } from '@/services/modelListService'
+import { getModelListService, type ModelInfo } from '@/services/ai'
 
 interface Props {
   formData: ApiConfigFormData

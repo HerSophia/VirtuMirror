@@ -1,11 +1,14 @@
 /**
  * 应用数据服务
- * 
+ *
  * 提供按命名空间隔离的数据存储服务
  * 每个应用根据其来源获得独立的数据空间
+ *
+ * 注意：此服务主要供 ScopedStorage 内部使用
+ * App 开发者应通过 AppRuntime.storage 接口访问数据
  */
 
-import { db, type AppDataRecord } from './database'
+import { db, type AppDataRecord } from '@/services/database'
 
 /**
  * 应用数据服务
@@ -13,7 +16,7 @@ import { db, type AppDataRecord } from './database'
  */
 export class AppDataService {
   constructor(private namespace: string) {}
-  
+
   /**
    * 获取数据
    */
@@ -21,7 +24,7 @@ export class AppDataService {
     const record = await db.appData.get([this.namespace, key])
     return record?.value as T | undefined
   }
-  
+
   /**
    * 设置数据
    */
@@ -34,46 +37,37 @@ export class AppDataService {
       updatedAt: Date.now(),
     })
   }
-  
+
   /**
    * 删除数据
    */
   async delete(key: string): Promise<void> {
     await db.appData.delete([this.namespace, key])
   }
-  
+
   /**
    * 列出所有键
    */
   async list(): Promise<string[]> {
-    const records = await db.appData
-      .where('namespace')
-      .equals(this.namespace)
-      .toArray()
-    return records.map(r => r.key)
+    const records = await db.appData.where('namespace').equals(this.namespace).toArray()
+    return records.map((r) => r.key)
   }
-  
+
   /**
    * 清空命名空间下的所有数据
    */
   async clear(): Promise<void> {
-    await db.appData
-      .where('namespace')
-      .equals(this.namespace)
-      .delete()
+    await db.appData.where('namespace').equals(this.namespace).delete()
   }
-  
+
   /**
    * 获取命名空间下的所有数据
    */
   async getAll(): Promise<Record<string, unknown>> {
-    const records = await db.appData
-      .where('namespace')
-      .equals(this.namespace)
-      .toArray()
-    return Object.fromEntries(records.map(r => [r.key, r.value]))
+    const records = await db.appData.where('namespace').equals(this.namespace).toArray()
+    return Object.fromEntries(records.map((r) => [r.key, r.value]))
   }
-  
+
   /**
    * 检查键是否存在
    */
@@ -81,9 +75,9 @@ export class AppDataService {
     const record = await db.appData.get([this.namespace, key])
     return record !== undefined
   }
-  
+
   /**
-   * 批置数据
+   * 批量设置数据
    */
   async setMany(entries: Record<string, unknown>): Promise<void> {
     const records: AppDataRecord[] = Object.entries(entries).map(([key, value]) => ({
@@ -95,7 +89,7 @@ export class AppDataService {
     }))
     await db.appData.bulkPut(records)
   }
-  
+
   /**
    * 批量获取数据
    */
@@ -106,15 +100,12 @@ export class AppDataService {
     }
     return result
   }
-  
+
   /**
    * 获取数据记录数量
    */
   async count(): Promise<number> {
-    return db.appData
-      .where('namespace')
-      .equals(this.namespace)
-      .count()
+    return db.appData.where('namespace').equals(this.namespace).count()
   }
 }
 

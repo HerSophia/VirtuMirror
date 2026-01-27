@@ -1,11 +1,11 @@
 /**
  * 应用身份识别服务
- * 
+ *
  * 提供应用身份验证、数据命名空间计算、安装验证、数据迁移等功能
  */
 
-import { db } from './database'
-import { AppDataService } from './appDataService'
+import { db } from '@/services/database'
+import { AppDataService } from './dataService'
 import type {
   AppSourceInfo,
   TrustedRepository,
@@ -35,13 +35,13 @@ export function calculateDataNamespace(
     case 'builtin':
       // 内置应用：直接用 appId
       return `builtin/${pkg.id}`
-    
+
     case 'repository': {
       // 仓库应用：仓库担保身份，可信任 developerId
       const developerId = pkg.author?.name ?? 'unknown'
       return `repo/${sourceInfo.repositoryId}/${developerId}/${pkg.id}`
     }
-    
+
     case 'url': {
       // URL 导入：用域名 + 内容哈希（TOFU）
       try {
@@ -52,7 +52,7 @@ export function calculateDataNamespace(
         return `url/invalid/${sourceInfo.contentHash.substring(0, 8)}`
       }
     }
-    
+
     case 'local':
       // 本地导入：用随机安装 ID 完全隔离
       return `local/${installationId}`
@@ -74,44 +74,42 @@ export class TrustedRepositoryService {
       await db.trustedRepositories.add(OFFICIAL_REPOSITORY)
     }
   }
-  
+
   /**
    * 获取所有受信任仓库
    */
   async getAll(): Promise<TrustedRepository[]> {
     return db.trustedRepositories.toArray()
   }
-  
+
   /**
    * 获取已启用的仓库
    */
   async getEnabled(): Promise<TrustedRepository[]> {
-    return db.trustedRepositories
-      .filter(repo => repo.enabled)
-      .toArray()
+    return db.trustedRepositories.filter((repo) => repo.enabled).toArray()
   }
-  
+
   /**
    * 根据ID获取仓库
    */
   async getById(id: string): Promise<TrustedRepository | undefined> {
     return db.trustedRepositories.get(id)
   }
-  
+
   /**
    * 添加仓库
    */
   async add(repo: TrustedRepository): Promise<void> {
     await db.trustedRepositories.add(repo)
   }
-  
+
   /**
    * 更新仓库
    */
   async update(id: string, updates: Partial<TrustedRepository>): Promise<void> {
     await db.trustedRepositories.update(id, updates)
   }
-  
+
   /**
    * 删除仓库（官方仓库不可删除）
    */
@@ -122,7 +120,7 @@ export class TrustedRepositoryService {
     await db.trustedRepositories.delete(id)
     return true
   }
-  
+
   /**
    * 切换仓库启用状态
    */
@@ -162,7 +160,7 @@ export async function verifyEd25519Signature(
   // TODO: 实现真正的 Ed25519 签名验证
   // 当前简化实现：如果公钥为空则验证失败
   // 在实际部署时需要集成 tweetnacl 或类似库
-  
+
   // 简化：如果签名和公钥都存在且非空，则认为验证通过
   // 这仅用于开发阶段，生产环境必须实现真正的验证
   console.warn('[AppIdentity] 签名验证使用简化实现，生产环境需要真正的 Ed25519 验证')
@@ -178,7 +176,6 @@ export async function verifyAndInstall(
   pkg: PhoneAppPackage,
   source: AppSourceInfo
 ): Promise<InstallVerificationResult> {
-  
   // Level 0: 内置应用
   if (source.type === 'builtin') {
     return {
@@ -187,7 +184,7 @@ export async function verifyAndInstall(
       canInstall: true,
     }
   }
-  
+
   // Level 1-2: 仓库来源
   if (source.type === 'repository') {
     const repo = await trustedRepositoryService.getById(source.repositoryId)
@@ -199,7 +196,7 @@ export async function verifyAndInstall(
         error: '未知仓库，请先添加该仓库',
       }
     }
-    
+
     if (!repo.enabled) {
       return {
         verified: false,
@@ -208,14 +205,14 @@ export async function verifyAndInstall(
         error: '该仓库已被禁用',
       }
     }
-    
+
     // 验证仓库签名
     const signatureValid = await verifyEd25519Signature(
       getSignableContent(pkg),
       source.signature,
       repo.publicKey
     )
-    
+
     if (!signatureValid) {
       return {
         verified: false,
@@ -224,7 +221,7 @@ export async function verifyAndInstall(
         error: '应用签名验证失败，可能已被篡改',
       }
     }
-    
+
     return {
       verified: true,
       trustLevel: 'repository',
@@ -232,7 +229,7 @@ export async function verifyAndInstall(
       canInstall: true,
     }
   }
-  
+
   // Level 3: URL 导入
   if (source.type === 'url') {
     return {
@@ -250,7 +247,7 @@ export async function verifyAndInstall(
       },
     }
   }
-  
+
   // Level 4: 本地导入
   if (source.type === 'local') {
     return {
@@ -265,7 +262,7 @@ export async function verifyAndInstall(
       ],
     }
   }
-  
+
   // 未知来源
   return {
     verified: false,
@@ -285,9 +282,8 @@ export async function verifyUpdate(
   newPkg: PhoneAppPackage,
   newSource: AppSourceInfo
 ): Promise<UpdateVerificationResult> {
-  
   const oldSource = installed.sourceInfo
-  
+
   // 检查来源一致性
   if (oldSource.type !== newSource.type) {
     return {
@@ -296,7 +292,7 @@ export async function verifyUpdate(
       suggestion: '请卸载后重新安装',
     }
   }
-  
+
   // 仓库应用：必须来自同一仓库
   if (oldSource.type === 'repository' && newSource.type === 'repository') {
     if (oldSource.repositoryId !== newSource.repositoryId) {
@@ -307,7 +303,7 @@ export async function verifyUpdate(
       }
     }
   }
-  
+
   // URL 应用：必须来自同一 URL（TOFU）
   if (oldSource.type === 'url' && newSource.type === 'url') {
     if (oldSource.url !== newSource.url) {
@@ -318,7 +314,7 @@ export async function verifyUpdate(
       }
     }
   }
-  
+
   // 本地应用：不允许更新（每次导入都是新安装）
   if (oldSource.type === 'local') {
     return {
@@ -327,7 +323,7 @@ export async function verifyUpdate(
       suggestion: '请卸载后重新导入',
     }
   }
-  
+
   // 通过基本检查，继续数据迁移检查
   return {
     allowed: true,
@@ -346,7 +342,7 @@ export function checkDataMigration(
 ): DataMigrationCheck {
   const oldVersion = installed.currentDataVersion
   const newVersion = newPkg.dataVersion ?? 1
-  
+
   if (newVersion <= oldVersion) {
     return {
       needed: false,
@@ -355,17 +351,17 @@ export function checkDataMigration(
       migrations: [],
     }
   }
-  
+
   // 收集所有需要执行的迁移
   const allMigrations: DataMigrationAction[] = []
   const migrationDefs = newPkg.dataMigrations ?? {}
-  
+
   for (let v = oldVersion; v < newVersion; v++) {
     const key = `${v}:${v + 1}`
     const actions = migrationDefs[key] ?? []
     allMigrations.push(...actions)
   }
-  
+
   return {
     needed: true,
     fromVersion: oldVersion,
@@ -378,15 +374,15 @@ export function checkDataMigration(
  * 预定义的数据转换器
  */
 const DATA_TRANSFORMERS: Record<string, (v: unknown) => unknown> = {
-  'intToFloat': (v) => typeof v === 'number' ? v : parseFloat(String(v)),
-  'stringToArray': (v) => typeof v === 'string' ? v.split(',') : v,
-  'boolToInt': (v) => v ? 1 : 0,
-  'intToBool': (v) => Boolean(v),
-  'stringify': (v) => JSON.stringify(v),
-  'parse': (v) => typeof v === 'string' ? JSON.parse(v) : v,
-  'trim': (v) => typeof v === 'string' ? v.trim() : v,
-  'lowercase': (v) => typeof v === 'string' ? v.toLowerCase() : v,
-  'uppercase': (v) => typeof v === 'string' ? v.toUpperCase() : v,
+  intToFloat: (v) => (typeof v === 'number' ? v : parseFloat(String(v))),
+  stringToArray: (v) => (typeof v === 'string' ? v.split(',') : v),
+  boolToInt: (v) => (v ? 1 : 0),
+  intToBool: (v) => Boolean(v),
+  stringify: (v) => JSON.stringify(v),
+  parse: (v) => (typeof v === 'string' ? JSON.parse(v) : v),
+  trim: (v) => (typeof v === 'string' ? v.trim() : v),
+  lowercase: (v) => (typeof v === 'string' ? v.toLowerCase() : v),
+  uppercase: (v) => (typeof v === 'string' ? v.toUpperCase() : v),
 }
 
 /**
@@ -397,7 +393,7 @@ export async function executeDataMigration(
   migrations: DataMigrationAction[]
 ): Promise<MigrationResult> {
   const dataService = new AppDataService(namespace)
-  
+
   try {
     for (const action of migrations) {
       switch (action.type) {
@@ -409,14 +405,14 @@ export async function executeDataMigration(
           }
           break
         }
-        
+
         case 'delete': {
           for (const field of action.fields) {
             await dataService.delete(field)
           }
           break
         }
-        
+
         case 'setDefault': {
           const existing = await dataService.get(action.field)
           if (existing === undefined) {
@@ -424,11 +420,9 @@ export async function executeDataMigration(
           }
           break
         }
-        
+
         case 'merge': {
-          const sources = await Promise.all(
-            action.source.map(s => dataService.get(s))
-          )
+          const sources = await Promise.all(action.source.map((s) => dataService.get(s)))
           const merged = Object.assign({}, ...sources.filter(Boolean))
           await dataService.set(action.target, merged)
           for (const s of action.source) {
@@ -436,7 +430,7 @@ export async function executeDataMigration(
           }
           break
         }
-        
+
         case 'transform': {
           const transformer = DATA_TRANSFORMERS[action.transformer]
           if (transformer) {
@@ -451,7 +445,7 @@ export async function executeDataMigration(
         }
       }
     }
-    
+
     return { success: true }
   } catch (error) {
     return {
@@ -483,9 +477,7 @@ export function createMigrationRecord(
 /**
  * 从安装验证结果创建验证状态
  */
-export function createVerificationStatus(
-  result: InstallVerificationResult
-): VerificationStatus {
+export function createVerificationStatus(result: InstallVerificationResult): VerificationStatus {
   return {
     verified: result.verified,
     trustLevel: result.trustLevel,

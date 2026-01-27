@@ -3,42 +3,39 @@
  * 处理来自酒馆的叙事内容订阅和上下文管理
  */
 
-import { ref } from 'vue';
-import { 
-  narrativeService, 
-  type NarrativeEvent,
-} from '@/services/narrativeService';
-import { db } from '@/services/database';
-import { tryUseAppRuntime } from '@/services/appRuntime';
+import { tryUseAppRuntime } from '@/services/appRuntime'
+import { db } from '@/services/database'
+import { narrativeService, type NarrativeEvent } from '@/services/narrative/narrativeService'
+import { ref } from 'vue'
 
 // ==================== 类型定义 ====================
 
 export interface NarrativeCache {
-  content: string;
-  messageId: number;
-  swipeId: number;
-  sessionId: string;
-  timestamp: number;
+  content: string
+  messageId: number
+  swipeId: number
+  sessionId: string
+  timestamp: number
 }
 
 export interface NarrativeContext {
-  content: string;
-  available: boolean;
-  messageId?: number;
+  content: string
+  available: boolean
+  messageId?: number
 }
 
 export interface ExistingContentContext {
-  existingPosts: string;
-  existingHotSearches: string;
+  existingPosts: string
+  existingHotSearches: string
 }
 
 // ==================== 状态 ====================
 
 /** 叙事内容缓存（来自酒馆的聊天内容） */
-export const narrativeCache = ref<NarrativeCache | null>(null);
+export const narrativeCache = ref<NarrativeCache | null>(null)
 
 /** 叙事订阅取消函数 */
-let narrativeUnsubscribe: (() => void) | null = null;
+let narrativeUnsubscribe: (() => void) | null = null
 
 // ==================== 叙事订阅 ====================
 
@@ -50,10 +47,10 @@ export function initializeNarrativeSubscription(
   onLog?: (level: 'info' | 'warn' | 'error', message: string) => void
 ): void {
   if (narrativeUnsubscribe) {
-    onLog?.('info', '叙事订阅已存在');
-    return;
+    onLog?.('info', '叙事订阅已存在')
+    return
   }
-  
+
   narrativeUnsubscribe = narrativeService.subscribe((event: NarrativeEvent) => {
     // 缓存最新的叙事内容
     narrativeCache.value = {
@@ -62,17 +59,17 @@ export function initializeNarrativeSubscription(
       swipeId: event.swipeId,
       sessionId: event.sessionId,
       timestamp: event.timestamp,
-    };
-    
+    }
+
     console.log('[NarrativeIntegration] 收到叙事内容:', {
       messageId: event.messageId,
       contentLength: event.content.length,
       preview: event.content.slice(0, 100) + (event.content.length > 100 ? '...' : ''),
-    });
-  });
-  
-  onLog?.('info', '叙事订阅已初始化');
-  console.log('[NarrativeIntegration] 叙事订阅已初始化');
+    })
+  })
+
+  onLog?.('info', '叙事订阅已初始化')
+  console.log('[NarrativeIntegration] 叙事订阅已初始化')
 }
 
 /**
@@ -80,9 +77,9 @@ export function initializeNarrativeSubscription(
  */
 export function destroyNarrativeSubscription(): void {
   if (narrativeUnsubscribe) {
-    narrativeUnsubscribe();
-    narrativeUnsubscribe = null;
-    console.log('[NarrativeIntegration] 叙事订阅已销毁');
+    narrativeUnsubscribe()
+    narrativeUnsubscribe = null
+    console.log('[NarrativeIntegration] 叙事订阅已销毁')
   }
 }
 
@@ -96,33 +93,35 @@ export function getNarrativeContext(): NarrativeContext {
     return {
       content: '（暂无叙事内容，请在酒馆中进行对话后再执行任务）',
       available: false,
-    };
+    }
   }
-  
+
   return {
     content: narrativeCache.value.content,
     available: true,
     messageId: narrativeCache.value.messageId,
-  };
+  }
 }
 
 /**
  * 获取叙事缓存的元数据
  */
-export function getNarrativeCacheMetadata(): {
-  messageId?: number;
-  swipeId?: number;
-  sessionId?: string;
-  timestamp?: number;
-} | undefined {
-  if (!narrativeCache.value) return undefined;
-  
+export function getNarrativeCacheMetadata():
+  | {
+      messageId?: number
+      swipeId?: number
+      sessionId?: string
+      timestamp?: number
+    }
+  | undefined {
+  if (!narrativeCache.value) return undefined
+
   return {
     messageId: narrativeCache.value.messageId,
     swipeId: narrativeCache.value.swipeId,
     sessionId: narrativeCache.value.sessionId,
     timestamp: narrativeCache.value.timestamp,
-  };
+  }
 }
 
 // ==================== 现有内容查询 ====================
@@ -135,40 +134,36 @@ export function getNarrativeCacheMetadata(): {
 export async function getExistingPostsSummary(limit: number = 10): Promise<string> {
   try {
     // 获取 App Runtime 的 namespace（如果可用）
-    const runtime = tryUseAppRuntime();
-    const namespace = runtime?.identity.dataNamespace;
-    
+    const runtime = tryUseAppRuntime()
+    const namespace = runtime?.identity.dataNamespace
+
     // 使用 toArray() 获取所有数据后在内存中排序和截取
-    const allPosts = await db.socialPosts
-      .where('platformId').equals('weibo')
-      .toArray();
-    
+    const allPosts = await db.socialPosts.where('platformId').equals('weibo').toArray()
+
     // 按 namespace 过滤（如果有的话）
     const filteredPosts = namespace
-      ? allPosts.filter(p => p.namespace === namespace || p.namespace === undefined)
-      : allPosts;
-    
+      ? allPosts.filter((p) => p.namespace === namespace || p.namespace === undefined)
+      : allPosts
+
     // 按时间戳降序排序（最新的在前）
-    const posts = filteredPosts
-      .sort((a, b) => b.timestamp - a.timestamp)
-      .slice(0, limit);
-    
+    const posts = filteredPosts.sort((a, b) => b.timestamp - a.timestamp).slice(0, limit)
+
     if (posts.length === 0) {
-      return '';
+      return ''
     }
-    
+
     // 提取博文内容摘要
     const summaries = posts.map((post, index) => {
-      const text = post.payload?.text || '';
+      const text = post.payload?.text || ''
       // 截取前100字作为摘要
-      const summary = text.length > 100 ? text.slice(0, 100) + '...' : text;
-      return `${index + 1}. ${summary}`;
-    });
-    
-    return summaries.join('\n');
+      const summary = text.length > 100 ? text.slice(0, 100) + '...' : text
+      return `${index + 1}. ${summary}`
+    })
+
+    return summaries.join('\n')
   } catch (e) {
-    console.warn('[NarrativeIntegration] 获取已有博文失败:', e);
-    return '';
+    console.warn('[NarrativeIntegration] 获取已有博文失败:', e)
+    return ''
   }
 }
 
@@ -180,41 +175,37 @@ export async function getExistingPostsSummary(limit: number = 10): Promise<strin
 export async function getExistingHotSearchesSummary(limit: number = 20): Promise<string> {
   try {
     // 获取 App Runtime 的 namespace（如果可用）
-    const runtime = tryUseAppRuntime();
-    const namespace = runtime?.identity.dataNamespace;
-    
+    const runtime = tryUseAppRuntime()
+    const namespace = runtime?.identity.dataNamespace
+
     // 使用 toArray() 获取所有数据后在内存中排序和截取
-    const allTopics = await db.socialTopics
-      .where('platformId').equals('weibo')
-      .toArray();
-    
+    const allTopics = await db.socialTopics.where('platformId').equals('weibo').toArray()
+
     // 按 namespace 过滤（如果有的话）
     const filteredTopics = namespace
-      ? allTopics.filter(t => t.namespace === namespace || t.namespace === undefined)
-      : allTopics;
-    
+      ? allTopics.filter((t) => t.namespace === namespace || t.namespace === undefined)
+      : allTopics
+
     // 按创建时间降序排序（最新的在前）
-    const topics = filteredTopics
-      .sort((a, b) => b.createdAt - a.createdAt)
-      .slice(0, limit);
-    
-    console.log(`[NarrativeIntegration] 从数据库获取到 ${topics.length} 条热搜`);
-    
+    const topics = filteredTopics.sort((a, b) => b.createdAt - a.createdAt).slice(0, limit)
+
+    console.log(`[NarrativeIntegration] 从数据库获取到 ${topics.length} 条热搜`)
+
     if (topics.length === 0) {
-      return '';
+      return ''
     }
-    
+
     // 提取热搜关键词
     const keywords = topics.map((topic, index) => {
-      const keyword = topic.keyword || '';
-      const summary = topic.summary ? ` - ${topic.summary.slice(0, 30)}` : '';
-      return `${index + 1}. ${keyword}${summary}`;
-    });
-    
-    return keywords.join('\n');
+      const keyword = topic.keyword || ''
+      const summary = topic.summary ? ` - ${topic.summary.slice(0, 30)}` : ''
+      return `${index + 1}. ${keyword}${summary}`
+    })
+
+    return keywords.join('\n')
   } catch (e) {
-    console.warn('[NarrativeIntegration] 获取已有热搜失败:', e);
-    return '';
+    console.warn('[NarrativeIntegration] 获取已有热搜失败:', e)
+    return ''
   }
 }
 
@@ -226,10 +217,10 @@ export async function getExistingContentContext(): Promise<ExistingContentContex
   const [posts, hotSearches] = await Promise.all([
     getExistingPostsSummary(10),
     getExistingHotSearchesSummary(20),
-  ]);
-  
+  ])
+
   return {
     existingPosts: posts,
     existingHotSearches: hotSearches,
-  };
+  }
 }

@@ -31,7 +31,7 @@ import {
   checkDataMigration,
   createMigrationRecord,
   createVerificationStatus,
-} from '@/services/appIdentityService'
+} from '@/services/appRuntime'
 
 // ===== 示例应用数据 =====
 

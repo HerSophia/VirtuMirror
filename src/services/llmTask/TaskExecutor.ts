@@ -3,51 +3,51 @@
  * 处理 L的执行流程
  */
 
-import { useAIStore } from '@/stores/aiStore';
-import { PromptService } from '@/services/promptService';
-import { promptChainService } from '@/services/promptChainService';
-import { promptChainExecutor } from '@/services/promptChainExecutor';
-import type { ChainExecutionEvent, ChainExecutionResult } from '@/types/promptChain';
-import type { TokenUsage } from '@/services/ai/types';
+import type { TokenUsage } from '@/services/ai/types'
+import { promptChainExecutor } from '@/services/prompt'
+import { promptChainService } from '@/services/prompt/promptChainService'
+import { PromptService } from '@/services/prompt/promptService'
+import { useAIStore } from '@/stores/aiStore'
+import type { ChainExecutionEvent, ChainExecutionResult } from '@/types/promptChain'
 
 import type {
+  ExecutionResult,
   LLMTask,
   LLMTaskDefinition,
   LLMTaskStatus,
-  ExecutionResult,
   OutputHandlerResult,
   TaskExecutionContext,
   TaskLog,
-} from './types';
+} from './types'
 
-import { getTaskRegistry } from './TaskRegistry';
-import { getContextProviderRegistry } from './ContextProviderRegistry';
-import { getOutputHandlerRegistry } from './OutputHandlerRegistry';
-import { getVariableResolver, getTimeContextVariables } from './VariableResolver';
+import { getContextProviderRegistry } from './ContextProviderRegistry'
+import { getOutputHandlerRegistry } from './OutputHandlerRegistry'
+import { getTaskRegistry } from './TaskRegistry'
+import { getTimeContextVariables, getVariableResolver } from './VariableResolver'
 
 // ==================== 类型定义 ====================
 
 /** 执行器上下文 */
 export interface ExecutorContext {
   /** 获取任务 */
-  getTask: (id: string) => LLMTask | undefined;
+  getTask: (id: string) => LLMTask | undefined
   /** 更新任务 */
-  updateTask: (id: string, updates: Partial<LLMTask>) => boolean;
+  updateTask: (id: string, updates: Partial<LLMTask>) => boolean
   /** 添加日志 */
-  addLog: (taskId: string, level: TaskLog['level'], message: string, data?: unknown) => void;
+  addLog: (taskId: string, level: TaskLog['level'], message: string, data?: unknown) => void
   /** 获取任务日志 */
-  getTaskLogs: (taskId: string) => TaskLog[];
+  getTaskLogs: (taskId: string) => TaskLog[]
   /** 安排下次执行（自动任务） */
-  scheduleNextExecution: (taskId: string) => void;
+  scheduleNextExecution: (taskId: string) => void
   /** 获取服务（依赖注入） */
-  getService?: <T>(serviceId: string) => T | undefined;
+  getService?: <T>(serviceId: string) => T | undefined
 }
 
 /** 内部执行结果 */
 interface InternalExecutionResult {
-  text: string;
-  usage?: TokenUsage;
-  chainResult?: ChainExecutionResult;
+  text: string
+  usage?: TokenUsage
+  chainResult?: ChainExecutionResult
 }
 
 // ==================== 执行器实现 ====================
@@ -57,14 +57,14 @@ interface InternalExecutionResult {
  * 负责执行 LLM 任务、变量替换、调用 AI 服务、处理输出
  */
 export class TaskExecutor {
-  private context: ExecutorContext | null = null;
+  private context: ExecutorContext | null = null
 
   /**
    * 初始化执行器
    */
   initialize(context: ExecutorContext): void {
-    this.context = context;
-    console.log('[TaskExecutor] 执行器已初始化');
+    this.context = context
+    console.log('[TaskExecutor] 执行器已初始化')
   }
 
   /**
@@ -77,88 +77,81 @@ export class TaskExecutor {
         success: false,
         error: '执行器未初始化',
         duration: 0,
-      };
+      }
     }
 
-    const task = this.context.getTask(taskId);
+    const task = this.context.getTask(taskId)
     if (!task) {
       return {
         success: false,
         error: '任务不存在',
         duration: 0,
-      };
+      }
     }
 
     if (task.status === 'running') {
-      this.context.addLog(taskId, 'warn', '任务已在运行中');
+      this.context.addLog(taskId, 'warn', '任务已在运行中')
       return {
         success: false,
         error: '任务已在运行中',
         duration: 0,
-      };
+      }
     }
 
-    const startTime = Date.now();
+    const startTime = Date.now()
 
     // 更新状态为运行中
     this.context.updateTask(taskId, {
       status: 'running',
       startedAt: startTime,
       error: undefined,
-    });
-    this.context.addLog(taskId, 'info', '任务开始执行');
+    })
+    this.context.addLog(taskId, 'info', '任务开始执行')
     this.context.addLog(
       taskId,
       'info',
       `配置来源: ${task.config.source}${task.config.presetName ? ` (${task.config.presetName})` : ''}`
-    );
+    )
 
     try {
       // 获取任务定义
-      const definition = getTaskRegistry().get(task.definitionId);
+      const definition = getTaskRegistry().get(task.definitionId)
       if (!definition) {
-        throw new Error(`找不到任务定义: ${task.definitionId}`);
+        throw new Error(`找不到任务定义: ${task.definitionId}`)
       }
 
       // 1. 收集上下文变量
-      const contextVariables = await this.collectContextVariables(
-        task,
-        definition
-      );
+      const contextVariables = await this.collectContextVariables(task, definition)
 
       // 2. 构建提示词
-      const prompt = await this.buildPrompt(task, definition, contextVariables);
+      const prompt = await this.buildPrompt(task, definition, contextVariables)
 
       // 3. 执行 LLM 调用
-      const result = await this.executeLLMCall(task, definition, prompt);
+      const result = await this.executeLLMCall(task, definition, prompt)
 
       // 4. 处理输出
-      const handlerResult = await this.handleOutput(
-        task,
-        definition,
-        result.text
-      );
+      const handlerResult = await this.handleOutput(task, definition, result.text)
 
       // 5. 更新任务状态
-      const completedAt = Date.now();
-      const duration = completedAt - startTime;
+      const completedAt = Date.now()
+      const duration = completedAt - startTime
 
       // 根据执行模式设置状态
-      let newStatus: LLMTaskStatus;
+      let newStatus: LLMTaskStatus
       switch (task.executionMode) {
         case 'once':
-          newStatus = 'completed';
-          break;
+          newStatus = 'completed'
+          break
         case 'repeatable':
         case 'auto':
-          newStatus = 'pending';
-          break;
+          newStatus = 'pending'
+          break
         default:
-          newStatus = 'completed';
+          newStatus = 'completed'
       }
 
       // 保存输出历史
-      const outputHistory = [...(task.outputHistory || [])];
+      const outputHistory = [...(task.outputHistory || [])]
       if (task.executionMode !== 'once') {
         outputHistory.unshift({
           timestamp: completedAt,
@@ -175,10 +168,10 @@ export class TaskExecutor {
                 })),
               }
             : undefined,
-        });
+        })
         // 限制历史记录数量
         if (outputHistory.length > 20) {
-          outputHistory.pop();
+          outputHistory.pop()
         }
       }
 
@@ -203,7 +196,7 @@ export class TaskExecutor {
         usage: result.usage,
         totalExecutions: (task.totalExecutions || 0) + 1,
         retryCount: 0,
-      });
+      })
 
       // 更新自动执行配置
       if (task.autoConfig) {
@@ -213,7 +206,7 @@ export class TaskExecutor {
             executionCount: (task.autoConfig.executionCount || 0) + 1,
             lastExecutionAt: completedAt,
           },
-        });
+        })
       }
 
       this.context.addLog(
@@ -221,11 +214,11 @@ export class TaskExecutor {
         'info',
         `任务完成，使用 ${result.usage?.totalTokens || 0} tokens，` +
           `总执行次数: ${(task.totalExecutions || 0) + 1}`
-      );
+      )
 
       // 如果是自动任务，安排下次执行
       if (task.executionMode === 'auto' && task.autoConfig?.enabled) {
-        this.context.scheduleNextExecution(taskId);
+        this.context.scheduleNextExecution(taskId)
       }
 
       return {
@@ -235,9 +228,9 @@ export class TaskExecutor {
         chainResult: result.chainResult,
         handlerResult,
         duration,
-      };
+      }
     } catch (error: unknown) {
-      return this.handleError(taskId, error, task, startTime);
+      return this.handleError(taskId, error, task, startTime)
     }
   }
 
@@ -248,20 +241,20 @@ export class TaskExecutor {
     task: LLMTask,
     definition: LLMTaskDefinition
   ): Promise<Record<string, string>> {
-    const providerIds = definition.contextProviders || [];
-    const contextRegistry = getContextProviderRegistry();
+    const providerIds = definition.contextProviders || []
+    const contextRegistry = getContextProviderRegistry()
 
     // 获取上下文提供器的变量
-    const contextVars = await contextRegistry.getContext(providerIds);
+    const contextVars = await contextRegistry.getContext(providerIds)
 
     // 获取时间上下文
-    const timeVars = getTimeContextVariables();
+    const timeVars = getTimeContextVariables()
 
     // 合并（时间变量优先级最低）
     return {
       ...timeVars,
       ...contextVars,
-    };
+    }
   }
 
   /**
@@ -272,39 +265,36 @@ export class TaskExecutor {
     definition: LLMTaskDefinition,
     contextVariables: Record<string, string>
   ): Promise<string> {
-    const resolver = getVariableResolver();
+    const resolver = getVariableResolver()
 
     // 合并用户输入和上下文变量
     const allVariables: Record<string, unknown> = {
       ...contextVariables,
       ...task.input,
-    };
-
-    // 特殊处理时间上下文
-    if (
-      allVariables['timeContext'] === '当前时间' ||
-      allVariables['timeContext'] === ''
-    ) {
-      allVariables['timeContext'] = contextVariables['fullDateTime'] || '';
     }
 
-    let prompt = '';
+    // 特殊处理时间上下文
+    if (allVariables['timeContext'] === '当前时间' || allVariables['timeContext'] === '') {
+      allVariables['timeContext'] = contextVariables['fullDateTime'] || ''
+    }
+
+    let prompt = ''
 
     if (task.type === 'manual') {
       // 使用定义中的模板或任务实例中的
-      const template = definition.promptTemplate || '';
-      prompt = resolver.resolve(template, allVariables);
+      const template = definition.promptTemplate || ''
+      prompt = resolver.resolve(template, allVariables)
     } else if (task.type === 'prompt') {
       // 注册提示词类型，返回占位符（实际渲染在执行时）
-      prompt = `[Prompt: ${definition.promptId}] with vars: ${JSON.stringify(allVariables)}`;
+      prompt = `[Prompt: ${definition.promptId}] with vars: ${JSON.stringify(allVariables)}`
     } else if (task.type === 'chain') {
-      prompt = `[Chain: ${definition.chainId}]`;
+      prompt = `[Chain: ${definition.chainId}]`
     }
 
     // 更新任务的解析后提示词
-    this.context?.updateTask(task.id, { resolvedPrompt: prompt });
+    this.context?.updateTask(task.id, { resolvedPrompt: prompt })
 
-    return prompt;
+    return prompt
   }
 
   /**
@@ -315,19 +305,19 @@ export class TaskExecutor {
     definition: LLMTaskDefinition,
     prompt: string
   ): Promise<InternalExecutionResult> {
-    const aiStore = useAIStore();
+    const aiStore = useAIStore()
 
     // 确保 AIStore 已初始化
     if (!aiStore.initialized) {
-      await aiStore.initialize();
+      await aiStore.initialize()
     }
 
     if (task.type === 'chain' && definition.chainId) {
-      return this.executeChain(task, definition);
+      return this.executeChain(task, definition)
     } else if (task.type === 'prompt' && definition.promptId) {
-      return this.executePrompt(task, definition);
+      return this.executePrompt(task, definition)
     } else {
-      return this.executeManual(task, definition, prompt);
+      return this.executeManual(task, definition, prompt)
     }
   }
 
@@ -338,54 +328,41 @@ export class TaskExecutor {
     task: LLMTask,
     definition: LLMTaskDefinition
   ): Promise<InternalExecutionResult> {
-    this.context?.addLog(task.id, 'info', `执行提示词链: ${definition.chainId}`);
+    this.context?.addLog(task.id, 'info', `执行提示词链: ${definition.chainId}`)
 
-    const chain = await promptChainService.getChainById(definition.chainId!);
+    const chain = await promptChainService.getChainById(definition.chainId!)
     if (!chain) {
-      throw new Error(`找不到链定义: ${definition.chainId}`);
+      throw new Error(`找不到链定义: ${definition.chainId}`)
     }
 
     // 准备输入变量
-    const chainInputs = { ...task.input };
+    const chainInputs = { ...task.input }
 
     // 执行链
     const executionResult = await promptChainExecutor.execute(
       chain,
       chainInputs as Record<string, string>,
       (event: ChainExecutionEvent) => {
-        const stepNum =
-          event.stepIndex !== undefined ? event.stepIndex + 1 : '?';
+        const stepNum = event.stepIndex !== undefined ? event.stepIndex + 1 : '?'
         if (event.type === 'step-start') {
-          this.context?.addLog(
-            task.id,
-            'info',
-            `[步骤 ${stepNum}] 开始: ${event.stepId}`
-          );
+          this.context?.addLog(task.id, 'info', `[步骤 ${stepNum}] 开始: ${event.stepId}`)
         } else if (event.type === 'step-complete') {
-          this.context?.addLog(
-            task.id,
-            'info',
-            `[步骤 ${stepNum}] 完成: ${event.stepId}`
-          );
+          this.context?.addLog(task.id, 'info', `[步骤 ${stepNum}] 完成: ${event.stepId}`)
         } else if (event.type === 'step-error') {
-          this.context?.addLog(
-            task.id,
-            'error',
-            `[步骤 ${stepNum}] 失败: ${event.error}`
-          );
+          this.context?.addLog(task.id, 'error', `[步骤 ${stepNum}] 失败: ${event.error}`)
         }
       }
-    );
+    )
 
     if (executionResult.status === 'failed') {
-      throw new Error(executionResult.error || '链执行失败');
+      throw new Error(executionResult.error || '链执行失败')
     }
 
     return {
       text: JSON.stringify(executionResult.outputs, null, 2),
       usage: executionResult.totalUsage,
       chainResult: executionResult,
-    };
+    }
   }
 
   /**
@@ -395,25 +372,18 @@ export class TaskExecutor {
     task: LLMTask,
     definition: LLMTaskDefinition
   ): Promise<InternalExecutionResult> {
-    this.context?.addLog(
-      task.id,
-      'info',
-      `执行注册提示词: ${definition.promptId}`
-    );
+    this.context?.addLog(task.id, 'info', `执行注册提示词: ${definition.promptId}`)
 
-    const promptDef = PromptService.getPromptByScene(definition.promptId!);
+    const promptDef = PromptService.getPromptByScene(definition.promptId!)
     if (!promptDef) {
-      throw new Error(`找不到提示词定义: ${definition.promptId}`);
+      throw new Error(`找不到提示词定义: ${definition.promptId}`)
     }
 
     // 渲染提示词
-    const rendered = PromptService.renderPrompt(
-      promptDef,
-      task.input as Record<string, string>
-    );
+    const rendered = PromptService.renderPrompt(promptDef, task.input as Record<string, string>)
 
     // 执行生成
-    const aiStore = useAIStore();
+    const aiStore = useAIStore()
     const result = await aiStore.generate(
       {
         prompt: rendered.userPrompt,
@@ -428,9 +398,9 @@ export class TaskExecutor {
         scene: definition.promptId,
       },
       task.priority
-    );
+    )
 
-    return { text: result.text, usage: result.usage };
+    return { text: result.text, usage: result.usage }
   }
 
   /**
@@ -441,9 +411,9 @@ export class TaskExecutor {
     definition: LLMTaskDefinition,
     prompt: string
   ): Promise<InternalExecutionResult> {
-    this.context?.addLog(task.id, 'info', '执行手动提示词');
+    this.context?.addLog(task.id, 'info', '执行手动提示词')
 
-    const aiStore = useAIStore();
+    const aiStore = useAIStore()
     const result = await aiStore.generate(
       {
         prompt,
@@ -458,9 +428,9 @@ export class TaskExecutor {
         scene: task.definitionId,
       },
       task.priority
-    );
+    )
 
-    return { text: result.text, usage: result.usage };
+    return { text: result.text, usage: result.usage }
   }
 
   /**
@@ -471,16 +441,12 @@ export class TaskExecutor {
     definition: LLMTaskDefinition,
     output: string
   ): Promise<OutputHandlerResult | undefined> {
-    const handlerRegistry = getOutputHandlerRegistry();
-    const handler = handlerRegistry.get(definition.outputHandlerId);
+    const handlerRegistry = getOutputHandlerRegistry()
+    const handler = handlerRegistry.get(definition.outputHandlerId)
 
     if (!handler) {
-      this.context?.addLog(
-        task.id,
-        'warn',
-        `找不到输出处理器: ${definition.outputHandlerId}`
-      );
-      return undefined;
+      this.context?.addLog(task.id, 'warn', `找不到输出处理器: ${definition.outputHandlerId}`)
+      return undefined
     }
 
     // 创建执行上下文
@@ -489,41 +455,32 @@ export class TaskExecutor {
       appId: task.appId,
       variables: task.input,
       addLog: (level, message, data) => {
-        this.context?.addLog(task.id, level, message, data);
+        this.context?.addLog(task.id, level, message, data)
       },
       getService: this.context?.getService || (() => undefined),
-    };
+    }
 
     try {
-      const result = await handler.handle(output, task, executionContext);
+      const result = await handler.handle(output, task, executionContext)
 
       if (result.success) {
         this.context?.addLog(
           task.id,
           'info',
           `输出处理成功${result.recordsCreated ? `，创建 ${result.recordsCreated} 条记录` : ''}`
-        );
+        )
       } else {
-        this.context?.addLog(
-          task.id,
-          'error',
-          `输出处理失败: ${result.error}`
-        );
+        this.context?.addLog(task.id, 'error', `输出处理失败: ${result.error}`)
       }
 
-      return result;
+      return result
     } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error ? error.message : '未知错误';
-      this.context?.addLog(
-        task.id,
-        'error',
-        `输出处理器异常: ${errorMessage}`
-      );
+      const errorMessage = error instanceof Error ? error.message : '未知错误'
+      this.context?.addLog(task.id, 'error', `输出处理器异常: ${errorMessage}`)
       return {
         success: false,
         error: errorMessage,
-      };
+      }
     }
   }
 
@@ -536,38 +493,36 @@ export class TaskExecutor {
     task: LLMTask,
     startTime: number
   ): ExecutionResult {
-    const errorMessage =
-      error instanceof Error ? error.message : '未知错误';
-    const duration = Date.now() - startTime;
+    const errorMessage = error instanceof Error ? error.message : '未知错误'
+    const duration = Date.now() - startTime
 
-    this.context?.addLog(taskId, 'error', `任务失败: ${errorMessage}`);
+    this.context?.addLog(taskId, 'error', `任务失败: ${errorMessage}`)
 
     // 判断是否重试
     if (task.retryCount < task.maxRetries && this.isRetryableError(error)) {
       this.context?.updateTask(taskId, {
         status: 'pending',
         retryCount: task.retryCount + 1,
-      });
-      this.context?.addLog(
-        taskId,
-        'info',
-        `准备重试 (${task.retryCount + 1}/${task.maxRetries})`
-      );
+      })
+      this.context?.addLog(taskId, 'info', `准备重试 (${task.retryCount + 1}/${task.maxRetries})`)
 
       // 延迟重试
-      setTimeout(() => {
-        this.execute(taskId);
-      }, 2000 * (task.retryCount + 1));
+      setTimeout(
+        () => {
+          this.execute(taskId)
+        },
+        2000 * (task.retryCount + 1)
+      )
     } else {
       this.context?.updateTask(taskId, {
         status: 'failed',
         error: errorMessage,
         completedAt: Date.now(),
-      });
+      })
 
       // 自动任务失败后仍然安排下次执行
       if (task.executionMode === 'auto' && task.autoConfig?.enabled) {
-        this.context?.scheduleNextExecution(taskId);
+        this.context?.scheduleNextExecution(taskId)
       }
     }
 
@@ -575,7 +530,7 @@ export class TaskExecutor {
       success: false,
       error: errorMessage,
       duration,
-    };
+    }
   }
 
   /**
@@ -590,26 +545,26 @@ export class TaskExecutor {
         'rate limit',
         'timeout',
         'network',
-      ];
+      ]
       return retryableMessages.some((msg) =>
         error.message.toLowerCase().includes(msg.toLowerCase())
-      );
+      )
     }
-    return false;
+    return false
   }
 }
 
 // 导出单例
-let taskExecutorInstance: TaskExecutor | null = null;
+let taskExecutorInstance: TaskExecutor | null = null
 
 export function getTaskExecutor(): TaskExecutor {
   if (!taskExecutorInstance) {
-    taskExecutorInstance = new TaskExecutor();
+    taskExecutorInstance = new TaskExecutor()
   }
-  return taskExecutorInstance;
+  return taskExecutorInstance
 }
 
 // 用于测试的重置函数
 export function resetTaskExecutor(): void {
-  taskExecutorInstance = null;
+  taskExecutorInstance = null
 }

@@ -3,7 +3,7 @@
  * @description 微博 App 专用的多步骤 LLM 编排链
  */
 
-import type { AppChainDefinition } from '@/services/promptChainService';
+import type { AppChainDefinition } from '@/services/prompt/promptChainService'
 
 /**
  * 微博热点内容生成流水线
@@ -17,7 +17,7 @@ export const weiboHotTopicPipeline: AppChainDefinition = {
   executionMode: 'multi-step',
   version: '1.0.0',
   enabled: true,
-  
+
   // 输入变量
   inputs: [
     {
@@ -49,7 +49,7 @@ export const weiboHotTopicPipeline: AppChainDefinition = {
       defaultValue: 5,
     },
   ],
-  
+
   // 执行步骤
   steps: [
     // Step 1: 生成世界事件
@@ -70,7 +70,7 @@ export const weiboHotTopicPipeline: AppChainDefinition = {
         defaultValue: { title: '未知事件', summary: '', category: 'other' },
       },
     },
-    
+
     // Step 2: 生成微博话题标签
     {
       id: 'step-topic',
@@ -89,7 +89,7 @@ export const weiboHotTopicPipeline: AppChainDefinition = {
         defaultValue: '#热门话题#',
       },
     },
-    
+
     // Step 3: 批量生成博文
     {
       id: 'step-posts',
@@ -113,7 +113,7 @@ export const weiboHotTopicPipeline: AppChainDefinition = {
         maxIterations: 5,
       },
     },
-    
+
     // Step 4: 为第一条博文生成评论
     {
       id: 'step-comments',
@@ -132,7 +132,7 @@ export const weiboHotTopicPipeline: AppChainDefinition = {
       condition: 'posts[0]',
     },
   ],
-  
+
   // 输出映射
   outputs: {
     event: 'event',
@@ -140,7 +140,7 @@ export const weiboHotTopicPipeline: AppChainDefinition = {
     posts: 'posts',
     comments: 'comments',
   },
-};
+}
 
 /**
  * 评论区深度对话生成
@@ -154,7 +154,7 @@ export const weiboCommentThread: AppChainDefinition = {
   executionMode: 'multi-step',
   version: '1.0.0',
   enabled: true,
-  
+
   inputs: [
     {
       name: 'postContent',
@@ -177,7 +177,7 @@ export const weiboCommentThread: AppChainDefinition = {
       defaultValue: true,
     },
   ],
-  
+
   steps: [
     // Step 1: 生成主评论
     {
@@ -205,7 +205,7 @@ export const weiboCommentThread: AppChainDefinition = {
         parseAs: 'json',
       },
     },
-    
+
     // Step 2: 生成回复链
     {
       id: 'step-replies',
@@ -231,7 +231,7 @@ export const weiboCommentThread: AppChainDefinition = {
         parseAs: 'json',
       },
     },
-    
+
     // Step 3: 官方回应（条件执行）
     {
       id: 'step-official',
@@ -260,13 +260,13 @@ export const weiboCommentThread: AppChainDefinition = {
       condition: 'hasOfficialResponse',
     },
   ],
-  
+
   outputs: {
     mainComment: 'mainComment',
     replies: 'replies',
     officialResponse: 'officialResponse',
   },
-};
+}
 
 /**
  * 用户画像批量生成
@@ -280,7 +280,7 @@ export const weiboUserGenerator: AppChainDefinition = {
   executionMode: 'multi-step',
   version: '1.0.0',
   enabled: true,
-  
+
   inputs: [
     {
       name: 'count',
@@ -297,7 +297,7 @@ export const weiboUserGenerator: AppChainDefinition = {
       defaultValue: '混合',
     },
   ],
-  
+
   steps: [
     {
       id: 'step-users',
@@ -320,11 +320,11 @@ export const weiboUserGenerator: AppChainDefinition = {
       },
     },
   ],
-  
+
   outputs: {
     users: 'users',
   },
-};
+}
 
 /**
  * 导出所有微博链
@@ -333,4 +333,4 @@ export const weiboChains: AppChainDefinition[] = [
   weiboHotTopicPipeline,
   weiboCommentThread,
   weiboUserGenerator,
-];
+]

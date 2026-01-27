@@ -48,12 +48,12 @@
 │  │   IconService       │◄────►│   IconStore         │           │
 │  │   (业务逻辑)         │      │   (响应式状态)       │           │
 │  └─────────────────────┘      └─────────────────────┘           │
-│              ▲                                                    │
-│              │                                                    │
-│  ┌───────────┴─────────┐                                         │
-│  │   Legacy Facade     │  ← 兼容旧代码                            │
-│  │  (iconRegistryService) │                                      │
-│  └─────────────────────┘                                         │
+│              ▲                          ▲                         │
+│              │                          │                         │
+│  ┌───────────┴─────────┐    ┌──────────┴──────────┐             │
+│  │  RegistryService    │    │  AppRegistryService │             │
+│  │  (图标注册 Facade)   │    │  (App 统一注册)      │             │
+│  └─────────────────────┘    └─────────────────────┘             │
 └─────────────────────────────────────────────────────────────────┘
                            │
                            ▼ Reactive Data
@@ -73,7 +73,8 @@
 | **Types** | `src/types/icon.ts` | 核心类型定义 |
 | **Service** | `src/services/icon/iconService.ts` | 业务逻辑层（单例） |
 | **Store** | `src/stores/iconStore.ts` | Pinia 响应式状态 |
-| **Facade** | `src/services/iconRegistryService.ts` | 旧版兼容层 |
+| **Facade** | `src/services/icon/registryService.ts` | 图标注册兼容层 |
+| **AppRegistry** | `src/services/icon/appRegistryService.ts` | 统一 App 注册服务 |
 | **AppIcon** | `src/components/common/AppIcon.vue` | 基础图标组件 |
 | **DynamicAppIcon** | `src/components/common/DynamicAppIcon.vue` | 动态图标组件 |
 
@@ -146,6 +147,7 @@ const myApp = iconStore.getIcon('my-app')
 | [类型定义](./types.md) | 核心接口和类型说明 |
 | [Service API](./service-api.md) | IconService 方法详解 |
 | [Store API](./store-api.md) | IconStore 状态和方法 |
+| [App 注册服务](./app-registry.md) | 统一 App 注册服务 |
 | [组件使用](./components.md) | AppIcon 和 DynamicAppIcon 使用指南 |
 | [集成示例](./integration.md) | 完整的集成示例 |
 

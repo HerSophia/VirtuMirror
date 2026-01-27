@@ -1,9 +1,9 @@
 /**
  * 内置叙事理解系统提示词
- * 
+ *
  * 这些提示词用于帮助 LLM 理解来自酒馆等平台的叙事内容。
  * 用户可以在 Prompts App 中查看、修改或禁用这些提示词。
- * 
+ *
  * 设计原则：
  * 1. 默认开启，开箱即用
  * 2. 提供通用指导，不过度约束
@@ -11,8 +11,8 @@
  * 4. 用户/开发者可覆盖或扩展
  */
 
-import { SystemPromptService } from './systemPromptService'
-import type { SystemPromptDefinition } from './systemPromptService'
+import type { SystemPromptDefinition } from './prompt/systemPromptService'
+import { SystemPromptService } from './prompt/systemPromptService'
 
 // ========== 内置提示词定义 ==========
 
@@ -145,32 +145,32 @@ const registeredPromptIds = new Set<string>()
 
 /**
  * 注册内置叙事理解提示词
- * 
+ *
  * 应在应用初始化时调用一次。
  * 如果提示词已存在（用户可能已修改），则不会覆盖。
  */
 export function registerBuiltinNarrativePrompts(): void {
   console.log('[BuiltinNarrativePrompts] 开始注册内置叙事理解提示词...')
-  
+
   for (const definition of BUILTIN_NARRATIVE_PROMPTS) {
     // 检查是否已存在同名的系统提示词
     const existing = SystemPromptService.getAllSystemPrompts().find(
-      p => p.name === definition.name
+      (p) => p.name === definition.name
     )
-    
+
     if (existing) {
       // 已存在，跳过（保留用户的修改）
       registeredPromptIds.add(existing.id)
       console.log(`[BuiltinNarrativePrompts] 跳过已存在的: ${definition.name}`)
       continue
     }
-    
+
     // 创建新的系统提示词
     const created = SystemPromptService.create(definition)
     registeredPromptIds.add(created.id)
     console.log(`[BuiltinNarrativePrompts] 已创建: ${definition.name}`)
   }
-  
+
   console.log(`[BuiltinNarrativePrompts] 注册完成，共 ${registeredPromptIds.size} 个提示词`)
 }
 
@@ -190,24 +190,24 @@ export function isBuiltinNarrativePrompt(id: string): boolean {
 
 /**
  * 重置所有内置叙事理解提示词为默认值
- * 
+ *
  * 注意：这会删除用户对内置提示词的修改
  */
 export function resetBuiltinNarrativePrompts(): void {
   console.log('[BuiltinNarrativePrompts] 重置所有内置提示词...')
-  
+
   // 删除现有的内置提示词
   for (const id of registeredPromptIds) {
     SystemPromptService.delete(id)
   }
   registeredPromptIds.clear()
-  
+
   // 重新注册
   for (const definition of BUILTIN_NARRATIVE_PROMPTS) {
     const created = SystemPromptService.create(definition)
     registeredPromptIds.add(created.id)
   }
-  
+
   console.log('[BuiltinNarrativePrompts] 重置完成')
 }
 

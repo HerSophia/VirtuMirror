@@ -1,15 +1,15 @@
-import { ref, type Ref } from 'vue'
-import { audioService } from '@/services/audioService'
+import { audioService } from '@/services/audio/audioService'
 import type {
-  Notification,
   CreateNotificationParams,
+  Notification,
+  NotificationIcon,
   StatusBarNotificationIcon,
-  NotificationIcon
 } from '@/types/notification'
+import { ref, type Ref } from 'vue'
 
 export class NotificationService {
   private static instance: NotificationService
-  
+
   // State refs (injected from Store)
   private _notifications: Ref<Notification[]> = ref([])
   private _activeToast: Ref<Notification | null> = ref(null)
@@ -17,7 +17,7 @@ export class NotificationService {
   private _doNotDisturb: Ref<boolean> = ref(false)
   private _mutedApps: Ref<string[]> = ref([])
   private _statusBarIcons: Ref<StatusBarNotificationIcon[]> = ref([])
-  
+
   private toastTimer: ReturnType<typeof setTimeout> | null = null
 
   static getInstance(): NotificationService {
@@ -26,7 +26,7 @@ export class NotificationService {
     }
     return this.instance
   }
-  
+
   /**
    * 初始化 Service，注入 Store 的状态
    */
@@ -45,7 +45,7 @@ export class NotificationService {
     this._mutedApps = refs.mutedApps
     this._statusBarIcons = refs.statusBarIcons
   }
-  
+
   /**
    * 生成唯一 ID
    */
@@ -90,13 +90,13 @@ export class NotificationService {
     // 规则: 非勿扰模式 且 应用未被静音
     if (!this._doNotDisturb.value && !this._mutedApps.value.includes(params.appId)) {
       this.showToast(notification)
-      
+
       // 播放声音
       if (typeof params.sound === 'string' && params.sound) {
         audioService.play({
           source: params.sound,
           channel: 'notification',
-          overlap: true
+          overlap: true,
         })
       } else if (params.sound === true) {
         // 使用系统默认提示音
@@ -106,7 +106,7 @@ export class NotificationService {
 
     // 更新状态栏图标
     this.updateStatusBarIcon(params.appId, params.appIcon)
-    
+
     return notification
   }
 
@@ -130,7 +130,7 @@ export class NotificationService {
     if (this._activeToast.value) {
       const currentPriority = this.getPriorityWeight(this._activeToast.value.priority)
       const newPriority = this.getPriorityWeight(notification.priority)
-      
+
       // 如果新通知优先级更高，立即替换（挤出去）
       if (newPriority > currentPriority) {
         // 清除旧的定时器
@@ -146,10 +146,10 @@ export class NotificationService {
         return
       }
     }
-    
+
     this._activeToast.value = notification
     notification.shown = true
-    
+
     // 设置自动关闭
     if (notification.autoDismiss && notification.autoDismiss > 0) {
       this.toastTimer = setTimeout(() => {
@@ -166,9 +166,9 @@ export class NotificationService {
       clearTimeout(this.toastTimer)
       this.toastTimer = null
     }
-    
+
     this._activeToast.value = null
-    
+
     // 处理队列中的下一个
     if (this._toastQueue.value.length > 0) {
       const next = this._toastQueue.value.shift()!
@@ -176,12 +176,12 @@ export class NotificationService {
       setTimeout(() => this.showToast(next), 300)
     }
   }
-  
+
   /**
    * 标记通知为已读
    */
   markAsRead(notificationId: string) {
-    const notification = this._notifications.value.find(n => n.id === notificationId)
+    const notification = this._notifications.value.find((n) => n.id === notificationId)
     if (notification) {
       notification.read = true
       // 刷新该应用的状态栏图标可见性
@@ -193,7 +193,7 @@ export class NotificationService {
    * 标记所有通知为已读
    */
   markAllAsRead() {
-    this._notifications.value.forEach(n => {
+    this._notifications.value.forEach((n) => {
       n.read = true
     })
     this.refreshStatusBarIcons()
@@ -204,8 +204,8 @@ export class NotificationService {
    */
   markAppAsRead(appId: string) {
     this._notifications.value
-      .filter(n => n.appId === appId)
-      .forEach(n => {
+      .filter((n) => n.appId === appId)
+      .forEach((n) => {
         n.read = true
       })
     this.refreshStatusBarIcons()
@@ -215,7 +215,7 @@ export class NotificationService {
    * 删除通知
    */
   removeNotification(notificationId: string) {
-    const index = this._notifications.value.findIndex(n => n.id === notificationId)
+    const index = this._notifications.value.findIndex((n) => n.id === notificationId)
     if (index !== -1) {
       this._notifications.value.splice(index, 1)
     }
@@ -225,7 +225,7 @@ export class NotificationService {
    * 删除应用的所有通知
    */
   removeAppNotifications(appId: string) {
-    this._notifications.value = this._notifications.value.filter(n => n.appId !== appId)
+    this._notifications.value = this._notifications.value.filter((n) => n.appId !== appId)
     this.removeStatusBarIcon(appId)
   }
 
@@ -260,11 +260,9 @@ export class NotificationService {
    * 更新状态栏图标
    */
   updateStatusBarIcon(appId: string, icon: NotificationIcon) {
-    const hasUnread = this._notifications.value.some(
-      n => n.appId === appId && !n.read
-    )
-    
-    const existing = this._statusBarIcons.value.find(i => i.id === appId)
+    const hasUnread = this._notifications.value.some((n) => n.appId === appId && !n.read)
+
+    const existing = this._statusBarIcons.value.find((i) => i.id === appId)
     if (existing) {
       existing.icon = icon
       existing.visible = hasUnread
@@ -283,9 +281,7 @@ export class NotificationService {
    */
   refreshStatusBarIcons() {
     for (const icon of this._statusBarIcons.value) {
-      const hasUnread = this._notifications.value.some(
-        n => n.appId === icon.id && !n.read
-      )
+      const hasUnread = this._notifications.value.some((n) => n.appId === icon.id && !n.read)
       icon.visible = hasUnread
     }
   }
@@ -294,7 +290,7 @@ export class NotificationService {
    * 移除状态栏图标
    */
   removeStatusBarIcon(appId: string) {
-    const index = this._statusBarIcons.value.findIndex(i => i.id === appId)
+    const index = this._statusBarIcons.value.findIndex((i) => i.id === appId)
     if (index !== -1) {
       this._statusBarIcons.value.splice(index, 1)
     }
@@ -303,7 +299,7 @@ export class NotificationService {
    * 设置状态栏图标优先级
    */
   setStatusBarIconPriority(appId: string, priority: number) {
-    const icon = this._statusBarIcons.value.find(i => i.id === appId)
+    const icon = this._statusBarIcons.value.find((i) => i.id === appId)
     if (icon) {
       icon.priority = priority
     }

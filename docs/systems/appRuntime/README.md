@@ -18,6 +18,7 @@ AppRuntime 是小手机的核心基础设施服务，解决以下问题：
 | [types.md](./types.md) | 核心类型定义 |
 | [scoped-storage.md](./scoped-storage.md) | 隔离存储实现 |
 | [system-api.md](./system-api.md) | 系统 API 说明 |
+| [identity-service.md](./identity-service.md) | 身份验证与命名空间 |
 | [usage-guide.md](./usage-guide.md) | 使用指南与最佳实践 |
 
 ## 架构图
@@ -124,6 +125,8 @@ interface SystemAPI {
 | 工厂函数 | `src/services/appRuntime/factory.ts` | AppRuntime 创建 |
 | 隔离存储 | `src/services/appRuntime/scopedStorage.ts` | ScopedStorage 实现 |
 | 系统 API | `src/services/appRuntime/systemAPI.ts` | SystemAPI 实现 |
+| 数据服务 | `src/services/appRuntime/dataService.ts` | 底层数据存储服务 |
+| 身份服务 | `src/services/appRuntime/identityService.ts` | 身份验证与命名空间计算 |
 
 ## 命名空间隔离策略
 
@@ -189,25 +192,60 @@ if (runtime) {
 }
 ```
 
-## 与其他服务的关系
+## 模块内部结构
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                     AppRuntime                          │
-└─────────────────────────┬───────────────────────────────┘
-                          │
-          ┌───────────────┼───────────────┐
-          │               │               │
-          ▼               ▼               ▼
-┌─────────────┐   ┌─────────────┐   ┌─────────────┐
-│ WriteQueue  │   │AppIdentity  │   │Notification │
-│  Service    │   │  Service    │   │  Service    │
-│ (写入队列)   │   │ (身份计算)   │   │ (Toast回调) │
-└─────────────┘   └─────────────┘   └─────────────┘
+┌─────────────────────────────────────────────────────────────────┐
+│                     appRuntime 模块                              │
+│                                                                  │
+│  ┌─────────────────────────────────────────────────────────┐    │
+│  │                   对外 API (index.ts)                    │    │
+│  │  createAppRuntime, useAppRuntime, useAppStorage, ...    │    │
+│  └──────────────────────────┬──────────────────────────────┘    │
+│                             │                                    │
+│            ┌────────────────┼────────────────┐                  │
+│            │                │                │                  │
+│            ▼                ▼                ▼                  │
+│  ┌─────────────┐   ┌─────────────┐   ┌─────────────┐           │
+│  │  factory.ts │   │ context.ts  │   │ systemAPI.ts│           │
+│  │ (创建运行时) │   │(Vue集成)    │   │ (系统功能)  │           │
+│  └──────┬──────┘   └─────────────┘   └─────────────┘           │
+│         │                                                       │
+│         ▼                                                       │
+│  ┌──────────────────────────────────────────────┐              │
+│  │              identityService.ts               │              │
+│  │  • calculateDataNamespace（命名空间计算）      │              │
+│  │  • verifyAndInstall（安装验证）               │              │
+│  │  • trustedRepositoryService（仓库管理）       │              │
+│  └──────────────────────────────────────────────┘              │
+│         │                                                       │
+│         ▼                                                       │
+│  ┌──────────────────────────────────────────────┐              │
+│  │              scopedStorage.ts                 │              │
+│  │  使用 dataService.ts 作为底层存储             │              │
+│  └──────────────────────────────────────────────┘              │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+                             │
+                             ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                      外部依赖                                    │
+│  ┌─────────────┐   ┌─────────────┐   ┌─────────────┐           │
+│  │ WriteQueue  │   │  database   │   │Notification │           │
+│  │  (写入队列)  │   │ (IndexedDB) │   │  (Toast)    │           │
+│  └─────────────┘   └─────────────┘   └─────────────┘           │
+└─────────────────────────────────────────────────────────────────┘
 ```
+
+### 内部服务说明
+
+- **identityService.ts**：提供命名空间计算、安装验证、数据迁移等身份相关功能
+- **dataService.ts**：底层数据存储服务，被 ScopedStorage 和数据迁移使用
+
+### 外部依赖
 
 - **WriteQueue**：所有存储写入操作通过写入队列串行执行，确保数据一致性
-- **AppIdentityService**：计算 App 的数据命名空间
+- **database**：IndexedDB 数据库访问层
 - **NotificationService**：提供 Toast 提示的实际显示能力
 
 ## 实现状态

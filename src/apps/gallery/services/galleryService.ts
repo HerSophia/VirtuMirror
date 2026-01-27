@@ -19,7 +19,7 @@ import type {
   ResourceLoadRequest,
   ResourceLoadResult,
 } from '../types'
-import { createAppDataService, type AppDataService } from '@/services/appDataService'
+import { createAppDataService, type AppDataService } from '@/services/appRuntime'
 
 /**
  * 生成唯一ID

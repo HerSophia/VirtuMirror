@@ -1,7 +1,7 @@
 /**
  * 社交引擎配置 App 注册清单
  */
-import { registerApp } from '@/services/appRegistryService'
+import { registerApp } from '@/services/icon'
 
 /**
  * 注册社交引擎配置 App

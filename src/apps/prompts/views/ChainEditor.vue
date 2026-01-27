@@ -3,108 +3,111 @@
  * 提示词链编辑器
  * 表单模式编辑链配置
  */
-import { ref, computed, onMounted, watch } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
-import { promptChainService } from '@/services/promptChainService';
-import { PromptService } from '@/services/promptService';
-import { useDialogStore } from '@/stores/dialogStore';
-import type { PromptChain, ChainStep, ChainVariableDefinition, LoopConfig } from '@/types/promptChain';
-import type { PromptTemplate } from '@/types/prompts';
+import { promptChainService } from '@/services/prompt/promptChainService'
+import { PromptService } from '@/services/prompt/promptService'
+import { useDialogStore } from '@/stores/dialogStore'
+import type {
+  ChainStep,
+  PromptChain
+} from '@/types/promptChain'
+import type { PromptTemplate } from '@/types/prompts'
+import { computed, onMounted, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 
-const router = useRouter();
-const route = useRoute();
-const dialog = useDialogStore();
+const router = useRouter()
+const route = useRoute()
+const dialog = useDialogStore()
 
 // 状态
-const chain = ref<PromptChain | null>(null);
-const loading = ref(true);
-const saving = ref(false);
-const hasChanges = ref(false);
-const activeTab = ref<'basic' | 'steps' | 'io' | 'visual'>('basic');
-const editingStepIndex = ref<number | null>(null);
+const chain = ref<PromptChain | null>(null)
+const loading = ref(true)
+const saving = ref(false)
+const hasChanges = ref(false)
+const activeTab = ref<'basic' | 'steps' | 'io' | 'visual'>('basic')
+const editingStepIndex = ref<number | null>(null)
 
 // 可用的提示词列表
-const availablePrompts = ref<PromptTemplate[]>([]);
+const availablePrompts = ref<PromptTemplate[]>([])
 
 // 验证结果
 const validationErrors = computed(() => {
-  if (!chain.value) return { valid: true, errors: [] };
-  return promptChainService.validateChain(chain.value);
-});
+  if (!chain.value) return { valid: true, errors: [] }
+  return promptChainService.validateChain(chain.value)
+})
 
 // 是否只读（只有内置链不可编辑，App 链可编辑）
 const isReadonly = computed(() => {
-  if (!chain.value) return true;
-  return chain.value.source === 'builtin';
-});
+  if (!chain.value) return true
+  return chain.value.source === 'builtin'
+})
 
 // 加载链数据
 async function loadChain() {
-  loading.value = true;
+  loading.value = true
   try {
-    const id = route.params.id as string;
-    const isNew = id === 'new';
-    
+    const id = route.params.id as string
+    const isNew = id === 'new'
+
     if (!isNew) {
-      const data = await promptChainService.getChainById(id);
+      const data = await promptChainService.getChainById(id)
       if (data) {
-        chain.value = { ...data };
+        chain.value = { ...data }
       }
     }
-    
+
     // 新建链或未找到
     if (!chain.value) {
-      const empty = promptChainService.createEmptyChain();
+      const empty = promptChainService.createEmptyChain()
       chain.value = {
         ...empty,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
-      } as PromptChain;
-      hasChanges.value = true; // 新建链默认有更改
+      } as PromptChain
+      hasChanges.value = true // 新建链默认有更改
     }
-    
+
     // 加载可用提示词
-    availablePrompts.value = PromptService.getAllPrompts();
+    availablePrompts.value = PromptService.getAllPrompts()
   } catch (error) {
-    console.error('加载链失败:', error);
+    console.error('加载链失败:', error)
   } finally {
-    loading.value = false;
+    loading.value = false
   }
 }
 
 // 保存链
 async function saveChain() {
-  if (!chain.value) return;
-  
+  if (!chain.value) return
+
   // 验证
-  const validation = promptChainService.validateChain(chain.value);
+  const validation = promptChainService.validateChain(chain.value)
   if (!validation.valid) {
     await dialog.alert({
       title: '验证失败',
       message: '请修复以下问题：\n' + validation.errors.join('\n'),
-      icon: 'warning'
-    });
-    return;
+      icon: 'warning',
+    })
+    return
   }
-  
-  saving.value = true;
+
+  saving.value = true
   try {
-    await promptChainService.updateChain(chain.value.id, chain.value);
-    hasChanges.value = false;
+    await promptChainService.updateChain(chain.value.id, chain.value)
+    hasChanges.value = false
     await dialog.alert({
       title: '保存成功',
       message: '链配置已保存',
-      icon: 'success'
-    });
+      icon: 'success',
+    })
   } catch (error) {
-    console.error('保存失败:', error);
+    console.error('保存失败:', error)
     await dialog.alert({
       title: '保存失败',
       message: '保存链配置时出错，请重试',
-      icon: 'danger'
-    });
+      icon: 'danger',
+    })
   } finally {
-    saving.value = false;
+    saving.value = false
   }
 }
 
@@ -118,216 +121,220 @@ async function goBack() {
       confirmText: '离开',
       cancelText: '继续编辑',
       confirmType: 'danger',
-      icon: 'warning'
-    });
-    if (!confirmed) return;
+      icon: 'warning',
+    })
+    if (!confirmed) return
   }
-  router.push('/prompts/chains');
+  router.push('/prompts/chains')
 }
 
 // 运行链
 function runChain() {
-  if (!chain.value) return;
-  router.push(`/prompts/chains/${chain.value.id}/run`);
+  if (!chain.value) return
+  router.push(`/prompts/chains/${chain.value.id}/run`)
 }
 
 // ========== 步骤管理 ==========
 
 function addStep() {
-  if (!chain.value) return;
-  const newStep = promptChainService.createEmptyStep('prompt');
-  chain.value.steps.push(newStep);
-  editingStepIndex.value = chain.value.steps.length - 1;
-  hasChanges.value = true;
+  if (!chain.value) return
+  const newStep = promptChainService.createEmptyStep('prompt')
+  chain.value.steps.push(newStep)
+  editingStepIndex.value = chain.value.steps.length - 1
+  hasChanges.value = true
 }
 
 // ========== 循环配置 ==========
 
 // 获取步骤的循环次数
 function getStepLoopTimes(step: ChainStep): number {
-  if (!step.loop) return 1;
+  if (!step.loop) return 1
   if (step.loop.type === 'times') {
-    return step.loop.times || 1;
+    return step.loop.times || 1
   }
-  return 1; // 'over' 类型返回 1（表示不是固定次数循环）
+  return 1 // 'over' 类型返回 1（表示不是固定次数循环）
 }
 
 // 设置步骤的循环次数
 function setStepLoopTimes(stepIndex: number, times: number) {
-  if (!chain.value) return;
-  const step = chain.value.steps[stepIndex];
-  if (!step) return;
-  
+  if (!chain.value) return
+  const step = chain.value.steps[stepIndex]
+  if (!step) return
+
   if (times <= 1) {
     // 如果设置为 1 次，移除循环配置
-    step.loop = undefined;
+    step.loop = undefined
   } else {
     step.loop = {
       type: 'times',
       times: times,
-      maxIterations: Math.min(times, 100) // 防止无限循环
-    };
+      maxIterations: Math.min(times, 100), // 防止无限循环
+    }
   }
   // 强制触发响应式更新
-  chain.value.steps = [...chain.value.steps];
-  hasChanges.value = true;
+  chain.value.steps = [...chain.value.steps]
+  hasChanges.value = true
 }
 
 // 判断步骤是否有循环
 function hasLoop(step: ChainStep): boolean {
-  return !!step.loop && step.loop.type === 'times' && (step.loop.times || 1) > 1;
+  return !!step.loop && step.loop.type === 'times' && (step.loop.times || 1) > 1
 }
 
 async function removeStep(index: number) {
-  if (!chain.value) return;
+  if (!chain.value) return
   const confirmed = await dialog.confirm({
     title: '删除步骤',
     message: '确定要删除这个步骤吗？',
     confirmText: '删除',
     confirmType: 'danger',
-    icon: 'warning'
-  });
-  if (!confirmed) return;
-  chain.value.steps.splice(index, 1);
+    icon: 'warning',
+  })
+  if (!confirmed) return
+  chain.value.steps.splice(index, 1)
   if (editingStepIndex.value === index) {
-    editingStepIndex.value = null;
+    editingStepIndex.value = null
   }
-  hasChanges.value = true;
+  hasChanges.value = true
 }
 
 function moveStep(index: number, direction: 'up' | 'down') {
-  if (!chain.value) return;
-  const newIndex = direction === 'up' ? index - 1 : index + 1;
-  if (newIndex < 0 || newIndex >= chain.value.steps.length) return;
-  
-  const steps = [...chain.value.steps];
-  [steps[index], steps[newIndex]] = [steps[newIndex], steps[index]];
-  chain.value.steps = steps;
-  
+  if (!chain.value) return
+  const newIndex = direction === 'up' ? index - 1 : index + 1
+  if (newIndex < 0 || newIndex >= chain.value.steps.length) return
+
+  const steps = [...chain.value.steps]
+  ;[steps[index], steps[newIndex]] = [steps[newIndex], steps[index]]
+  chain.value.steps = steps
+
   if (editingStepIndex.value === index) {
-    editingStepIndex.value = newIndex;
+    editingStepIndex.value = newIndex
   }
-  hasChanges.value = true;
+  hasChanges.value = true
 }
 
 // 复制步骤
 function duplicateStep(index: number) {
-  if (!chain.value) return;
-  const step = chain.value.steps[index];
+  if (!chain.value) return
+  const step = chain.value.steps[index]
   const newStep = {
     ...JSON.parse(JSON.stringify(step)),
     id: `step_${Date.now()}`,
     name: `${step.name} (副本)`,
-  };
-  chain.value.steps.splice(index + 1, 0, newStep);
-  editingStepIndex.value = index + 1;
-  hasChanges.value = true;
+  }
+  chain.value.steps.splice(index + 1, 0, newStep)
+  editingStepIndex.value = index + 1
+  hasChanges.value = true
 }
 
 // 跳转到提示词编辑页面
 function goToPromptEditor(promptId: string) {
   // 根据 promptId 查找对应的提示词
-  const prompt = availablePrompts.value.find(p => p.scene === promptId);
+  const prompt = availablePrompts.value.find((p) => p.scene === promptId)
   if (prompt) {
-    router.push(`/prompts/detail/${prompt.id}`);
+    router.push(`/prompts/detail/${prompt.id}`)
   }
 }
 
 // 获取步骤的提示词内容（用于可视化展示）
 function getStepPromptContent(step: ChainStep): string {
   if (step.inlineTemplate) {
-    return step.inlineTemplate;
+    return step.inlineTemplate
   }
   if (step.promptId) {
-    const prompt = availablePrompts.value.find(p => p.scene === step.promptId);
+    const prompt = availablePrompts.value.find((p) => p.scene === step.promptId)
     if (prompt) {
-      return prompt.template.substring(0, 200) + (prompt.template.length > 200 ? '...' : '');
+      return prompt.template.substring(0, 200) + (prompt.template.length > 200 ? '...' : '')
     }
-    return `引用提示词: ${step.promptId}`;
+    return `引用提示词: ${step.promptId}`
   }
-  return '无提示词内容';
+  return '无提示词内容'
 }
 
 // 获取步骤的提示词名称
 function getStepPromptName(step: ChainStep): string {
   if (step.promptId) {
-    const prompt = availablePrompts.value.find(p => p.scene === step.promptId);
-    return prompt?.name || step.promptId;
+    const prompt = availablePrompts.value.find((p) => p.scene === step.promptId)
+    return prompt?.name || step.promptId
   }
-  return '内联模板';
+  return '内联模板'
 }
 
 function editStep(index: number) {
-  editingStepIndex.value = editingStepIndex.value === index ? null : index;
+  editingStepIndex.value = editingStepIndex.value === index ? null : index
 }
 
 function updateStep(index: number, updates: Partial<ChainStep>) {
-  if (!chain.value) return;
-  chain.value.steps[index] = { ...chain.value.steps[index], ...updates };
-  hasChanges.value = true;
+  if (!chain.value) return
+  chain.value.steps[index] = { ...chain.value.steps[index], ...updates }
+  hasChanges.value = true
 }
 
 // ========== 输入变量管理 ==========
 
 function addInput() {
-  if (!chain.value) return;
+  if (!chain.value) return
   chain.value.inputs.push({
     name: '',
     description: '',
     type: 'string',
     required: true,
-  });
-  hasChanges.value = true;
+  })
+  hasChanges.value = true
 }
 
 function removeInput(index: number) {
-  if (!chain.value) return;
-  chain.value.inputs.splice(index, 1);
-  hasChanges.value = true;
+  if (!chain.value) return
+  chain.value.inputs.splice(index, 1)
+  hasChanges.value = true
 }
 
 // ========== 输出映射管理 ==========
 
 const outputEntries = computed({
   get() {
-    if (!chain.value) return [];
-    return Object.entries(chain.value.outputs).map(([key, value]) => ({ key, value }));
+    if (!chain.value) return []
+    return Object.entries(chain.value.outputs).map(([key, value]) => ({ key, value }))
   },
   set(entries) {
-    if (!chain.value) return;
-    chain.value.outputs = Object.fromEntries(entries.map(e => [e.key, e.value]));
-  }
-});
+    if (!chain.value) return
+    chain.value.outputs = Object.fromEntries(entries.map((e) => [e.key, e.value]))
+  },
+})
 
 function addOutput() {
-  if (!chain.value) return;
-  chain.value.outputs[`output${Object.keys(chain.value.outputs).length + 1}`] = '';
-  hasChanges.value = true;
+  if (!chain.value) return
+  chain.value.outputs[`output${Object.keys(chain.value.outputs).length + 1}`] = ''
+  hasChanges.value = true
 }
 
 function removeOutput(key: string) {
-  if (!chain.value) return;
-  delete chain.value.outputs[key];
-  hasChanges.value = true;
+  if (!chain.value) return
+  delete chain.value.outputs[key]
+  hasChanges.value = true
 }
 
 function updateOutput(oldKey: string, newKey: string, value: string) {
-  if (!chain.value) return;
+  if (!chain.value) return
   if (oldKey !== newKey) {
-    delete chain.value.outputs[oldKey];
+    delete chain.value.outputs[oldKey]
   }
-  chain.value.outputs[newKey] = value;
-  hasChanges.value = true;
+  chain.value.outputs[newKey] = value
+  hasChanges.value = true
 }
 
 // 监听变化
-watch(chain, () => {
-  hasChanges.value = true;
-}, { deep: true });
+watch(
+  chain,
+  () => {
+    hasChanges.value = true
+  },
+  { deep: true }
+)
 
 onMounted(() => {
-  loadChain();
-});
+  loadChain()
+})
 </script>
 
 <template>
@@ -345,17 +352,22 @@ onMounted(() => {
         <button class="run-btn" @click="runChain" :disabled="!validationErrors.valid">
           <i class="fas fa-play"></i>
         </button>
-        <button v-if="!isReadonly" class="save-btn" @click="saveChain" :disabled="saving || !hasChanges">
+        <button
+          v-if="!isReadonly"
+          class="save-btn"
+          @click="saveChain"
+          :disabled="saving || !hasChanges"
+        >
           <i :class="saving ? 'fas fa-spinner fa-spin' : 'fas fa-save'"></i>
         </button>
       </div>
     </header>
-    
+
     <div v-if="loading" class="loading">
       <i class="fas fa-spinner fa-spin"></i>
       <span>加载中...</span>
     </div>
-    
+
     <template v-else-if="chain">
       <!-- 标签页 -->
       <div class="tabs">
@@ -372,7 +384,7 @@ onMounted(() => {
           <i class="fas fa-project-diagram"></i> 可视化
         </button>
       </div>
-      
+
       <!-- 验证错误 -->
       <div v-if="!validationErrors.valid" class="validation-errors">
         <i class="fas fa-exclamation-triangle"></i>
@@ -381,19 +393,19 @@ onMounted(() => {
           +{{ validationErrors.errors.length - 1 }} 个问题
         </span>
       </div>
-      
+
       <!-- 基本信息 -->
       <div v-show="activeTab === 'basic'" class="tab-content">
         <div class="form-group">
           <label>链名称 *</label>
           <input v-model="chain.name" type="text" placeholder="输入链名称" />
         </div>
-        
+
         <div class="form-group">
           <label>描述</label>
           <textarea v-model="chain.description" placeholder="描述这个链的用途" rows="3"></textarea>
         </div>
-        
+
         <div class="form-group">
           <label>执行模式</label>
           <div class="radio-group">
@@ -413,17 +425,22 @@ onMounted(() => {
             </label>
           </div>
         </div>
-        
+
         <div class="form-group">
           <label>标签</label>
           <input
             :value="chain.tags?.join(', ') || ''"
-            @input="chain.tags = ($event.target as HTMLInputElement).value.split(',').map(s => s.trim()).filter(Boolean)"
+            @input="
+              chain.tags = ($event.target as HTMLInputElement).value
+                .split(',')
+                .map((s) => s.trim())
+                .filter(Boolean)
+            "
             type="text"
             placeholder="用逗号分隔，如: 微博, 社交, 热点"
           />
         </div>
-        
+
         <div class="form-group">
           <label class="checkbox-label">
             <input type="checkbox" v-model="chain.enabled" />
@@ -431,7 +448,7 @@ onMounted(() => {
           </label>
         </div>
       </div>
-      
+
       <!-- 步骤管理 -->
       <div v-show="activeTab === 'steps'" class="tab-content steps-tab">
         <div class="steps-list">
@@ -446,12 +463,14 @@ onMounted(() => {
               <div class="step-info">
                 <span class="step-name">{{ step.name || '未命名步骤' }}</span>
                 <span class="step-type">
-                  <i :class="{
-                    'fas fa-comment': step.type === 'prompt',
-                    'fas fa-exchange-alt': step.type === 'transform',
-                    'fas fa-code-branch': step.type === 'condition',
-                    'fas fa-redo': step.type === 'loop'
-                  }"></i>
+                  <i
+                    :class="{
+                      'fas fa-comment': step.type === 'prompt',
+                      'fas fa-exchange-alt': step.type === 'transform',
+                      'fas fa-code-branch': step.type === 'condition',
+                      'fas fa-redo': step.type === 'loop',
+                    }"
+                  ></i>
                   {{ step.type }}
                 </span>
               </div>
@@ -459,7 +478,11 @@ onMounted(() => {
                 <button @click.stop="moveStep(index, 'up')" :disabled="index === 0" title="上移">
                   <i class="fas fa-chevron-up"></i>
                 </button>
-                <button @click.stop="moveStep(index, 'down')" :disabled="index === chain.steps.length - 1" title="下移">
+                <button
+                  @click.stop="moveStep(index, 'down')"
+                  :disabled="index === chain.steps.length - 1"
+                  title="下移"
+                >
                   <i class="fas fa-chevron-down"></i>
                 </button>
                 <button @click.stop="duplicateStep(index)" title="复制步骤">
@@ -470,14 +493,14 @@ onMounted(() => {
                 </button>
               </div>
             </div>
-            
+
             <!-- 步骤编辑表单 -->
             <div v-if="editingStepIndex === index" class="step-editor">
               <div class="form-group">
                 <label>步骤名称 *</label>
                 <input v-model="step.name" type="text" placeholder="步骤名称" />
               </div>
-              
+
               <div class="form-group">
                 <label>步骤类型</label>
                 <select v-model="step.type">
@@ -485,7 +508,7 @@ onMounted(() => {
                   <option value="transform">Transform (数据转换)</option>
                 </select>
               </div>
-              
+
               <template v-if="step.type === 'prompt'">
                 <div class="form-group">
                   <label>提示词来源</label>
@@ -506,7 +529,7 @@ onMounted(() => {
                     </button>
                   </div>
                 </div>
-                
+
                 <div v-if="!step.promptId" class="form-group">
                   <label>内联模板</label>
                   <textarea
@@ -516,22 +539,28 @@ onMounted(() => {
                   ></textarea>
                 </div>
               </template>
-              
+
               <div class="form-group">
                 <label>输出键名 *</label>
                 <input v-model="step.outputKey" type="text" placeholder="如: eventResult" />
                 <small>此步骤的结果将存储到这个变量中</small>
               </div>
-              
+
               <div class="form-group">
                 <label>输入映射</label>
                 <div class="mapping-list">
                   <div v-for="(value, key) in step.inputMapping" :key="key" class="mapping-item">
-                    <input :value="key" @change="(e) => {
-                      const newKey = (e.target as HTMLInputElement).value;
-                      delete step.inputMapping[key];
-                      step.inputMapping[newKey] = value;
-                    }" placeholder="变量名" />
+                    <input
+                      :value="key"
+                      @change="
+                        (e) => {
+                          const newKey = (e.target as HTMLInputElement).value
+                          delete step.inputMapping[key]
+                          step.inputMapping[newKey] = value
+                        }
+                      "
+                      placeholder="变量名"
+                    />
                     <span class="arrow">←</span>
                     <input v-model="step.inputMapping[key]" placeholder="表达式" />
                     <button @click="delete step.inputMapping[key]">
@@ -543,11 +572,11 @@ onMounted(() => {
                   </button>
                 </div>
               </div>
-              
+
               <div class="form-group">
                 <label>循环次数</label>
                 <div class="loop-config">
-                  <button 
+                  <button
                     class="loop-btn"
                     @click="setStepLoopTimes(index, Math.max(1, getStepLoopTimes(step) - 1))"
                     :disabled="getStepLoopTimes(step) <= 1"
@@ -559,10 +588,19 @@ onMounted(() => {
                     min="1"
                     max="100"
                     :value="getStepLoopTimes(step)"
-                    @change="(e) => setStepLoopTimes(index, Math.max(1, Math.min(100, parseInt((e.target as HTMLInputElement).value) || 1)))"
+                    @change="
+                      (e) =>
+                        setStepLoopTimes(
+                          index,
+                          Math.max(
+                            1,
+                            Math.min(100, parseInt((e.target as HTMLInputElement).value) || 1)
+                          )
+                        )
+                    "
                     class="loop-times-input"
                   />
-                  <button 
+                  <button
                     class="loop-btn"
                     @click="setStepLoopTimes(index, Math.min(100, getStepLoopTimes(step) + 1))"
                     :disabled="getStepLoopTimes(step) >= 100"
@@ -577,7 +615,7 @@ onMounted(() => {
                 </div>
                 <small>设置此步骤执行的次数，默认 1 次</small>
               </div>
-              
+
               <div class="form-group">
                 <label>条件表达式（可选）</label>
                 <input v-model="step.condition" type="text" placeholder="如: step1.success" />
@@ -585,13 +623,13 @@ onMounted(() => {
               </div>
             </div>
           </div>
-          
+
           <button class="add-step-btn" @click="addStep">
             <i class="fas fa-plus"></i> 添加步骤
           </button>
         </div>
       </div>
-      
+
       <!-- 可视化 -->
       <div v-show="activeTab === 'visual'" class="tab-content visual-tab">
         <div class="visual-chain">
@@ -609,20 +647,27 @@ onMounted(() => {
               </div>
             </div>
           </div>
-          
+
           <!-- 连接线 -->
           <div class="connector">
             <i class="fas fa-arrow-down"></i>
           </div>
-          
+
           <!-- 步骤节点 -->
           <template v-for="(step, index) in chain.steps" :key="step.id">
-            <div class="visual-node step-node" :class="{ 'prompt-node': step.type === 'prompt', 'has-loop': hasLoop(step) }">
+            <div
+              class="visual-node step-node"
+              :class="{ 'prompt-node': step.type === 'prompt', 'has-loop': hasLoop(step) }"
+            >
               <div class="node-header">
                 <span class="step-badge">{{ index + 1 }}</span>
                 <span class="node-title">{{ step.name || '未命名步骤' }}</span>
                 <!-- 循环次数标记 -->
-                <span v-if="hasLoop(step)" class="loop-badge" :title="`循环 ${getStepLoopTimes(step)} 次`">
+                <span
+                  v-if="hasLoop(step)"
+                  class="loop-badge"
+                  :title="`循环 ${getStepLoopTimes(step)} 次`"
+                >
                   <i class="fas fa-redo"></i>
                   ×{{ getStepLoopTimes(step) }}
                 </span>
@@ -630,12 +675,16 @@ onMounted(() => {
                   <button @click="duplicateStep(index)" title="复制步骤">
                     <i class="fas fa-copy"></i>
                   </button>
-                  <button v-if="step.promptId" @click="goToPromptEditor(step.promptId)" title="编辑提示词">
+                  <button
+                    v-if="step.promptId"
+                    @click="goToPromptEditor(step.promptId)"
+                    title="编辑提示词"
+                  >
                     <i class="fas fa-external-link-alt"></i>
                   </button>
                 </div>
               </div>
-              
+
               <div class="node-content">
                 <div class="prompt-source">
                   <i class="fas fa-file-alt"></i>
@@ -645,7 +694,7 @@ onMounted(() => {
                   {{ getStepPromptContent(step) }}
                 </div>
               </div>
-              
+
               <div class="node-footer">
                 <div class="output-key">
                   <i class="fas fa-arrow-right"></i>
@@ -654,18 +703,18 @@ onMounted(() => {
                 </div>
               </div>
             </div>
-            
+
             <!-- 连接线 -->
             <div v-if="index < chain.steps.length - 1" class="connector">
               <i class="fas fa-arrow-down"></i>
             </div>
           </template>
-          
+
           <!-- 连接线 -->
           <div v-if="chain.steps.length > 0" class="connector">
             <i class="fas fa-arrow-down"></i>
           </div>
-          
+
           <!-- 输出节点 -->
           <div class="visual-node output-node">
             <div class="node-header">
@@ -673,7 +722,9 @@ onMounted(() => {
               <span>输出</span>
             </div>
             <div class="node-content">
-              <div v-if="Object.keys(chain.outputs).length === 0" class="empty-hint">无输出映射</div>
+              <div v-if="Object.keys(chain.outputs).length === 0" class="empty-hint">
+                无输出映射
+              </div>
               <div v-for="(value, key) in chain.outputs" :key="key" class="output-mapping">
                 <code class="output-key-name">{{ key }}</code>
                 <span class="mapping-arrow">←</span>
@@ -683,13 +734,13 @@ onMounted(() => {
           </div>
         </div>
       </div>
-      
+
       <!-- 输入/输出 -->
       <div v-show="activeTab === 'io'" class="tab-content">
         <section class="io-section">
           <h3>输入变量</h3>
           <p class="section-desc">定义执行链时需要提供的输入参数</p>
-          
+
           <div class="inputs-list">
             <div v-for="(input, index) in chain.inputs" :key="index" class="input-item">
               <input v-model="input.name" placeholder="变量名" />
@@ -708,36 +759,36 @@ onMounted(() => {
                 <i class="fas fa-times"></i>
               </button>
             </div>
-            <button class="add-btn" @click="addInput">
-              <i class="fas fa-plus"></i> 添加输入
-            </button>
+            <button class="add-btn" @click="addInput"><i class="fas fa-plus"></i> 添加输入</button>
           </div>
         </section>
-        
+
         <section class="io-section">
           <h3>输出映射</h3>
           <p class="section-desc">定义链执行完成后返回的结果</p>
-          
+
           <div class="outputs-list">
             <div v-for="entry in outputEntries" :key="entry.key" class="output-item">
               <input
                 :value="entry.key"
-                @change="(e) => updateOutput(entry.key, (e.target as HTMLInputElement).value, entry.value)"
+                @change="
+                  (e) => updateOutput(entry.key, (e.target as HTMLInputElement).value, entry.value)
+                "
                 placeholder="输出名"
               />
               <span class="arrow">←</span>
               <input
                 :value="entry.value"
-                @change="(e) => updateOutput(entry.key, entry.key, (e.target as HTMLInputElement).value)"
+                @change="
+                  (e) => updateOutput(entry.key, entry.key, (e.target as HTMLInputElement).value)
+                "
                 placeholder="表达式，如: step1.result"
               />
               <button @click="removeOutput(entry.key)">
                 <i class="fas fa-times"></i>
               </button>
             </div>
-            <button class="add-btn" @click="addOutput">
-              <i class="fas fa-plus"></i> 添加输出
-            </button>
+            <button class="add-btn" @click="addOutput"><i class="fas fa-plus"></i> 添加输出</button>
           </div>
         </section>
       </div>
@@ -887,7 +938,7 @@ onMounted(() => {
   color: var(--text-secondary, #666);
 }
 
-.form-group input[type="text"],
+.form-group input[type='text'],
 .form-group textarea,
 .form-group select {
   width: 100%;

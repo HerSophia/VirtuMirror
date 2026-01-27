@@ -3,7 +3,7 @@
  * 提供自动整理和分类摆放能力
  */
 import type { DesktopItem, AppItem, DesktopPage } from '../types'
-import { getIconRegistryService, type AppCategory } from '@/services/iconRegistryService'
+import { getIconRegistryService, type AppCategory } from '@/services/icon'
 
 /**
  * App 分类配置（静态配置，作为后备）

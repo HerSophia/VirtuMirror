@@ -4,7 +4,7 @@
 
 import { ref, computed, reactive } from 'vue'
 import { getGlobalConfigService } from '@/services/globalConfigService'
-import { getModelListService, type ModelInfo } from '@/services/modelListService'
+import { getModelListService, type ModelInfo } from '@/services/ai'
 import type { ApiPreset, CustomApiConfig } from '@/types/globalConfig'
 import type {
   ApiConfigFormData,
