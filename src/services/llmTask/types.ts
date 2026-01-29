@@ -6,6 +6,7 @@
  */
 
 import type { RequestPriority, TokenUsage } from '@/services/ai/types';
+import type { ContextType } from '@/services/contextSharing';
 import type { ChainExecutionResult } from '@/types/promptChain';
 
 // ==================== 基础枚举 ====================
@@ -36,6 +37,49 @@ export type TaskExecutionMode =
   | 'once'       // 一次性执行
   | 'repeatable' // 可重复执行
   | 'auto';      // 自动循环执行
+
+// ==================== 共享上下文配置 ====================
+
+/**
+ * 共享上下文配置
+ * 用于声明任务需要从 Context Sharing Service 获取的上下文
+ */
+export interface SharedContextConfig {
+  /**
+   * 需要聚合的上下文类型
+   * 例如：['narrative:content', 'social:trending']
+   */
+  types?: ContextType[];
+
+  /**
+   * 需要聚合的上下文 ID
+   * 例如：['weibo:trending', 'narrative:current']
+   */
+  ids?: string[];
+
+  /**
+   * 输出格式
+   * @default 'xml'
+   */
+  format?: 'xml' | 'text' | 'markdown' | 'raw';
+
+  /**
+   * 最大 token 数限制
+   * @default 2000
+   */
+  maxTokens?: number;
+
+  /**
+   * 优先级排序（优先保留的类型）
+   */
+  priority?: ContextType[];
+
+  /**
+   * 注入的变量名
+   * @default 'sharedContext'
+   */
+  variableName?: string;
+}
 
 // ==================== 配置类型 ====================
 
@@ -253,6 +297,12 @@ export interface LLMTaskDefinition {
    * 格式：appId:providerId，如 ["weibo:narrative", "weibo:existing-content"]
    */
   contextProviders?: string[];
+
+  /**
+   * 共享上下文配置
+   * 如果配置了此字段，任务执行时会自动从 Context Sharing Service 聚合上下文
+   */
+  sharedContextConfig?: SharedContextConfig;
 
   // === 元数据 ===
 

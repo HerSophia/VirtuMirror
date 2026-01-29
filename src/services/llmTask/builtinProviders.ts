@@ -3,7 +3,8 @@
  * 提供系统级的上下文变量
  */
 
-import type { ContextProvider } from './types';
+import { contextSharingService } from '@/services/contextSharing';
+import type { ContextProvider, SharedContextConfig } from './types';
 import { getContextProviderRegistry } from './ContextProviderRegistry';
 
 // ==================== 时间上下文提供器 ====================
@@ -133,6 +134,61 @@ export const environmentContextProvider: ContextProvider = {
       type: 'builtin',
       category: 'environment',
     };
+  },
+};
+
+// ==================== 共享上下文提供器 ====================
+
+/**
+ * 共享上下文提供器选项
+ */
+export interface SharedContextProviderOptions {
+  config: SharedContextConfig;
+  appId?: string;
+  taskId?: string;
+}
+
+/**
+ * 共享上下文提供器
+ * 从 Context Sharing Service 获取聚合上下文
+ */
+export const sharedContextProvider = {
+  id: 'system:shared-context',
+  appId: 'system',
+  name: '共享上下文',
+  description: '从 Context Sharing Service 聚合跨应用上下文',
+  priority: 50, // 较高优先级，确保在其他提供器之前执行
+
+  async getContext(options?: SharedContextProviderOptions): Promise<Record<string, string>> {
+    // 如果没有配置，返回空对象
+    if (!options?.config) {
+      return {};
+    }
+
+    const { config, appId } = options;
+
+    try {
+      const aggregated = await contextSharingService.aggregate({
+        requesterId: appId || 'llm-task',
+        types: config.types,
+        ids: config.ids,
+        format: config.format || 'xml',
+        maxTokens: config.maxTokens || 2000,
+        priority: config.priority,
+      });
+
+      const variableName = config.variableName || 'sharedContext';
+
+      return {
+        [variableName]: aggregated.formatted || '',
+        [`${variableName}Meta`]: JSON.stringify(aggregated.meta),
+      };
+    } catch (error) {
+      console.error('[SharedContextProvider] 获取共享上下文失败:', error);
+      return {
+        [config.variableName || 'sharedContext']: '',
+      };
+    }
   },
 };
 

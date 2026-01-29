@@ -58,33 +58,40 @@
 
 | 服务 | 文档位置 | 状态 | 说明 |
 |------|----------|------|------|
-| **Social Media Engine** | `social-media-engine.md` | ✅ Phase 1-3 | TrendService、ContentFactory、TrafficEngine |
-| **Account Service** | `account-service.md` | ✅ Phase 1-4 | 双层作用域、玩家多重身份 |
+| **Social Media Engine** | `social-media-engine/` | ✅ Phase 1-3 | TrendService、ContentFactory、TrafficEngine |
+| **Account Service** | `account-service/` | ✅ Phase 1-4 | 双层作用域、玩家多重身份 |
 | **LLM Task Service** | `llm-task-service/` | ✅ v1.0 | 任务定义、执行、扩展点 |
-| **Notification System** | `notification-system.md` | ✅ 已实现 | 通知推送、勿扰模式 |
-| **Time Service** | `time-service.md` | ✅ 已实现 | 多时间源、模拟时间 |
-| **Narrative Service** | `narrative-service.md` | ✅ 已实现 | 酒馆叙事分发 |
+| **Notification System** | `notification-service/` | ✅ 已实现 | 通知推送、勿扰模式 |
+| **Time Service** | `time-service/` | ✅ 已实现 | 多时间源、模拟时间 |
+| **Narrative Service** | `narrative-service/` | ✅ 已实现 | 酒馆叙事分发 |
 | **统一内容模型** | `已完成的/social-content-types.md` | ✅ Phase 1-5 | UniversalPost、MediaAsset、解析器架构 |
+| **Session Context Service** | `session-context/` | ✅ v1.0 | 会话隔离、来源追踪、Bridge 集成 |
+| **Event Bus Service** | `eventBus-service/` | ✅ v1.0 | 发布/订阅、通道隔离、类型安全 |
+| **Interaction Service** | `interaction-service/` | ✅ v1.0 | 点赞/收藏/评论、事件广播、平台扩展 |
+| **Logger Service** | `logger-service/` | ✅ v1.0 | 命名空间、多 Transport、性能计时 |
+| **Context Sharing Service** | `context-sharing-service/` | ✅ v1.0 | 发布/订阅、聚合、LLM 集成 |
 
 ### 3.2 已设计未实现服务
 
 | 服务 | 文档位置 | 状态 | 说明 |
 |------|----------|------|------|
-| **Session Context Service** | `session-context-service.md` | 📋 设计完成 | 会话隔离、来源追踪 |
-| **Media Service** | `media-service.md` | 📋 设计完成 | 统一媒体库、跨应用共享 |
-| **Fans Service** | `fans-service/README.md` | 📋 设计完成 | 粉丝管理、增长算法、画像生成 |
+| **Media Service** | `media-service/` | 📋 设计完成，部分实现 | 统一媒体库、跨应用共享 |
+| **Fans Service** | `fans-service/` | 📋 设计完成 | 粉丝管理、增长算法、画像生成 |
+| **Archive Service** | `archive-service/` | 📋 设计完成 | 知识库、注入系统、账号绑定 |
+| **Search Service** | `search-service/` | 📋 设计完成 | 全文搜索、模糊匹配、语义搜索 |
+| **Scheduler Service** | `scheduler-service/` | 📋 设计完成 | 定时任务、Cron、事件触发 |
 | **IM Service** | `im-service.md` | 📋 设计完成 | 私信引擎、Private Director |
-| **User Profile Extension** | `user-profile-extension.md` | 📋 设计完成 | 详细画像、平台差异化 |
 
-### 3.3 需要新增的服务
+### 3.3 建议开发的服务
 
 | 服务 | 优先级 | 说明 |
 |------|--------|------|
-| **Interaction Service** | 🔴 高 | 统一互动行为（点赞、收藏、评论） |
 | **Social Graph Service** | 🟡 中 | 社交图谱管理（关注、粉丝） |
 | **Feed Algorithm Service** | 🟡 中 | 信息流推荐算法 |
+| **Rate Limiter Service** | 🟡 中 | 频率控制与限流 |
+| **Vector Store** | 🟡 中 | 向量存储与相似度查询 |
+| **Deep Link Service** | 🟢 低 | 跨应用深度链接导航 |
 | **Image Generation Service** | 🟢 低 | AI 配图生成 |
-| **Context Sharing Service** | 🟢 低 | 跨 App 上下文共享 |
 
 ---
 
@@ -532,7 +539,7 @@ graph TD
     
     subgraph "内容服务"
         ContentModel[统一内容模型 ✅]
-        Interaction[互动系统 🆕]
+        Interaction[互动系统 ✅]
         FeedAlgo[信息流算法 🆕]
     end
     
@@ -555,10 +562,13 @@ graph TD
     
     subgraph "基础服务"
         Time[时间服务 ✅]
-        Session[会话上下文 📋]
+        Session[会话上下文 ✅]
         Narrative[叙事服务 ✅]
         LLMTask[LLM任务 ✅]
         AI[AI服务 ✅]
+        EventBus[事件总线 ✅]
+        Logger[日志服务 ✅]
+        ContextSharing[上下文共享 ✅]
     end
     
     %% 应用层依赖
@@ -596,14 +606,19 @@ graph TD
 
 ## 6. 实施优先级
 
-### 6.1 高优先级（平台化基础）
+### 6.1 已完成的高优先级服务 ✅
 
-| 服务 | 原因 | 预估工作量 |
-|------|------|------------|
-| **Session Context Service** | 数据隔离基础，多 App 必需 | 4-5h |
-| **Interaction Service** | 点赞/收藏/评论的通用化 | 3-4h |
+以下服务已经实现，是平台化架构的基础：
 
-### 6.2 中优先级（体验增强）
+| 服务 | 状态 | 说明 |
+|------|------|------|
+| **Session Context Service** | ✅ 已完成 | 会话隔离、来源追踪、Bridge 集成 |
+| **Interaction Service** | ✅ 已完成 | 点赞/收藏/评论、事件广播、平台扩展 |
+| **Event Bus Service** | ✅ 已完成 | 发布/订阅、通道隔离、类型安全 |
+| **Context Sharing Service** | ✅ 已完成 | 跨 App 上下文共享、LLM 集成 |
+| **Logger Service** | ✅ 已完成 | 命名空间、多 Transport、性能计时 |
+
+### 6.2 待实现的中优先级服务
 
 | 服务 | 原因 | 预估工作量 |
 |------|------|------------|
@@ -611,6 +626,9 @@ graph TD
 | **Media Service** | 图片/视频管理 | 4-6h |
 | **Social Graph Service** | 关系管理优化 | 4-5h |
 | **Feed Algorithm Service** | 高级推荐 | 6-8h |
+| **Search Service** | 全文/语义搜索 | 6-8h |
+| **Scheduler Service** | 定时任务调度 | 4-6h |
+| **Archive Service** | 知识库、注入系统 | 8-12h |
 
 ### 6.3 低优先级（锦上添花）
 
@@ -618,7 +636,9 @@ graph TD
 |------|------|------------|
 | **IM Service** | 私信功能完善 | 10-15h |
 | **Image Generation Service** | AI 配图 | 4-6h |
-| **Context Sharing Service** | 跨 App 上下文 | 3-4h |
+| **Deep Link Service** | 跨应用导航 | 3-4h |
+| **Vector Store** | 语义搜索支撑 | 4-6h |
+| **Rate Limiter Service** | 频率控制 | 2-3h |
 
 ---
 
@@ -626,25 +646,31 @@ graph TD
 
 ### 7.1 短期（1-2 周）
 
-1. **实现 Session Context Service**
-   - 参考微博现有实现
-   - 提供统一的会话上下文管理
-   - 为新 App 开发奠定基础
+基础服务已经完成，可以开始以下工作：
 
-2. **抽取 Interaction Service**
-   - 从微博 `userActionStore` 抽取通用逻辑
-   - 定义统一的互动事件类型
-   - 支持事件订阅
+1. **验证已实现服务的稳定性**
+   - Session Context Service 与更多 App 集成
+   - Interaction Service 从微博 userActionStore 迁移
+   - 确保 Event Bus 事件类型覆盖所有场景
+
+2. **开始 Fans Service 实现**
+   - 参考 fans-service/ 设计文档
+   - 先实现核心的粉丝管理模块
+   - 与 Interaction Service 联动
 
 ### 7.2 中期（1 个月）
 
-3. **实现 Fans Service（粉丝服务）**
-   - 参考 fans-service/ 设计文档逐步实现
-   - 与 Interaction Service、Account Service 联动
+3. **实现 Archive Service**
+   - 知识库与注入系统
+   - 与 LLM Task Service 集成
 
 4. **实现 Media Service**
    - 统一媒体管理
    - 迁移 Gallery 数据
+
+5. **实现 Search Service**
+   - 全文搜索能力
+   - 与社交引擎集成
 
 ### 7.3 长期
 
@@ -1718,25 +1744,25 @@ interface LogViewer {
 | **用户域** | Account Service | - | ✅ | 账号管理 |
 | | Profile Service | 🟢 | 📋 | 用户画像 |
 | **社交域** | **Social Graph** | 🟡 | 🆕 | 关系图谱 |
-| | **Interaction** | 🔴 | 🆕 | 互动行为（高优先级）|
+| | **Interaction** | 🔴 | ✅ | 互动行为（高优先级）|
 | | IM Service | 🟢 | 📋 | 即时通讯 |
 | **传播域** | Feed Service | 🟡 | 🆕 | 信息流 |
-| | **Trending Service** | 🟡 | 🆕 | 热搜服务（从微博抽取）|
+| | **Trending Service** | 🟡 | ✅ | 热搜服务（从微博抽取）|
 | | Traffic Engine | - | ✅ | 流量引擎 |
 | | Fans Service | 🟡 | 📋 | 粉丝管理、增长算法 |
-| **能力层** | **Session Context** | 🔴 | 📋 | 会话上下文（高优先级）|
-| | **Context Sharing** | 🟡 | 📋 | 上下文共享（优先级提升）|
-| | **Search Service** | 🟡 | 🆕 | 全文/语义搜索 |
-| | **Scheduler Service** | 🟡 | 🆕 | 定时任务调度 |
+| **能力层** | **Session Context** | 🔴 | ✅ | 会话上下文（高优先级）|
+| | **Context Sharing** | 🟡 | ✅ | 上下文共享（优先级提升）|
+| | **Search Service** | 🟡 | 📋 | 全文/语义搜索 |
+| | **Scheduler Service** | 🟡 | 📋 | 定时任务调度 |
 | | **Rate Limiter** | 🟡 | 🆕 | 频率控制限流 |
 | | Media Service | 🟡 | 📋 | 媒体管理 |
 | | Notification | - | ✅ | 通知系统 |
 | | Time Service | - | ✅ | 时间服务 |
 | | LLM Task | - | ✅ | LLM 任务 |
 | | Narrative | - | ✅ | 叙事服务 |
-| **基础设施** | **Event Bus** | 🟡 | 🆕 | 事件总线 |
+| **基础设施** | **Event Bus** | 🟡 | ✅ | 事件总线 |
 | | **Vector Store** | 🟡 | 🆕 | 向量存储与相似度查询 |
-| | **Logger Service** | 🟡 | 🆕 | 统一日志与调试 |
+| | **Logger Service** | 🟡 | ✅ | 统一日志与调试 |
 | | **Deep Link Service** | 🟢 | 🆕 | 跨应用深度链接导航 |
 | | JSON Parser | - | ✅ | 鲁棒 JSON 解析（待抽取）|
 | | Lazy Loader | - | ✅ | 惰性加载框架（待抽取）|

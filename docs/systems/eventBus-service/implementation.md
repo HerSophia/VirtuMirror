@@ -585,89 +585,82 @@ describe('EventBus Integration', () => {
 
 | 阶段 | 内容 | 预估工作量 | 状态 |
 |------|------|------------|------|
-| Phase 1 | 核心 EventBus 类实现 | 2h | 📋 待实现 |
-| Phase 2 | EventChannel 实现 | 1h | 📋 待实现 |
-| Phase 3 | 类型定义与事件映射 | 1h | 📋 待实现 |
-| Phase 4 | 调试工具与泄漏检测 | 1h | 📋 待实现 |
-| Phase 5 | 单元测试 | 2h | 📋 待实现 |
+| Phase 1 | 核心 EventBus 类实现 | 2h | ✅ 已完成 |
+| Phase 2 | EventChannel 实现 | 1h | ✅ 已完成 |
+| Phase 3 | 类型定义与事件映射 | 1h | ✅ 已完成 |
+| Phase 4 | 调试工具与泄漏检测 | 1h | ✅ 已完成 |
+| Phase 5 | 单元测试 | 2h | ✅ 已完成 |
 | Phase 6 | 文档与示例 | 1h | ✅ 已完成 |
 
 **总预估工作量**：8 小时
 
 ---
 
-## 9. 未来扩展
+## 9. 扩展功能（已实现）
 
-### 9.1 异步事件支持
+### 9.1 EventBusExtended 扩展类
 
-```typescript
-// 支持异步处理函数
-async emitAsync<T>(event: string, payload: T): Promise<void> {
-  const handlers = this.listeners.get(event);
-  if (!handlers) return;
-  
-  await Promise.all(
-    Array.from(handlers).map(handler => handler(payload))
-  );
-}
-```
-
-### 9.2 事件历史记录
+扩展事件总线提供了异步事件、历史记录和过滤器功能：
 
 ```typescript
-interface EventRecord {
-  event: string;
-  payload: any;
-  timestamp: number;
-}
+import { EventBusExtended } from '@/services/eventBus';
 
-class EventBusWithHistory extends EventBus {
-  private history: EventRecord[] = [];
-  private maxHistory = 100;
-  
-  emit<T>(event: string, payload: T): void {
-    this.history.push({
-      event,
-      payload,
-      timestamp: Date.now(),
-    });
-    
-    if (this.history.length > this.maxHistory) {
-      this.history.shift();
-    }
-    
-    super.emit(event, payload);
-  }
-  
-  getHistory(): EventRecord[] {
-    return [...this.history];
-  }
-}
-```
+const extBus = new EventBusExtended();
 
-### 9.3 事件过滤器
+// 异步发布，等待所有处理函数完成
+await extBus.emitAsync('task:complete', { taskId: '123' });
 
-```typescript
-// 支持条件过滤
-onFiltered<T>(
-  event: string,
-  filter: (payload: T) => boolean,
-  handler: EventHandler<T>
-): Unsubscribe {
-  return this.on(event, (payload: T) => {
-    if (filter(payload)) {
-      handler(payload);
-    }
-  });
-}
-
-// 使用示例
-eventBus.onFiltered(
+// 带过滤器订阅
+extBus.onFiltered(
   'content:post:created',
   (data) => data.platformId === 'weibo',
   (data) => console.log('微博新帖子:', data)
 );
+
+// 启用事件历史记录
+extBus.setHistoryEnabled(true);
+extBus.setMaxHistory(200);
+
+// 获取历史记录
+const history = extBus.getHistory();
 ```
+
+### 9.2 工具函数
+
+```typescript
+import { 
+  waitForEvent, 
+  collectEvents, 
+  throttledOn, 
+  debouncedOn 
+} from '@/services/eventBus';
+
+// 等待事件，支持超时
+const result = await waitForEvent(eventBus, 'llm:task:completed', 5000);
+
+// 收集指定时间内的所有事件
+const events = await collectEvents(eventBus, 'interaction:like', 1000);
+
+// 节流订阅，100ms 内只触发一次
+throttledOn(eventBus, 'scroll:update', handleScroll, 100);
+
+// 防抖订阅，连续触发时只在最后一次执行
+debouncedOn(eventBus, 'search:input', handleSearch, 300);
+```
+
+### 9.3 扩展功能 API 参考
+
+| 方法/函数 | 说明 |
+|-----------|------|
+| `emitAsync()` | 异步发布事件，等待所有处理函数完成 |
+| `onFiltered()` | 带过滤器的订阅，只在满足条件时触发 |
+| `getHistory()` | 获取事件历史记录 |
+| `setHistoryEnabled()` | 启用/禁用历史记录 |
+| `setMaxHistory()` | 设置最大历史记录数 |
+| `waitForEvent()` | 创建 Promise 等待事件触发 |
+| `collectEvents()` | 收集指定时间内的所有事件 |
+| `throttledOn()` | 节流订阅 |
+| `debouncedOn()` | 防抖订阅 |
 
 ---
 

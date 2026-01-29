@@ -1,17 +1,18 @@
 # 交互服务类型定义
 
 > **版本**: v1.0  
-> **最后更新**: 2026-01-16
+> **状态**: ✅ 已实现  
+> **最后更新**: 2025-01-17
 
-本文档定义交互服务的核心类型。
+本文档定义交互服务的核心类型。所有类型均已实现并导出自 `@/types/interaction`。
 
 ---
 
-## 1. 互动类型枚举
+## 1. 基础类型
 
 ### 1.1 InteractionType
 
-基础互动类型枚举：
+互动类型枚举：
 
 ```typescript
 /**
@@ -25,38 +26,29 @@ export type InteractionType =
   | 'comment'    // 评论
   | 'repost'     // 转发
   | 'view'       // 浏览
-  | 'share';     // 分享
+  | 'share'      // 分享
 ```
 
-### 1.2 互动类型分组
+### 1.2 ContentType
+
+内容类型：
 
 ```typescript
 /**
- * 积极互动类型（用于统计和涨粉计算）
+ * 内容类型
  */
-export const POSITIVE_INTERACTIONS: InteractionType[] = [
-  'like',
-  'favorite',
-  'comment',
-  'repost',
-  'share',
-];
+export type ContentType = 'post' | 'comment' | 'article' | 'video'
+```
 
-/**
- * 可撤销的互动类型
- */
-export const REVERSIBLE_INTERACTIONS: InteractionType[] = [
-  'like',
-  'favorite',
-];
+### 1.3 PlatformId
 
+平台标识：
+
+```typescript
 /**
- * 需要内容的互动类型
+ * 平台 ID
  */
-export const CONTENT_REQUIRED_INTERACTIONS: InteractionType[] = [
-  'comment',
-  'repost',
-];
+export type PlatformId = 'weibo' | 'bilibili' | 'zhihu' | string
 ```
 
 ---
@@ -70,109 +62,41 @@ export const CONTENT_REQUIRED_INTERACTIONS: InteractionType[] = [
 ```typescript
 /**
  * 互动事件
- * 当用户进行任何互动操作时触发
  */
 export interface InteractionEvent {
-  /** 事件唯一 ID */
-  id: string;
-  
+  /** 事件 ID */
+  id: string
   /** 互动类型 */
-  type: InteractionType;
-  
-  /** 被互动的内容 ID */
-  contentId: string;
-  
-  /** 内容类型（帖子/评论/文章等） */
-  contentType?: ContentType;
-  
-  /** 执行互动的用户 ID */
-  userId: string;
-  
+  type: InteractionType
+  /** 内容 ID */
+  contentId: string
+  /** 内容类型 */
+  contentType: ContentType
+  /** 用户 ID */
+  userId: string
   /** 平台 ID */
-  platformId: PlatformId;
-  
-  /** 事件发生时间戳 */
-  timestamp: number;
-  
-  /** 额外元数据 */
-  metadata?: InteractionMetadata;
+  platformId: PlatformId
+  /** 时间戳 */
+  timestamp: number
+  /** 额外数据 */
+  metadata?: Record<string, unknown>
 }
-
-/**
- * 内容类型
- */
-export type ContentType = 
-  | 'post'      // 帖子/博文
-  | 'comment'   // 评论
-  | 'article'   // 长文章
-  | 'video'     // 视频
-  | 'answer';   // 问答回答
-
-/**
- * 平台 ID
- */
-export type PlatformId = 
-  | 'weibo'     // 微博
-  | 'bilibili'  // B站
-  | 'zhihu'     // 知乎
-  | 'douyin'    // 抖音
-  | 'wechat';   // 微信
 ```
 
-### 2.2 InteractionMetadata
+### 2.2 InteractionEventHandler
 
-不同互动类型的元数据：
+事件处理器类型：
 
 ```typescript
 /**
- * 互动元数据（根据互动类型不同而不同）
+ * 互动事件处理函数
  */
-export interface InteractionMetadata {
-  // === 通用字段 ===
-  /** 来源（首页/详情页/通知等） */
-  source?: 'feed' | 'detail' | 'notification' | 'search' | 'profile';
-  
-  // === 评论相关 ===
-  /** 评论内容（type = 'comment' 时） */
-  commentText?: string;
-  /** 回复的评论 ID */
-  replyToCommentId?: string;
-  /** 评论 ID（创建后填充） */
-  commentId?: string;
-  
-  // === 转发相关 ===
-  /** 转发时的附言 */
-  repostText?: string;
-  /** 转发后的帖子 ID */
-  repostId?: string;
-  
-  // === 浏览相关 ===
-  /** 浏览时长（秒） */
-  viewDuration?: number;
-  /** 滚动深度（0-1） */
-  scrollDepth?: number;
-  /** 是否完整阅读 */
-  isCompleteRead?: boolean;
-  
-  // === 收藏相关 ===
-  /** 收藏夹 ID */
-  collectionId?: string;
-  /** 收藏夹名称 */
-  collectionName?: string;
-  
-  // === 分享相关 ===
-  /** 分享目标 */
-  shareTarget?: 'wechat' | 'qq' | 'weibo' | 'copy' | 'other';
-  
-  // === 平台特定数据 ===
-  /** 平台特定的额外数据 */
-  platformData?: Record<string, any>;
-}
+export type InteractionEventHandler = (event: InteractionEvent) => void
 ```
 
 ---
 
-## 3. 用户互动状态
+## 3. 用户互动记录
 
 ### 3.1 UserInteraction
 
@@ -180,99 +104,37 @@ export interface InteractionMetadata {
 
 ```typescript
 /**
- * 用户互动状态
- * 记录某用户对某内容的所有互动情况
+ * 用户对某内容的互动状态
  */
 export interface UserInteraction {
-  /** 复合主键：userId + contentId */
-  id: string;
-  
+  /** 记录 ID */
+  id: string
   /** 用户 ID */
-  userId: string;
-  
+  userId: string
   /** 内容 ID */
-  contentId: string;
-  
+  contentId: string
+  /** 内容类型 */
+  contentType: ContentType
   /** 平台 ID */
-  platformId: PlatformId;
-  
-  // === 互动状态 ===
+  platformId: PlatformId
   /** 是否已点赞 */
-  isLiked: boolean;
-  
+  isLiked: boolean
   /** 点赞时间 */
-  likedAt?: number;
-  
+  likedAt?: number
   /** 是否已收藏 */
-  isFavorited: boolean;
-  
+  isFavorited: boolean
   /** 收藏时间 */
-  favoritedAt?: number;
-  
+  favoritedAt?: number
   /** 收藏夹 ID */
-  collectionId?: string;
-  
-  // === 浏览记录 ===
+  collectionId?: string
   /** 浏览次数 */
-  viewCount: number;
-  
-  /** 首次浏览时间 */
-  firstViewAt?: number;
-  
+  viewCount: number
   /** 最后浏览时间 */
-  lastViewAt?: number;
-  
-  /** 总浏览时长（秒） */
-  totalViewDuration: number;
-  
-  // === 评论记录 ===
-  /** 评论数量 */
-  commentCount: number;
-  
-  /** 评论 ID 列表 */
-  commentIds: string[];
-  
-  // === 时间戳 ===
+  lastViewAt?: number
   /** 创建时间 */
-  createdAt: number;
-  
+  createdAt: number
   /** 更新时间 */
-  updatedAt: number;
-}
-```
-
-### 3.2 UserInteractionSummary
-
-用户互动汇总（用于个人中心）：
-
-```typescript
-/**
- * 用户互动汇总
- */
-export interface UserInteractionSummary {
-  /** 用户 ID */
-  userId: string;
-  
-  /** 平台 ID（可选，不指定则为全平台） */
-  platformId?: PlatformId;
-  
-  /** 点赞总数 */
-  totalLikes: number;
-  
-  /** 收藏总数 */
-  totalFavorites: number;
-  
-  /** 评论总数 */
-  totalComments: number;
-  
-  /** 转发总数 */
-  totalReposts: number;
-  
-  /** 浏览总数 */
-  totalViews: number;
-  
-  /** 最后活跃时间 */
-  lastActiveAt: number;
+  updatedAt: number
 }
 ```
 
@@ -290,58 +152,25 @@ export interface UserInteractionSummary {
  */
 export interface InteractionStats {
   /** 内容 ID */
-  contentId: string;
-  
+  contentId: string
+  /** 内容类型 */
+  contentType: ContentType
   /** 平台 ID */
-  platformId: PlatformId;
-  
-  // === 互动计数 ===
+  platformId: PlatformId
   /** 点赞数 */
-  likes: number;
-  
+  likes: number
   /** 收藏数 */
-  favorites: number;
-  
+  favorites: number
   /** 评论数 */
-  comments: number;
-  
+  comments: number
   /** 转发数 */
-  reposts: number;
-  
+  reposts: number
   /** 浏览数 */
-  views: number;
-  
+  views: number
   /** 分享数 */
-  shares: number;
-  
-  // === 衍生指标 ===
-  /** 互动率 = (likes + comments + reposts) / views */
-  engagementRate?: number;
-  
-  /** 热度值（由 TrafficEngine 计算） */
-  heatValue?: number;
-  
-  // === 时间戳 ===
+  shares: number
   /** 最后更新时间 */
-  updatedAt: number;
-}
-```
-
-### 4.2 StatsDelta
-
-统计增量（用于批量更新）：
-
-```typescript
-/**
- * 统计增量
- */
-export interface StatsDelta {
-  likes?: number;      // +1 或 -1
-  favorites?: number;
-  comments?: number;
-  reposts?: number;
-  views?: number;
-  shares?: number;
+  updatedAt: number
 }
 ```
 
@@ -359,79 +188,59 @@ export interface StatsDelta {
  */
 export interface Comment {
   /** 评论 ID */
-  id: string;
-  
+  id: string
   /** 所属内容 ID */
-  contentId: string;
-  
+  contentId: string
+  /** 内容类型 */
+  contentType: ContentType
   /** 平台 ID */
-  platformId: PlatformId;
-  
-  /** 评论者 ID */
-  authorId: string;
-  
+  platformId: PlatformId
+  /** 作者 ID */
+  authorId: string
+  /** 作者名称 */
+  authorName?: string
+  /** 作者头像 */
+  authorAvatar?: string
   /** 评论内容 */
-  text: string;
-  
-  // === 回复关系 ===
-  /** 父评论 ID（如果是回复） */
-  parentId?: string;
-  
-  /** 被回复的用户 ID */
-  replyToUserId?: string;
-  
-  /** 层级（0 = 顶级评论） */
-  depth: number;
-  
-  /** 回复数量 */
-  replyCount: number;
-  
-  // === 互动数据 ===
+  content: string
+  /** 父评论 ID（回复） */
+  parentId?: string
+  /** 回复的用户 ID */
+  replyToUserId?: string
+  /** 回复的用户名 */
+  replyToUserName?: string
   /** 点赞数 */
-  likes: number;
-  
-  /** 是否被当前用户点赞 */
-  isLikedByMe?: boolean;
-  
-  // === 状态 ===
-  /** 是否已删除 */
-  isDeleted: boolean;
-  
-  /** 是否置顶 */
-  isPinned: boolean;
-  
-  /** 是否热评 */
-  isHot: boolean;
-  
-  // === 时间戳 ===
+  likeCount: number
+  /** 回复数 */
+  replyCount: number
   /** 创建时间 */
-  createdAt: number;
-  
-  /** 更新时间 */
-  updatedAt: number;
+  createdAt: number
+  /** 是否已删除 */
+  isDeleted?: boolean
 }
 ```
 
-### 5.2 CommentThread
+### 5.2 CreateCommentParams
 
-评论树结构（用于展示）：
+创建评论参数：
 
 ```typescript
 /**
- * 评论树
+ * 创建评论参数
  */
-export interface CommentThread {
-  /** 根评论 */
-  root: Comment;
-  
-  /** 回复列表 */
-  replies: Comment[];
-  
-  /** 是否有更多回复 */
-  hasMoreReplies: boolean;
-  
-  /** 总回复数 */
-  totalReplies: number;
+export interface CreateCommentParams {
+  /** 内容 ID */
+  contentId: string
+  /** 内容类型 */
+  contentType?: ContentType
+  /** 平台 ID */
+  platformId: PlatformId
+  /** 用户 ID */
+  userId: string
+  /** 评论内容 */
+  content: string
+  /** 父评论 ID */
+  parentId?: string
 }
 ```
 
@@ -449,83 +258,41 @@ export interface CommentThread {
  */
 export interface ViewRecord {
   /** 记录 ID */
-  id: string;
-  
+  id: string
   /** 用户 ID */
-  userId: string;
-  
+  userId: string
   /** 内容 ID */
-  contentId: string;
-  
-  /** 平台 ID */
-  platformId: PlatformId;
-  
+  contentId: string
   /** 内容类型 */
-  contentType: ContentType;
-  
-  // === 浏览数据 ===
-  /** 浏览时长（秒） */
-  duration: number;
-  
-  /** 滚动深度（0-1） */
-  scrollDepth: number;
-  
-  /** 来源 */
-  source: 'feed' | 'detail' | 'search' | 'recommendation' | 'profile';
-  
-  // === 内容快照 ===
-  /** 内容标题（用于历史展示） */
-  contentTitle?: string;
-  
-  /** 内容摘要 */
-  contentSummary?: string;
-  
-  /** 作者名称 */
-  authorName?: string;
-  
-  /** 封面图 */
-  coverImage?: string;
-  
-  // === 时间戳 ===
+  contentType: ContentType
+  /** 平台 ID */
+  platformId: PlatformId
   /** 浏览时间 */
-  viewedAt: number;
+  viewedAt: number
+  /** 停留时长（秒） */
+  duration?: number
+  /** 滚动深度（0-1） */
+  scrollDepth?: number
+  /** 来源 */
+  source?: string
 }
 ```
 
-### 6.2 ViewHistoryQuery
+### 6.2 ViewRecordOptions
 
-浏览历史查询参数：
+浏览记录选项：
 
 ```typescript
 /**
- * 浏览历史查询参数
+ * 浏览记录选项
  */
-export interface ViewHistoryQuery {
-  /** 用户 ID */
-  userId: string;
-  
-  /** 平台过滤 */
-  platformId?: PlatformId;
-  
-  /** 内容类型过滤 */
-  contentType?: ContentType;
-  
-  /** 时间范围 */
-  timeRange?: {
-    start: number;
-    end: number;
-  };
-  
-  /** 最小浏览时长（秒） */
-  minDuration?: number;
-  
-  /** 分页 */
-  limit?: number;
-  offset?: number;
-  
-  /** 排序 */
-  sortBy?: 'viewedAt' | 'duration';
-  sortOrder?: 'asc' | 'desc';
+export interface ViewRecordOptions {
+  /** 停留时长（秒） */
+  duration?: number
+  /** 滚动深度（0-1） */
+  scrollDepth?: number
+  /** 来源 */
+  source?: string
 }
 ```
 
@@ -543,271 +310,268 @@ export interface ViewHistoryQuery {
  */
 export interface FavoriteCollection {
   /** 收藏夹 ID */
-  id: string;
-  
+  id: string
   /** 用户 ID */
-  userId: string;
-  
+  userId: string
   /** 收藏夹名称 */
-  name: string;
-  
+  name: string
   /** 描述 */
-  description?: string;
-  
-  /** 封面图 */
-  coverImage?: string;
-  
-  /** 是否默认收藏夹 */
-  isDefault: boolean;
-  
+  description?: string
   /** 是否公开 */
-  isPublic: boolean;
-  
+  isPublic: boolean
   /** 收藏数量 */
-  itemCount: number;
-  
+  count: number
   /** 创建时间 */
-  createdAt: number;
-  
+  createdAt: number
   /** 更新时间 */
-  updatedAt: number;
-}
-```
-
-### 7.2 FavoriteItem
-
-收藏项：
-
-```typescript
-/**
- * 收藏项
- */
-export interface FavoriteItem {
-  /** 收藏夹 ID */
-  collectionId: string;
-  
-  /** 内容 ID */
-  contentId: string;
-  
-  /** 平台 ID */
-  platformId: PlatformId;
-  
-  /** 备注 */
-  note?: string;
-  
-  /** 收藏时间 */
-  favoritedAt: number;
+  updatedAt: number
 }
 ```
 
 ---
 
-## 8. 服务配置类型
+## 8. 转发记录
 
-### 8.1 InteractionServiceConfig
+### 8.1 RepostRecord
 
-服务配置：
+转发记录：
 
 ```typescript
 /**
- * 交互服务配置
+ * 转发记录
  */
-export interface InteractionServiceConfig {
-  /** 是否启用事件广播 */
-  enableEventBroadcast: boolean;
-  
-  /** 事件保留时间（毫秒） */
-  eventRetentionMs: number;
-  
-  /** 浏览历史最大条数 */
-  maxViewHistoryItems: number;
-  
-  /** 统计缓存时间（毫秒） */
-  statsCacheTtlMs: number;
-  
-  /** 批量操作最大数量 */
-  maxBatchSize: number;
+export interface RepostRecord {
+  /** 记录 ID */
+  id: string
+  /** 原内容 ID */
+  originalContentId: string
+  /** 新帖子 ID */
+  newPostId: string
+  /** 用户 ID */
+  userId: string
+  /** 平台 ID */
+  platformId: PlatformId
+  /** 转发评论 */
+  comment?: string
+  /** 创建时间 */
+  createdAt: number
 }
-
-/**
- * 默认配置
- */
-export const DEFAULT_CONFIG: InteractionServiceConfig = {
-  enableEventBroadcast: true,
-  eventRetentionMs: 7 * 24 * 60 * 60 * 1000, // 7 天
-  maxViewHistoryItems: 1000,
-  statsCacheTtlMs: 5 * 60 * 1000, // 5 分钟
-  maxBatchSize: 100,
-};
 ```
 
-### 8.2 PlatformBehavior
+---
 
-平台扩展行为：
+## 9. 平台扩展
+
+### 9.1 PlatformBehavior
+
+平台扩展互动行为：
 
 ```typescript
 /**
- * 平台扩展行为
+ * 平台扩展互动行为
  */
 export interface PlatformBehavior {
   /** 平台 ID */
-  platformId: PlatformId;
-  
-  /** 自定义互动行为 */
-  customActions?: Record<string, CustomAction>;
-  
-  /** 互动权重配置（用于热度计算） */
-  interactionWeights?: Partial<Record<InteractionType, number>>;
-  
-  /** 平台特定验证规则 */
-  validators?: {
-    canLike?: (contentId: string, userId: string) => boolean;
-    canComment?: (contentId: string, userId: string) => boolean;
-    canRepost?: (contentId: string, userId: string) => boolean;
-  };
-}
-
-/**
- * 自定义互动行为
- */
-export interface CustomAction {
+  platformId: PlatformId
   /** 行为名称 */
-  name: string;
-  
+  name: string
+  /** 行为标识 */
+  action: string
   /** 描述 */
-  description: string;
-  
+  description?: string
   /** 执行函数 */
-  execute: (contentId: string, userId: string, params?: any) => Promise<void>;
+  execute: (
+    contentId: string,
+    userId: string,
+    params?: Record<string, unknown>
+  ) => Promise<void>
+}
+```
+
+### 9.2 RegisterPlatformBehaviorOptions
+
+注册平台行为选项：
+
+```typescript
+/**
+ * 平台行为注册选项
+ */
+export interface RegisterPlatformBehaviorOptions {
+  /** 是否覆盖已存在的行为 */
+  override?: boolean
 }
 ```
 
 ---
 
-## 9. 事件订阅类型
+## 10. 查询选项
 
-### 9.1 InteractionEventHandler
+### 10.1 PaginationOptions
 
-事件处理器：
+分页选项：
 
 ```typescript
 /**
- * 互动事件处理器
+ * 分页选项
  */
-export type InteractionEventHandler = (event: InteractionEvent) => void;
-
-/**
- * 类型化事件处理器
- */
-export type TypedInteractionHandler<T extends InteractionType> = (
-  event: InteractionEvent & { type: T }
-) => void;
-
-/**
- * 取消订阅函数
- */
-export type Unsubscribe = () => void;
+export interface PaginationOptions {
+  /** 偏移量 */
+  offset?: number
+  /** 限制数量 */
+  limit?: number
+}
 ```
 
-### 9.2 EventFilter
+### 10.2 GetUserInteractionsOptions
 
-事件过滤器：
+获取用户互动列表选项：
 
 ```typescript
 /**
- * 事件过滤器
+ * 获取用户互动列表选项
  */
-export interface EventFilter {
-  /** 只订阅特定类型 */
-  types?: InteractionType[];
-  
-  /** 只订阅特定平台 */
-  platforms?: PlatformId[];
-  
-  /** 只订阅特定内容 */
-  contentIds?: string[];
-  
-  /** 只订阅特定用户的行为 */
-  userIds?: string[];
+export interface GetUserInteractionsOptions extends PaginationOptions {
+  /** 平台 ID */
+  platformId?: PlatformId
+  /** 内容类型 */
+  contentType?: ContentType
+}
+```
+
+### 10.3 GetCommentsOptions
+
+获取评论列表选项：
+
+```typescript
+/**
+ * 获取评论列表选项
+ */
+export interface GetCommentsOptions extends PaginationOptions {
+  /** 排序方式 */
+  sortBy?: 'time' | 'likes'
+  /** 排序顺序 */
+  order?: 'asc' | 'desc'
+  /** 是否包含回复 */
+  includeReplies?: boolean
+}
+```
+
+### 10.4 GetViewHistoryOptions
+
+获取浏览历史选项：
+
+```typescript
+/**
+ * 获取浏览历史选项
+ */
+export interface GetViewHistoryOptions extends PaginationOptions {
+  /** 平台 ID */
+  platformId?: PlatformId
+  /** 内容类型 */
+  contentType?: ContentType
+  /** 时间范围起始 */
+  startTime?: number
+  /** 时间范围结束 */
+  endTime?: number
 }
 ```
 
 ---
 
-## 10. 数据库表结构
+## 11. 操作选项
 
-### 10.1 IndexedDB 表定义
+### 11.1 BaseInteractionOptions
+
+基础互动选项：
 
 ```typescript
 /**
- * IndexedDB 表结构
+ * 基础互动选项
  */
-export interface InteractionDBSchema {
-  /** 用户互动状态表 */
-  user_interactions: UserInteraction;
-  
-  /** 内容统计表 */
-  content_stats: InteractionStats;
-  
-  /** 评论表 */
-  comments: Comment;
-  
-  /** 浏览记录表 */
-  view_history: ViewRecord;
-  
-  /** 收藏夹表 */
-  favorite_collections: FavoriteCollection;
-  
-  /** 收藏项表 */
-  favorite_items: FavoriteItem;
-  
-  /** 事件日志表（用于调试和回放） */
-  interaction_events: InteractionEvent;
+export interface BaseInteractionOptions {
+  /** 平台 ID */
+  platformId?: PlatformId
+  /** 内容类型 */
+  contentType?: ContentType
 }
+```
+
+### 11.2 其他选项类型
+
+```typescript
+/**
+ * 点赞选项
+ */
+export interface LikeOptions extends BaseInteractionOptions {}
 
 /**
- * 索引定义
+ * 收藏选项
  */
-export const DB_INDEXES = {
-  user_interactions: [
-    'userId',
-    'contentId',
-    '[userId+platformId]',
-    '[userId+isLiked]',
-    '[userId+isFavorited]',
-  ],
-  content_stats: [
-    'platformId',
-    '[platformId+likes]',
-    '[platformId+views]',
-  ],
-  comments: [
-    'contentId',
-    'authorId',
-    'parentId',
-    '[contentId+createdAt]',
-  ],
-  view_history: [
-    'userId',
-    '[userId+viewedAt]',
-    '[userId+platformId]',
-  ],
-  favorite_collections: [
-    'userId',
-    '[userId+isDefault]',
-  ],
-  favorite_items: [
-    'collectionId',
-    'contentId',
-    '[collectionId+favoritedAt]',
-  ],
-  interaction_events: [
-    'type',
-    'contentId',
-    'userId',
-    'timestamp',
-  ],
-} as const;
+export interface FavoriteOptions extends BaseInteractionOptions {}
+
+/**
+ * 转发选项
+ */
+export interface RepostOptions extends BaseInteractionOptions {}
+```
+
+---
+
+## 12. 服务接口
+
+### 12.1 IInteractionService
+
+完整的服务接口定义：
+
+```typescript
+/**
+ * 交互服务接口
+ */
+export interface IInteractionService {
+  // === 点赞相关 ===
+  like(contentId: string, userId: string, options?: LikeOptions): Promise<void>
+  unlike(contentId: string, userId: string, options?: LikeOptions): Promise<void>
+  isLiked(contentId: string, userId: string, options?: LikeOptions): Promise<boolean>
+  getUserLikes(userId: string, options?: GetUserInteractionsOptions): Promise<UserInteraction[]>
+
+  // === 收藏相关 ===
+  favorite(contentId: string, userId: string, collectionId?: string, options?: FavoriteOptions): Promise<void>
+  unfavorite(contentId: string, userId: string, options?: FavoriteOptions): Promise<void>
+  isFavorited(contentId: string, userId: string, options?: FavoriteOptions): Promise<boolean>
+  getUserFavorites(userId: string, options?: GetUserInteractionsOptions): Promise<UserInteraction[]>
+  getFavoriteCollections(userId: string): Promise<FavoriteCollection[]>
+
+  // === 评论相关 ===
+  comment(params: CreateCommentParams): Promise<Comment>
+  deleteComment(commentId: string, userId: string): Promise<void>
+  getComments(contentId: string, options?: GetCommentsOptions): Promise<Comment[]>
+  getUserComments(userId: string, options?: GetUserInteractionsOptions): Promise<Comment[]>
+
+  // === 转发相关 ===
+  repost(contentId: string, userId: string, comment?: string, options?: RepostOptions): Promise<string>
+  getReposts(contentId: string, options?: PaginationOptions): Promise<RepostRecord[]>
+
+  // === 浏览记录 ===
+  recordView(contentId: string, userId: string, options?: ViewRecordOptions & BaseInteractionOptions): Promise<void>
+  getViewHistory(userId: string, options?: GetViewHistoryOptions): Promise<ViewRecord[]>
+  clearViewHistory(userId: string, platformId?: PlatformId): Promise<void>
+
+  // === 统计相关 ===
+  getStats(contentId: string, platformId: PlatformId): Promise<InteractionStats>
+  batchGetStats(contentIds: string[], platformId: PlatformId): Promise<Map<string, InteractionStats>>
+  incrementStats(contentId: string, platformId: PlatformId, field: string, delta?: number): Promise<void>
+
+  // === 事件相关 ===
+  onInteraction(handler: InteractionEventHandler): () => void
+  on(type: InteractionType, handler: InteractionEventHandler): () => void
+  off(type: InteractionType, handler?: InteractionEventHandler): void
+
+  // === 平台扩展 ===
+  registerPlatformBehavior(behavior: PlatformBehavior, options?: RegisterPlatformBehaviorOptions): void
+  getPlatformBehavior(platformId: PlatformId, action: string): PlatformBehavior | undefined
+  getPlatformBehaviors(platformId: PlatformId): PlatformBehavior[]
+  executePlatformBehavior(platformId: PlatformId, action: string, contentId: string, userId: string, params?: Record<string, unknown>): Promise<void>
+}
 ```
 
 ---

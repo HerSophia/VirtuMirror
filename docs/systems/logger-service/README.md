@@ -1,9 +1,9 @@
 # 日志服务 (Logger Service)
 
 > **版本**: 1.0  
-> **状态**: 🆕 建议开发  
+> **状态**: ✅ 已实现  
 > **优先级**: 🟡 中  
-> **最后更新**: 2026-01-16
+> **最后更新**: 2025-01-16
 
 ## 1. 概述
 
@@ -118,18 +118,19 @@ loggerService.setFilter({
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-## 4. 预期文件结构
+## 4. 文件结构
 
 ```text
 src/
 ├── services/
 │   └── logger/
-│       ├── loggerService.ts      # 核心服务类
+│       ├── loggerService.ts      # 核心服务类（单例）
 │       ├── Logger.ts             # 日志器类
 │       ├── transports/
-│       │   ├── ConsoleTransport.ts
-│       │   ├── MemoryTransport.ts
-│       │   └── IndexedDBTransport.ts
+│       │   ├── ConsoleTransport.ts  # 控制台输出（默认启用）
+│       │   ├── MemoryTransport.ts   # 内存存储（环形缓冲区）
+│       │   ├── IndexedDBTransport.ts # 持久化存储
+│       │   └── index.ts
 │       └── index.ts
 └── types/
     └── logger.ts                 # 类型定义
@@ -163,4 +164,4 @@ src/
 
 | 版本 | 日期 | 变更内容 |
 | ---- | ---- | -------- |
-| 1.0 | 2026-01-16 | 初始设计文档 |
+| 1.0 | 2025-01-16 | 初始实现：核心服务、三种 Transport |

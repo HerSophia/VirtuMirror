@@ -20,6 +20,7 @@ import type {
   TaskLog,
 } from './types'
 
+import { sharedContextProvider } from './builtinProviders'
 import { getContextProviderRegistry } from './ContextProviderRegistry'
 import { getOutputHandlerRegistry } from './OutputHandlerRegistry'
 import { getTaskRegistry } from './TaskRegistry'
@@ -244,16 +245,37 @@ export class TaskExecutor {
     const providerIds = definition.contextProviders || []
     const contextRegistry = getContextProviderRegistry()
 
-    // 获取上下文提供器的变量
-    const contextVars = await contextRegistry.getContext(providerIds)
-
-    // 获取时间上下文
+    // 1. 获取时间上下文（最低优先级）
     const timeVars = getTimeContextVariables()
 
-    // 合并（时间变量优先级最低）
+    // 2. 获取常规上下文提供器的变量
+    const contextVars = await contextRegistry.getContext(providerIds)
+
+    // 3. 处理共享上下文配置（新增）
+    let sharedContextVars: Record<string, string> = {}
+    if (definition.sharedContextConfig) {
+      this.context?.addLog(
+        task.id,
+        'info',
+        `正在获取共享上下文 (类型: ${definition.sharedContextConfig.types?.join(', ') || '全部'})`
+      )
+      sharedContextVars = await sharedContextProvider.getContext({
+        config: definition.sharedContextConfig,
+        appId: task.appId,
+        taskId: task.id,
+      })
+      this.context?.addLog(
+        task.id,
+        'info',
+        `共享上下文已获取，变量名: ${definition.sharedContextConfig.variableName || 'sharedContext'}`
+      )
+    }
+
+    // 合并（后面的优先级更高）
     return {
       ...timeVars,
       ...contextVars,
+      ...sharedContextVars,
     }
   }
 

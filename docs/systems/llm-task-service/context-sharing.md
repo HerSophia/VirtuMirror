@@ -1,6 +1,8 @@
-# 上下文共享服务（TODO）
+# 上下文共享服务
 
-> **状态**: ⏳ 待设计  
+> **状态**: ✅ 设计完成  
+> **详细文档**: [context-sharing-service](../context-sharing-service/README.md)  
+> **集成设计**: [integration-design](../context-sharing-service/integration-design.md)  
 > **依赖**: LLM 任务服务完成后实施
 
 ## 概述
@@ -108,9 +110,44 @@ interface IContextSharingService {
 
 ## 与 LLM 任务服务的集成
 
-```typescript
-// ContextProvider 可以从 ContextSharingService 获取数据
+### 方式一：使用 sharedContextConfig（推荐）
 
+在任务定义中直接配置需要的共享上下文，无需手动编写 ContextProvider：
+
+```typescript
+const weiboPostTask: LLMTaskDefinition = {
+  id: 'weibo:generate-post',
+  appId: 'weibo',
+  name: '生成微博帖子',
+  type: 'manual',
+  executionMode: 'repeatable',
+
+  // 使用共享上下文配置
+  sharedContextConfig: {
+    types: ['narrative:content', 'social:trending'],
+    format: 'xml',
+    maxTokens: 1500,
+    priority: ['narrative:content'], // 叙事内容优先
+    variableName: 'crossAppContext',
+  },
+
+  // 提示词模板中使用共享上下文
+  promptTemplate: `以下是当前的上下文信息：
+{{crossAppContext}}
+
+请根据以上上下文生成微博帖子。`,
+
+  inputSchema: [],
+  defaultInput: {},
+  outputHandlerId: 'weibo:post-handler',
+};
+```
+
+### 方式二：自定义 ContextProvider
+
+ContextProvider 可以从 ContextSharingService 获取数据：
+
+```typescript
 const crossAppNarrativeProvider: ContextProvider = {
   id: 'forum:narrative-subscriber',
   appId: 'forum',

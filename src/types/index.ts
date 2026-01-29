@@ -69,3 +69,59 @@ export * from './email'
 export * from './forum'
 export * from './live'
 export * from './browser'
+export * from './logger'
+
+// 会话上下文类型（重命名避免与 account.ts 的 SessionContext 冲突）
+export {
+  type SessionContext as TavernSessionContext,
+  type SessionContextState,
+  type EmptySessionContext,
+  type ContentSourceTracking,
+  type TrackedContent,
+  type FilterMode,
+  type FilterConfig,
+  type SourceFilter,
+  type ISessionContextService,
+  type SessionContextChangedEvent,
+  createEmptyContext,
+  DEFAULT_FILTER_CONFIG,
+} from './sessionContext'
+
+// 交互服务类型
+export type {
+  // 基础类型
+  InteractionType,
+  ContentType,
+  PlatformId,
+  // 事件
+  InteractionEvent,
+  InteractionEventHandler,
+  // 用户互动
+  UserInteraction,
+  // 统计
+  InteractionStats,
+  // 评论
+  Comment,
+  CreateCommentParams,
+  // 浏览记录
+  ViewRecord,
+  ViewRecordOptions,
+  // 收藏夹
+  FavoriteCollection,
+  // 平台扩展
+  PlatformBehavior,
+  RegisterPlatformBehaviorOptions,
+  // 查询选项
+  PaginationOptions,
+  GetUserInteractionsOptions,
+  GetCommentsOptions,
+  GetViewHistoryOptions,
+  // 操作选项
+  BaseInteractionOptions,
+  LikeOptions,
+  FavoriteOptions,
+  RepostOptions,
+  RepostRecord,
+  // 服务接口
+  IInteractionService,
+} from './interaction'

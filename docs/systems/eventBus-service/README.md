@@ -1,9 +1,9 @@
 # 事件总线服务 (Event Bus Service)
 
 > **版本**: 1.0  
-> **状态**: 📋 设计完成，待实现  
+> **状态**: ✅ 已实现  
 > **优先级**: 🟡 中（基础设施层核心服务）  
-> **最后更新**: 2026-01-16
+> **最后更新**: 2025-01-16
 
 ## 1. 概述
 
@@ -105,6 +105,36 @@ weiboChannel.on('feed:updated', (data) => {
 });
 ```
 
+### 3.4 扩展功能
+
+```typescript
+import { 
+  EventBusExtended, 
+  waitForEvent, 
+  throttledOn 
+} from '@/services/eventBus';
+
+// 使用扩展事件总线
+const extBus = new EventBusExtended();
+extBus.setHistoryEnabled(true);
+
+// 异步发布，等待所有处理函数完成
+await extBus.emitAsync('task:complete', { taskId: '123' });
+
+// 带过滤器订阅，只处理微博平台的事件
+extBus.onFiltered(
+  'content:post:created',
+  (data) => data.platformId === 'weibo',
+  (data) => console.log('微博新帖子:', data)
+);
+
+// 等待事件，支持超时
+const result = await waitForEvent(eventBus, 'llm:task:completed', 5000);
+
+// 节流订阅，100ms 内只触发一次
+throttledOn(eventBus, 'scroll:update', handleScroll, 100);
+```
+
 ---
 
 ## 4. 典型使用场景
@@ -177,10 +207,10 @@ eventBus.on('llm:task:completed', ({ taskId, result }) => {
 
 | 阶段 | 内容 | 预估工作量 | 状态 |
 |------|------|------------|------|
-| Phase 1 | 核心发布/订阅机制 | 2-3h | 📋 待实现 |
-| Phase 2 | 通道隔离 | 1-2h | 📋 待实现 |
-| Phase 3 | 调试工具与日志 | 1-2h | 📋 待实现 |
-| Phase 4 | 类型安全增强 | 1h | 📋 待实现 |
+| Phase 1 | 核心发布/订阅机制 | 2-3h | ✅ 已完成 |
+| Phase 2 | 通道隔离 | 1-2h | ✅ 已完成 |
+| Phase 3 | 调试工具与日志 | 1-2h | ✅ 已完成 |
+| Phase 4 | 类型安全增强 | 1h | ✅ 已完成 |
 
 **总预估工作量**：5-8 小时
 

@@ -1,9 +1,32 @@
 import type { NotificationIcon } from './notification'
+import type { ContextType } from '@/services/contextSharing/types'
 
 /**
  * 提示词管理系统类型定义
  * @description 定义提示词模板、变量、配置等核心类型
  */
+
+/**
+ * 变量来源类型
+ */
+export type VariableSourceType =
+  | 'input'           // 用户输入
+  | 'global'          // 全局变量
+  | 'context'         // ContextProvider
+  | 'shared-context'; // Context Sharing Service
+
+/**
+ * 共享上下文变量配置
+ * 当变量 source 为 'shared-context' 时使用
+ */
+export interface SharedContextVariableConfig {
+  /** 上下文类型 */
+  contextType?: ContextType;
+  /** 上下文 ID */
+  contextId?: string;
+  /** 格式化方式 */
+  format?: 'raw' | 'text' | 'xml';
+}
 
 /**
  * 提示词分类（按 App/场景）
@@ -55,6 +78,17 @@ export interface PromptVariable {
   
   /** 示例值 */
   example?: unknown;
+
+  /**
+   * 变量来源
+   * @default 'input'
+   */
+  source?: VariableSourceType;
+
+  /**
+   * 共享上下文配置（source='shared-context' 时使用）
+   */
+  sharedContextConfig?: SharedContextVariableConfig;
 }
 
 /**

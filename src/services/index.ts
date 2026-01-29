@@ -311,3 +311,99 @@ export type {
   TaskLog,
   TaskStats,
 } from './llmTask'
+
+// 会话上下文服务
+export {
+  sessionContextService,
+  SessionContextService,
+  initSessionContextListeners,
+  cleanupListeners as cleanupSessionContextListeners,
+  createEmptyContext,
+  DEFAULT_FILTER_CONFIG,
+} from './sessionContext'
+export type {
+  SessionContext as SessionContextType,
+  SessionContextState,
+  EmptySessionContext,
+  ContentSourceTracking,
+  TrackedContent,
+  FilterMode,
+  FilterConfig,
+  SourceFilter,
+  ISessionContextService,
+  SessionContextChangedEvent,
+} from './sessionContext'
+
+// 交互服务
+export {
+  interactionService,
+  useInteractionService,
+} from './interaction'
+export type {
+  // 基础类型
+  InteractionType,
+  ContentType,
+  PlatformId,
+  // 事件
+  InteractionEvent,
+  InteractionEventHandler,
+  // 用户互动
+  UserInteraction,
+  // 统计
+  InteractionStats,
+  // 评论
+  Comment,
+  CreateCommentParams,
+  // 浏览记录
+  ViewRecord,
+  ViewRecordOptions,
+  // 收藏夹
+  FavoriteCollection,
+  // 平台扩展
+  PlatformBehavior,
+  RegisterPlatformBehaviorOptions,
+  // 查询选项
+  PaginationOptions,
+  GetUserInteractionsOptions,
+  GetCommentsOptions,
+  GetViewHistoryOptions,
+  // 操作选项
+  BaseInteractionOptions,
+  LikeOptions,
+  FavoriteOptions,
+  RepostOptions,
+  RepostRecord,
+  // 服务接口
+  IInteractionService,
+} from './interaction'
+
+// 平台扩展行为
+export {
+  registerAllPlatformBehaviors,
+  registerWeiboBehaviors,
+  registerBilibiliBehaviors,
+  registerZhihuBehaviors,
+  allPlatformBehaviors,
+  weiboBehaviors,
+  bilibiliBehaviors,
+  zhihuBehaviors,
+} from './interaction/platformBehaviors'
+
+// JSON 解析服务
+export {
+  getJsonParserService,
+  resetJsonParserService,
+  jsonParser,
+  BUILTIN_REPAIR_STRATEGIES,
+  JsonParseError,
+  DEFAULT_PARSE_OPTIONS,
+} from './jsonParser'
+export type {
+  JsonParserService,
+  ParseOptions,
+  ParseResult,
+  ParserStats,
+  RepairStrategy,
+  BuiltinStrategyName,
+  TypeGuard,
+} from './jsonParser'

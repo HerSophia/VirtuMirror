@@ -515,7 +515,184 @@ eventBus.emit('test', { data: 1 });
 
 ---
 
-## 6. 相关文档
+## 6. 扩展功能 API
+
+### 6.1 EventBusExtended
+
+扩展事件总线，提供异步事件、历史记录和过滤器功能。
+
+#### emitAsync(event, payload)
+
+异步发布事件，等待所有处理函数完成（包括返回 Promise 的处理函数）。
+
+**参数**：
+
+| 参数 | 类型 | 必需 | 说明 |
+|------|------|------|------|
+| event | `string` | ✅ | 事件名称 |
+| payload | `T` | ✅ | 事件数据 |
+
+**返回值**：`Promise<void>`
+
+**示例**：
+
+```typescript
+import { EventBusExtended } from '@/services/eventBus';
+
+const extBus = new EventBusExtended();
+
+extBus.on('async:task', async (data) => {
+  await processData(data);
+});
+
+// 等待所有处理函数完成
+await extBus.emitAsync('async:task', { id: '123' });
+console.log('所有处理函数已完成');
+```
+
+#### onFiltered(event, filter, handler)
+
+带过滤器的订阅，只有当 payload 满足过滤条件时才调用处理函数。
+
+**参数**：
+
+| 参数 | 类型 | 必需 | 说明 |
+|------|------|------|------|
+| event | `string` | ✅ | 事件名称 |
+| filter | `(payload: T) => boolean` | ✅ | 过滤器函数 |
+| handler | `(payload: T) => void` | ✅ | 事件处理函数 |
+
+**返回值**：`() => void` - 取消订阅的函数
+
+**示例**：
+
+```typescript
+// 只处理微博平台的事件
+extBus.onFiltered(
+  'content:post:created',
+  (data) => data.platformId === 'weibo',
+  (data) => console.log('微博新帖子:', data)
+);
+```
+
+#### 历史记录相关方法
+
+```typescript
+// 启用历史记录
+extBus.setHistoryEnabled(true);
+
+// 设置最大历史记录数
+extBus.setMaxHistory(200);
+
+// 获取历史记录
+const history = extBus.getHistory();
+// 返回: EventRecord[]
+
+// 清除历史记录
+extBus.clearHistory();
+```
+
+### 6.2 工具函数
+
+#### waitForEvent(bus, event, timeout?)
+
+创建一个 Promise，在事件触发时 resolve。
+
+**参数**：
+
+| 参数 | 类型 | 必需 | 说明 |
+|------|------|------|------|
+| bus | `IEventBus` | ✅ | 事件总线实例 |
+| event | `string` | ✅ | 事件名称 |
+| timeout | `number` | ❌ | 超时时间（毫秒），0 表示不超时 |
+
+**返回值**：`Promise<T>` - 事件 payload
+
+**示例**：
+
+```typescript
+import { eventBus, waitForEvent } from '@/services/eventBus';
+
+try {
+  const result = await waitForEvent(eventBus, 'llm:task:completed', 5000);
+  console.log('任务完成:', result);
+} catch (error) {
+  console.log('等待超时');
+}
+```
+
+#### collectEvents(bus, event, duration)
+
+收集指定时间内的所有事件。
+
+**参数**：
+
+| 参数 | 类型 | 必需 | 说明 |
+|------|------|------|------|
+| bus | `IEventBus` | ✅ | 事件总线实例 |
+| event | `string` | ✅ | 事件名称 |
+| duration | `number` | ✅ | 收集时长（毫秒） |
+
+**返回值**：`Promise<T[]>` - 收集到的事件数组
+
+**示例**：
+
+```typescript
+// 收集 1 秒内的所有点赞事件
+const likes = await collectEvents(eventBus, 'interaction:like', 1000);
+console.log(`收集到 ${likes.length} 个点赞事件`);
+```
+
+#### throttledOn(bus, event, handler, wait)
+
+节流订阅，在指定时间内只触发一次。
+
+**参数**：
+
+| 参数 | 类型 | 必需 | 说明 |
+|------|------|------|------|
+| bus | `IEventBus` | ✅ | 事件总线实例 |
+| event | `string` | ✅ | 事件名称 |
+| handler | `(payload: T) => void` | ✅ | 事件处理函数 |
+| wait | `number` | ✅ | 节流时间（毫秒） |
+
+**返回值**：`() => void` - 取消订阅的函数
+
+**示例**：
+
+```typescript
+// 滚动事件节流，100ms 内只处理一次
+throttledOn(eventBus, 'scroll:update', handleScroll, 100);
+```
+
+#### debouncedOn(bus, event, handler, wait)
+
+防抖订阅，连续触发时只在最后一次触发后执行。
+
+**参数**：
+
+| 参数 | 类型 | 必需 | 说明 |
+|------|------|------|------|
+| bus | `IEventBus` | ✅ | 事件总线实例 |
+| event | `string` | ✅ | 事件名称 |
+| handler | `(payload: T) => void` | ✅ | 事件处理函数 |
+| wait | `number` | ✅ | 防抖时间（毫秒） |
+
+**返回值**：`() => void` - 取消订阅的函数
+
+**示例**：
+
+```typescript
+// 搜索输入防抖，300ms 后执行
+const unsubscribe = debouncedOn(eventBus, 'search:input', handleSearch, 300);
+
+// 取消订阅时会清除待执行的防抖
+unsubscribe();
+```
+
+---
+
+## 7. 相关文档
 
 - [事件类型](./event-types.md) - 预定义的系统事件
 - [使用指南](./usage-guide.md) - 详细使用示例

@@ -57,6 +57,57 @@ export interface LLMTaskConfig {
 
 ---
 
+## 共享上下文配置
+
+用于声明任务需要从 Context Sharing Service 获取的上下文。
+
+```typescript
+import type { ContextType } from '@/services/contextSharing/types';
+
+/**
+ * 共享上下文配置
+ * @see docs/systems/context-sharing-service/integration-design.md
+ */
+export interface SharedContextConfig {
+  /**
+   * 需要聚合的上下文类型
+   * 例如：['narrative:content', 'social:trending']
+   */
+  types?: ContextType[];
+
+  /**
+   * 需要聚合的上下文 ID
+   * 例如：['weibo:trending', 'narrative:current']
+   */
+  ids?: string[];
+
+  /**
+   * 输出格式
+   * @default 'xml'
+   */
+  format?: 'xml' | 'text' | 'markdown' | 'raw';
+
+  /**
+   * 最大 token 数限制
+   * @default 2000
+   */
+  maxTokens?: number;
+
+  /**
+   * 优先级排序（优先保留的类型，token 不足时按此顺序截断）
+   */
+  priority?: ContextType[];
+
+  /**
+   * 注入的变量名
+   * @default 'sharedContext'
+   */
+  variableName?: string;
+}
+```
+
+---
+
 ## 输入字段定义
 
 ```typescript
@@ -163,6 +214,13 @@ export interface LLMTaskDefinition {
    * 格式：appId:providerId，如 ["weibo:narrative", "weibo:existing-content"]
    */
   contextProviders?: string[];
+  
+  /**
+   * 共享上下文配置（来自 Context Sharing Service）
+   * 如果配置了此字段，任务执行时会自动从 Context Sharing Service 聚合上下文
+   * @see docs/systems/context-sharing-service/integration-design.md
+   */
+  sharedContextConfig?: SharedContextConfig;
   
   // === 元数据 ===
   

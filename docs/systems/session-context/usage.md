@@ -1,498 +1,333 @@
 # 使用示例
 
-## 服务初始化
+> 会话上下文服务的使用指南和代码示例
 
-在应用启动时初始化 Bridge 事件监听。
+## 初始化
+
+### 在应用启动时初始化
+
+在 `App.vue` 或 `main.ts` 中初始化会话上下文监听器：
 
 ```typescript
-// src/main.ts 或 src/App.vue
-
-import { initSessionContextListeners } from '@/services/sessionContext';
-import { useAdapter } from '@/composables/useAdapter';
-import { onMounted, onUnmounted } from 'vue';
+// src/App.vue
+import { onMounted, onUnmounted } from 'vue'
+import {
+  initSessionContextListeners,
+  cleanupListeners,
+} from '@/services/sessionContext'
+import { useAdapter } from '@/composables/useAdapter'
 
 onMounted(() => {
-  const adapter = useAdapter();
-  
-  // 初始化 Bridge 事件监听
-  // 服务会自动响应 sync、swipe_changed 等事件
-  initSessionContextListeners(adapter);
-});
+  const adapter = useAdapter()
+  initSessionContextListeners(adapter)
+})
 
 onUnmounted(() => {
-  // 可选：销毁事件监听
-  destroySessionContextListeners();
-});
+  cleanupListeners()
+})
 ```
 
 ---
 
-## 写入数据时附加来源
+## 写入数据
 
-保存数据时，调用 `getCurrentSourceTracking()` 获取来源信息。
+### 附加来源追踪信息
 
-### 基础用法
+在保存数据时，使用 `getCurrentSourceTracking()` 获取当前来源信息并附加到数据上：
 
 ```typescript
-// src/apps/myapp/stores/postStore.ts
+import { sessionContextService } from '@/services/sessionContext'
+import { db } from '@/services/database'
 
-import { sessionContextService } from '@/services/sessionContext';
-import { db } from '@/services/database';
-
-export async function savePost(postData: PostInput) {
-  // 1. 获取当前来源追踪信息
-  const source = sessionContextService.getCurrentSourceTracking();
-  
-  // 2. 构建完整记录
-  const post = {
-    id: generateId(),
-    platformId: 'myapp',
-    ...postData,
-    source, // 附加来源（可能为 undefined）
-  };
-  
-  // 3. 保存到数据库
-  await db.socialPosts.add(post);
-  
-  return post;
+// 微博帖子类型（扩展 TrackedContent）
+interface WeiboPost {
+  id: string
+  content: string
+  authorId: string
+  likes: number
+  source?: ContentSourceTracking  // 来源追踪
 }
-```
 
-### 批量保存
+async function createPost(content: string, authorId: string): Promise<WeiboPost> {
+  // 获取当前来源追踪信息
+  const source = sessionContextService.getCurrentSourceTracking()
 
-```typescript
-export async function savePosts(postsData: PostInput[]) {
-  // 获取一次来源信息，用于所有记录
-  const source = sessionContextService.getCurrentSourceTracking();
-  
-  const posts = postsData.map(data => ({
+  const post: WeiboPost = {
     id: generateId(),
-    platformId: 'myapp',
-    ...data,
-    source,
-  }));
-  
-  await db.socialPosts.bulkAdd(posts);
-  
-  return posts;
-}
-```
-
-### 条件附加来源
-
-```typescript
-export async function savePostWithOptions(
-  postData: PostInput,
-  options?: { skipSourceTracking?: boolean }
-) {
-  const post = {
-    id: generateId(),
-    platformId: 'myapp',
-    ...postData,
-  };
-  
-  // 根据选项决定是否附加来源
-  if (!options?.skipSourceTracking) {
-    post.source = sessionContextService.getCurrentSourceTracking();
+    content,
+    authorId,
+    likes: 0,
+    source,  // 附加来源信息
   }
-  
-  await db.socialPosts.add(post);
-  return post;
+
+  await db.posts.add(post)
+  return post
+}
+```
+
+### 批量创建数据
+
+```typescript
+async function createMultiplePosts(
+  posts: Array<{ content: string; authorId: string }>
+): Promise<WeiboPost[]> {
+  // 一次性获取来源（所有帖子使用相同来源）
+  const source = sessionContextService.getCurrentSourceTracking()
+
+  const newPosts = posts.map((p) => ({
+    id: generateId(),
+    content: p.content,
+    authorId: p.authorId,
+    likes: 0,
+    source,
+  }))
+
+  await db.posts.bulkAdd(newPosts)
+  return newPosts
 }
 ```
 
 ---
 
-## 读取数据时过滤
+## 读取数据
 
-加载数据时，使用 `buildSourceFilter()` 构建过滤函数。
+### 使用过滤器
 
-### 基础用法（会话级过滤）
+使用 `buildSourceFilter()` 构建过滤器，按不同级别过滤数据：
 
 ```typescript
-import { sessionContextService } from '@/services/sessionContext';
-import { db } from '@/services/database';
+import { sessionContextService } from '@/services/sessionContext'
 
-export async function loadPosts() {
-  // 构建过滤器（默认按会话过滤）
-  const filter = sessionContextService.buildSourceFilter('session');
-  
-  const posts = await db.socialPosts
-    .where('platformId').equals('myapp')
+// 按会话过滤（默认）
+async function loadSessionPosts(): Promise<WeiboPost[]> {
+  const filter = sessionContextService.buildSourceFilter('session')
+
+  return await db.posts
+    .where('platformId')
+    .equals('weibo')
     .filter(filter)
-    .toArray();
-  
-  return posts;
+    .toArray()
+}
+
+// 按楼层过滤
+async function loadMessagePosts(): Promise<WeiboPost[]> {
+  const filter = sessionContextService.buildSourceFilter('message')
+
+  return await db.posts.filter(filter).toArray()
+}
+
+// 按 Swipe 过滤
+async function loadSwipePosts(): Promise<WeiboPost[]> {
+  const filter = sessionContextService.buildSourceFilter('swipe')
+
+  return await db.posts.filter(filter).toArray()
+}
+
+// 显示所有数据
+async function loadAllPosts(): Promise<WeiboPost[]> {
+  const filter = sessionContextService.buildSourceFilter('all')
+
+  return await db.posts.filter(filter).toArray()
 }
 ```
 
-### 不同过滤模式
+### 排除历史数据
+
+默认情况下，无来源追踪的历史数据会被包含。如需排除：
 
 ```typescript
-// 按会话过滤（推荐）
-const sessionFilter = sessionContextService.buildSourceFilter('session');
-
-// 按楼层过滤（显示到当前楼层为止的数据）
-const messageFilter = sessionContextService.buildSourceFilter('message');
-
-// 按 Swipe 过滤（最后楼层精确匹配）
-const swipeFilter = sessionContextService.buildSourceFilter('swipe');
-
-// 不过滤（显示所有数据）
-const allFilter = sessionContextService.buildSourceFilter('all');
+const filter = sessionContextService.buildSourceFilter('session', {
+  includeUntracked: false,  // 排除无来源的历史数据
+})
 ```
 
-### 结合其他查询条件
+### 使用便捷方法检查
 
 ```typescript
-export async function loadPostsByAuthor(authorId: string) {
-  const filter = sessionContextService.buildSourceFilter('session');
-  
-  // 先按作者过滤，再按会话过滤
-  const posts = await db.socialPosts
-    .where('authorId').equals(authorId)
-    .filter(filter)
-    .toArray();
-  
-  return posts;
+// 检查单个数据项
+function shouldShowPost(post: WeiboPost): boolean {
+  return sessionContextService.belongsToCurrentSession(post)
 }
-```
 
-### 内存数组过滤
-
-```typescript
-export function filterPostsInMemory(posts: Post[]) {
-  const filter = sessionContextService.buildSourceFilter('session');
-  
-  return posts.filter(filter);
-}
+// 在列表中过滤
+const visiblePosts = allPosts.filter((post) =>
+  sessionContextService.belongsToCurrentSession(post)
+)
 ```
 
 ---
 
-## 响应式 UI
-
-在 Vue 组件中使用响应式状态。
+## 在 Vue 组件中使用
 
 ### 显示连接状态
 
 ```vue
 <template>
   <div class="connection-status">
-    <span v-if="isConnected" class="connected">
-      ✅ 已连接: {{ context.characterName }}
-    </span>
-    <span v-else class="disconnected">
-      ⚠️ 未连接到酒馆
-    </span>
+    <template v-if="isConnected">
+      <span class="status-dot connected"></span>
+      <span>已连接: {{ context.characterName }}</span>
+    </template>
+    <template v-else>
+      <span class="status-dot disconnected"></span>
+      <span>未连接到酒馆</span>
+    </template>
   </div>
 </template>
 
 <script setup lang="ts">
-import { sessionContextService } from '@/services/sessionContext';
+import { sessionContextService } from '@/services/sessionContext'
+import { computed } from 'vue'
 
-const context = sessionContextService.context;
-const isConnected = sessionContextService.isConnected;
+// 响应式访问
+const context = sessionContextService.context
+const isConnected = computed(() => sessionContextService.isConnected)
 </script>
 ```
 
-### 显示详细上下文
-
-```vue
-<template>
-  <div class="context-info">
-    <div>会话: {{ context.sessionId || '无' }}</div>
-    <div>楼层: {{ context.messageId ?? '无' }}</div>
-    <div>Swipe: {{ context.swipeId ?? '无' }}</div>
-    <div>角色: {{ context.characterName || '未知' }}</div>
-    <div>玩家: {{ context.playerName || '未知' }}</div>
-  </div>
-</template>
-
-<script setup lang="ts">
-import { sessionContextService } from '@/services/sessionContext';
-
-const context = sessionContextService.context;
-</script>
-```
-
-### 计算属性
-
-```vue
-<script setup lang="ts">
-import { computed } from 'vue';
-import { sessionContextService } from '@/services/sessionContext';
-
-const context = sessionContextService.context;
-
-// 格式化显示
-const contextSummary = computed(() => {
-  if (!context.value.sessionId) {
-    return '未连接';
-  }
-  return `${context.value.characterName} - 楼层 ${context.value.messageId}`;
-});
-
-// 是否在特定会话
-const isInSession = computed(() => 
-  context.value.sessionId === 'target_session_id'
-);
-</script>
-```
-
----
-
-## 监听上下文变化
-
-使用 Vue watch 监听上下文变化，触发数据刷新。
-
-### 监听 Session 切换
+### 监听上下文变化
 
 ```typescript
-import { watch } from 'vue';
-import { sessionContextService } from '@/services/sessionContext';
+import { watch } from 'vue'
+import { sessionContextService } from '@/services/sessionContext'
 
-// 会话切换时刷新数据
+// 监听会话变化
 watch(
-  () => sessionContextService.context.value.sessionId,
+  () => sessionContextService.context.sessionId,
   (newSessionId, oldSessionId) => {
     if (newSessionId !== oldSessionId) {
-      console.log('会话切换:', oldSessionId, '->', newSessionId);
-      refreshData();
+      console.log('会话已切换:', newSessionId)
+      // 重新加载数据
+      loadData()
     }
   }
-);
-```
+)
 
-### 监听 Swipe 切换
-
-```typescript
-// Swipe 切换时刷新数据（最后楼层的分支变化）
+// 监听楼层变化
 watch(
-  () => sessionContextService.context.value.swipeId,
-  (newSwipeId, oldSwipeId) => {
-    if (newSwipeId !== oldSwipeId) {
-      console.log('Swipe 切换:', oldSwipeId, '->', newSwipeId);
-      refreshLastFloorData();
-    }
+  () => sessionContextService.context.messageId,
+  (newMessageId) => {
+    console.log('楼层已更新:', newMessageId)
   }
-);
+)
 ```
 
-### 监听多个字段
+### 使用事件总线监听
 
 ```typescript
-// 监听 messageId 或 swipeId 变化
-watch(
-  () => ({
-    messageId: sessionContextService.context.value.messageId,
-    swipeId: sessionContextService.context.value.swipeId,
+import { eventBus } from '@/services/eventBus'
+import { onMounted, onUnmounted } from 'vue'
+
+onMounted(() => {
+  const unsubscribe = eventBus.on('session-context:changed', (event) => {
+    console.log('上下文变化:', event.type)
+    console.log('新上下文:', event.newContext)
+  })
+
+  onUnmounted(() => {
+    unsubscribe()
+  })
+})
+```
+
+---
+
+## 与 Pinia Store 集成
+
+### 在 Store 中使用
+
+```typescript
+import { defineStore } from 'pinia'
+import { sessionContextService } from '@/services/sessionContext'
+import { db } from '@/services/database'
+
+export const useWeiboStore = defineStore('weibo', {
+  state: () => ({
+    posts: [] as WeiboPost[],
+    loading: false,
   }),
-  (newValue, oldValue) => {
-    if (
-      newValue.messageId !== oldValue.messageId ||
-      newValue.swipeId !== oldValue.swipeId
-    ) {
-      console.log('楼层/Swipe 变化:', oldValue, '->', newValue);
-      refreshData();
-    }
-  },
-  { deep: true }
-);
-```
 
-### 在 Store 中监听
-
-```typescript
-// src/apps/myapp/stores/myStore.ts
-
-import { defineStore } from 'pinia';
-import { watch, ref } from 'vue';
-import { sessionContextService } from '@/services/sessionContext';
-
-export const useMyStore = defineStore('myapp', () => {
-  const posts = ref<Post[]>([]);
-  
-  // 自动响应会话变化
-  watch(
-    () => sessionContextService.context.value.sessionId,
-    () => {
-      loadPosts();
-    },
-    { immediate: true }
-  );
-  
-  async function loadPosts() {
-    const filter = sessionContextService.buildSourceFilter('session');
-    posts.value = await db.socialPosts
-      .where('platformId').equals('myapp')
-      .filter(filter)
-      .toArray();
-  }
-  
-  return { posts, loadPosts };
-});
-```
-
----
-
-## 完整 Store 示例
-
-一个完整的 Store 实现，展示所有使用模式。
-
-```typescript
-// src/apps/myapp/stores/contentStore.ts
-
-import { defineStore } from 'pinia';
-import { ref, computed, watch } from 'vue';
-import { sessionContextService } from '@/services/sessionContext';
-import { db } from '@/services/database';
-import type { Post, PostInput, FilterMode } from '../types';
-
-export const useContentStore = defineStore('myapp-content', () => {
-  // ========== 状态 ==========
-  const posts = ref<Post[]>([]);
-  const filterMode = ref<FilterMode>('session');
-  const isLoading = ref(false);
-  
-  // ========== 计算属性 ==========
-  
-  // 获取连接状态
-  const isConnected = computed(() => 
-    sessionContextService.isConnected.value
-  );
-  
-  // 获取当前会话信息
-  const currentSession = computed(() => 
-    sessionContextService.context.value
-  );
-  
-  // ========== 数据加载 ==========
-  
-  async function loadPosts() {
-    isLoading.value = true;
-    
-    try {
-      const filter = sessionContextService.buildSourceFilter(filterMode.value);
-      
-      posts.value = await db.socialPosts
-        .where('platformId').equals('myapp')
-        .reverse()
-        .filter(filter)
-        .limit(100)
-        .toArray();
-    } finally {
-      isLoading.value = false;
-    }
-  }
-  
-  // ========== 数据写入 ==========
-  
-  async function createPost(input: PostInput): Promise<Post> {
-    const source = sessionContextService.getCurrentSourceTracking();
-    
-    const post: Post = {
-      id: `post_${Date.now()}`,
-      platformId: 'myapp',
-      content: input.content,
-      authorId: input.authorId,
-      timestamp: Date.now(),
-      source,
-    };
-    
-    await db.socialPosts.add(post);
-    
-    // 刷新列表
-    await loadPosts();
-    
-    return post;
-  }
-  
-  // ========== 过滤模式切换 ==========
-  
-  function setFilterMode(mode: FilterMode) {
-    filterMode.value = mode;
-    loadPosts();
-  }
-  
-  // ========== 自动响应会话变化 ==========
-  
-  watch(
-    () => sessionContextService.context.value.sessionId,
-    () => {
-      loadPosts();
-    }
-  );
-  
-  // Swipe 切换时也刷新（如果使用 swipe 过滤模式）
-  watch(
-    () => sessionContextService.context.value.swipeId,
-    () => {
-      if (filterMode.value === 'swipe') {
-        loadPosts();
+  actions: {
+    async loadPosts() {
+      this.loading = true
+      try {
+        const filter = sessionContextService.buildSourceFilter('session')
+        this.posts = await db.posts.filter(filter).toArray()
+      } finally {
+        this.loading = false
       }
-    }
-  );
-  
-  // ========== 导出 ==========
-  
-  return {
-    // 状态
-    posts,
-    filterMode,
-    isLoading,
-    isConnected,
-    currentSession,
-    
-    // 方法
-    loadPosts,
-    createPost,
-    setFilterMode,
-  };
-});
+    },
+
+    async createPost(content: string, authorId: string) {
+      const source = sessionContextService.getCurrentSourceTracking()
+
+      const post: WeiboPost = {
+        id: generateId(),
+        content,
+        authorId,
+        likes: 0,
+        source,
+      }
+
+      await db.posts.add(post)
+      this.posts.push(post)
+    },
+  },
+})
 ```
 
 ---
 
-## 调试技巧
+## 最佳实践
 
-### 在控制台查看上下文
+### 1. 始终在写入时附加来源
 
 ```typescript
-// 导入服务
-import { sessionContextService } from '@/services/sessionContext';
+// ✅ 正确
+const post = {
+  ...data,
+  source: sessionContextService.getCurrentSourceTracking(),
+}
 
-// 查看当前状态
-console.log('Context:', sessionContextService.getContext());
-console.log('Connected:', sessionContextService.isConnected.value);
-
-// 查看来源追踪
-console.log('Source:', sessionContextService.getCurrentSourceTracking());
+// ❌ 错误 - 忘记附加来源
+const post = { ...data }
 ```
 
-### 测试过滤器
+### 2. 使用默认的 session 过滤模式
 
 ```typescript
-const filter = sessionContextService.buildSourceFilter('session');
+// ✅ 推荐 - 按会话过滤
+const filter = sessionContextService.buildSourceFilter('session')
 
-// 测试记录
-const testRecord = {
-  id: 'test',
-  source: {
-    sessionId: 'abc',
-    sourceMessageId: 10,
-  },
-};
-
-console.log('通过过滤:', filter(testRecord)); // true 或 false
+// 或使用默认值
+const filter = sessionContextService.buildSourceFilter()
 ```
 
-### 开启调试模式
+### 3. 处理未连接状态
 
 ```typescript
-// 如果服务支持调试模式
-sessionContextService.setDebug(true);
+function saveData() {
+  const source = sessionContextService.getCurrentSourceTracking()
 
-// 之后的状态变更会输出日志
-// [SessionContext] updateContext: { sessionId: 'abc', ... }
+  if (!source) {
+    // 未连接时的处理
+    console.warn('未连接到酒馆，数据将不带来源信息')
+  }
+
+  // 继续保存...
+}
+```
+
+### 4. 保持历史数据兼容
+
+```typescript
+// ✅ 推荐 - 包含历史数据
+const filter = sessionContextService.buildSourceFilter('session', {
+  includeUntracked: true,  // 默认值
+})
+
+// 只在明确需要时排除
+const strictFilter = sessionContextService.buildSourceFilter('session', {
+  includeUntracked: false,
+})
 ```

@@ -529,3 +529,88 @@ if (result.status === 'aborted') {
 3. **错误处理**: 为关键步骤设置 `onError` 策略
 4. **循环限制**: 设置合理的 `maxIterations` 防止无限循环
 5. **调试友好**: 使用有意义的步骤名称和描述
+
+---
+
+## 8. 与 Context Sharing Service 集成
+
+> **详细设计**: [Context Sharing 集成设计](../context-sharing-service/integration-design.md)
+
+### 8.1 使用共享上下文变量
+
+提示词变量可以从 Context Sharing Service 自动获取：
+
+```typescript
+import type { AppPromptDefinition } from '@/types/prompts';
+
+const forumPostPrompt: AppPromptDefinition = {
+  scene: 'forum.generate-post',
+  name: '生成论坛帖子',
+  category: 'social',
+  template: `请根据以下叙事内容生成论坛帖子：
+
+{{narrativeContent}}
+
+热门话题参考：
+{{trendingTopics}}`,
+
+  availableVariables: [
+    {
+      name: 'narrativeContent',
+      type: 'string',
+      description: '当前叙事内容',
+      // 从 Context Sharing Service 获取
+      source: 'shared-context',
+      sharedContextConfig: {
+        contextId: 'narrative:current',
+        format: 'text',
+      },
+    },
+    {
+      name: 'trendingTopics',
+      type: 'string',
+      description: '热门话题',
+      source: 'shared-context',
+      sharedContextConfig: {
+        contextType: 'social:trending',
+        format: 'xml',
+      },
+    },
+  ],
+};
+```
+
+### 8.2 异步渲染
+
+使用共享上下文变量时，需要使用异步渲染方法：
+
+```typescript
+import { PromptService } from '@/services/prompt';
+
+async function generateWithSharedContext(scene: string, userVariables: Record<string, unknown>) {
+  const template = PromptService.getPromptByScene(scene);
+  if (!template) return null;
+  
+  // 使用异步渲染（自动解析共享上下文变量）
+  const rendered = await PromptService.renderPromptAsync(template, userVariables, {
+    resolveSharedContext: true,
+  });
+  
+  // 调用 AI 生成
+  const result = await AIGenerateService.generate({
+    userPrompt: rendered.userPrompt,
+    systemPrompt: rendered.systemPrompt,
+  });
+  
+  return result;
+}
+```
+
+### 8.3 变量来源类型
+
+| 来源 | 说明 | 示例 |
+| --- | --- | --- |
+| `input` | 用户手动输入 | 默认类型 |
+| `global` | 全局变量 | `appName` |
+| `context` | ContextProvider | 来自 LLM Task 的上下文 |
+| `shared-context` | Context Sharing Service | 跨应用共享的上下文 |

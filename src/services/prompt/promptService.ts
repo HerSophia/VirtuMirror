@@ -10,8 +10,9 @@ import type {
   RenderedPrompt,
   PromptEditPermission,
   AppPromptDefinition,
-  PROMPT_STORAGE_KEY,
+  PromptVariable,
 } from '@/types/prompts';
+import { contextSharingService } from '@/services/contextSharing';
 
 // 定义内置提示词数组
 // 注意：2024-05 根据重构，内置提示词已被清空。
@@ -188,6 +189,116 @@ export class PromptService {
       systemPrompt: template.systemPrompt ? replaceVariables(template.systemPrompt) : undefined,
       userPrompt: replaceVariables(template.template),
     };
+  }
+
+  /**
+   * 渲染提示词模板（支持共享上下文变量）- 异步版本
+   * @param template 提示词模板
+   * @param variables 用户传入的变量
+   * @param options 渲染选项
+   */
+  static async renderPromptAsync(
+    template: PromptTemplate,
+    variables: Record<string, unknown>,
+    options?: RenderOptions
+  ): Promise<RenderedPrompt> {
+    const config = this.getConfig();
+    
+    // 1. 收集共享上下文变量（如果启用）
+    let sharedVars: Record<string, string> = {};
+    if (options?.resolveSharedContext !== false) {
+      sharedVars = await this.resolveSharedContextVariables(
+        template.availableVariables || []
+      );
+    }
+    
+    // 2. 合并所有变量（优先级：用户传入 > 共享上下文 > 全局变量）
+    const allVariables = {
+      ...config.globalVariables,
+      ...sharedVars,
+      ...variables,
+    };
+    
+    // 3. 替换变量占位符
+    const replaceVariables = (text: string): string => {
+      return text.replace(/\{\{(\w+)\}\}/g, (match, varName) => {
+        if (varName in allVariables) {
+          return String(allVariables[varName]);
+        }
+        // 查找默认值
+        const varDef = template.availableVariables.find(v => v.name === varName);
+        if (varDef?.defaultValue !== undefined) {
+          return String(varDef.defaultValue);
+        }
+        return match; // 保留原占位符
+      });
+    };
+    
+    return {
+      systemPrompt: template.systemPrompt ? replaceVariables(template.systemPrompt) : undefined,
+      userPrompt: replaceVariables(template.template),
+    };
+  }
+
+  /**
+   * 解析共享上下文变量
+   * @param variableDefs 变量定义列表
+   */
+  private static async resolveSharedContextVariables(
+    variableDefs: PromptVariable[]
+  ): Promise<Record<string, string>> {
+    const result: Record<string, string> = {};
+
+    for (const varDef of variableDefs) {
+      // 只处理共享上下文来源的变量
+      if (varDef.source !== 'shared-context') continue;
+
+      const config = varDef.sharedContextConfig;
+      if (!config) continue;
+
+      try {
+        let value: unknown;
+
+        if (config.contextId) {
+          // 获取指定 ID 的上下文
+          value = await contextSharingService.getAsync(config.contextId);
+        } else if (config.contextType) {
+          // 获取指定类型的所有上下文
+          const contexts = contextSharingService.getByType(config.contextType);
+          value = Array.from(contexts.values());
+        }
+
+        // 格式化值
+        result[varDef.name] = this.formatContextValue(value, config.format);
+      } catch (error) {
+        console.error(`[PromptService] 解析共享上下文变量 ${varDef.name} 失败:`, error);
+        result[varDef.name] = varDef.defaultValue?.toString() || '';
+      }
+    }
+
+    return result;
+  }
+
+  /**
+   * 格式化上下文值
+   * @param value 原始值
+   * @param format 格式化方式
+   */
+  private static formatContextValue(
+    value: unknown,
+    format?: 'raw' | 'text' | 'xml'
+  ): string {
+    if (value === undefined || value === null) return '';
+
+    switch (format) {
+      case 'xml':
+        return `<context>${JSON.stringify(value)}</context>`;
+      case 'text':
+        return typeof value === 'string' ? value : JSON.stringify(value, null, 2);
+      case 'raw':
+      default:
+        return typeof value === 'string' ? value : JSON.stringify(value);
+    }
   }
   
   /**
@@ -594,6 +705,14 @@ export class PromptService {
     
     return newPrompt;
   }
+}
+
+/**
+ * 渲染选项
+ */
+export interface RenderOptions {
+  /** 是否解析共享上下文变量（默认 true） */
+  resolveSharedContext?: boolean;
 }
 
 export default PromptService;
