@@ -12,6 +12,9 @@ import { ref, computed } from 'vue'
 import { cloudSyncService } from '@/services/cloudSyncService'
 import { sessionService } from '@/services/database'
 import { getBridgeAdapter } from '@/adapters/bridgeAdapter'
+import { loggerService } from '@/services/logger'
+
+const logger = loggerService.child('store:appState')
 
 export interface AppIconPosition {
   x: number  // 相对于容器的 x 百分比 (0-100)
@@ -305,15 +308,16 @@ export const useAppStateStore = defineStore('appState', () => {
   }
 
   async function checkAndRestore(sessionId: string) {
-    console.log(`[AppState] Checking session: ${sessionId}`)
+    logger.debug('检查会话', { sessionId })
     const session = await sessionService.getSession(sessionId)
     
     if (!session) {
-      console.log('[AppState] No local session found, attempting restore from cloud...')
+      logger.info('未找到本地会话，尝试从云端恢复')
       try {
         await cloudSyncService.restoreFromCloud()
+        logger.info('云端恢复成功')
       } catch (error) {
-        console.error('[AppState] Restore from cloud failed:', error)
+        logger.error('云端恢复失败', error)
       }
     }
   }
@@ -325,8 +329,9 @@ export const useAppStateStore = defineStore('appState', () => {
   async function saveState() {
     try {
       await cloudSyncService.backupToCloud()
+      logger.debug('状态已备份到云端')
     } catch (error) {
-      console.error('[AppState] Backup to cloud failed:', error)
+      logger.error('备份到云端失败', error)
     }
   }
   

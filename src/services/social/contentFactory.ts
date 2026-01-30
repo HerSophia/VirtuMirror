@@ -17,6 +17,9 @@ import { UserPool } from '../account/userPool'
 import AIGenerateService from '../aiGenerateService'
 import { PromptService } from '../prompt/promptService'
 import { PlatformRegistry } from './registry'
+import { loggerService } from '@/services/logger'
+
+const logger = loggerService.child('service:contentFactory')
 
 interface GenerationTask {
   id: string
@@ -84,7 +87,7 @@ export class ContentFactory {
       userPrompt = rendered.userPrompt
     } else {
       // Fallback (保留原有逻辑作为后备)
-      console.warn('Prompt social.post.generate not found, using fallback.')
+      logger.warn('Prompt social.post.generate not found, using fallback.')
       systemPrompt = `
 你是一个专业的社交媒体内容生成引擎。
 当前平台: ${platform.name}
@@ -169,7 +172,7 @@ JSON Output:
       userPrompt = rendered.userPrompt
     } else {
       // Fallback
-      console.warn('Prompt social.comment.batch not found, using fallback.')
+      logger.warn('Prompt social.comment.batch not found, using fallback.')
       systemPrompt = `
 你是一个社交媒体评论区模拟器。
 当前平台: ${platform.name}
@@ -220,7 +223,7 @@ JSON Array Output:
             comment.nickname,
             comment.userType || 'passerby'
           ).catch((err) => {
-            console.warn('[ContentFactory] Failed to create commenter account:', err)
+            logger.warn('Failed to create commenter account:', err)
           })
         }
       }
@@ -269,7 +272,7 @@ JSON Array Output:
       scope: 'session',
     })
 
-    console.log(`[ContentFactory] Created commenter account: ${nickname} (${account.id})`)
+    logger.debug(`Created commenter account: ${nickname} (${account.id})`)
     return account.id
   }
 
@@ -287,7 +290,7 @@ JSON Array Output:
     try {
       return JSON5.parse(cleanText)
     } catch (e) {
-      console.warn('JSON parse failed, attempting repair...', e)
+      logger.warn('JSON parse failed, attempting repair...', e)
 
       // 简单修复: 尝试找到第一个 { 或 [ 和 最后一个 } 或 ]
       const firstBrace = cleanText.indexOf('{')
@@ -312,7 +315,7 @@ JSON Array Output:
         try {
           return JSON5.parse(cleanText)
         } catch (e2) {
-          console.error('JSON repair failed', e2)
+          logger.error('JSON repair failed', e2)
           // 如果还是失败，且在生产环境，可能需要再次调用 LLM 进行修复 (Reflection)
           // 暂时返回 null 或抛出
           throw new Error('Failed to parse JSON content')

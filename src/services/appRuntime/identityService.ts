@@ -6,6 +6,7 @@
 
 import { db } from '@/services/database'
 import { AppDataService } from './dataService'
+import { loggerService } from '@/services/logger'
 import type {
   AppSourceInfo,
   TrustedRepository,
@@ -163,7 +164,8 @@ export async function verifyEd25519Signature(
 
   // 简化：如果签名和公钥都存在且非空，则认为验证通过
   // 这仅用于开发阶段，生产环境必须实现真正的验证
-  console.warn('[AppIdentity] 签名验证使用简化实现，生产环境需要真正的 Ed25519 验证')
+  const logger = loggerService.child('service:appIdentity')
+  logger.warn('签名验证使用简化实现，生产环境需要真正的 Ed25519 验证')
   return _signature.length > 0 && _publicKey.length > 0
 }
 
@@ -439,7 +441,8 @@ export async function executeDataMigration(
               await dataService.set(action.field, transformer(oldVal))
             }
           } else {
-            console.warn(`[AppIdentity] 未知的转换器: ${action.transformer}`)
+            const logger = loggerService.child('service:appIdentity')
+            logger.warn(`未知的转换器: ${action.transformer}`)
           }
           break
         }

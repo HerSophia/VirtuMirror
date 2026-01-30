@@ -13,6 +13,9 @@
 import { getBridgeAdapter } from '@/adapters/bridgeAdapter'
 import type { SyncPayload, SyncedMessage } from '@/adapters/bridgeAdapter'
 import type { SwipeChangedEvent } from '@/types/swipe'
+import { loggerService } from '@/services/logger'
+
+const logger = loggerService.child('service:narrative')
 
 export interface NarrativeEvent {
   sessionId: string // 会话ID
@@ -64,7 +67,7 @@ class NarrativeService {
    * @param event 叙事事件
    */
   publish(event: NarrativeEvent): void {
-    console.log('[NarrativeService] 发布叙事:', {
+    logger.debug('发布叙事:', {
       messageId: event.messageId,
       swipeId: event.swipeId,
       isSwipe: event.isSwipeChange || false,
@@ -75,7 +78,7 @@ class NarrativeService {
       try {
         cb(event)
       } catch (error) {
-        console.error('[NarrativeService] Subscriber error:', error)
+        logger.error('Subscriber error:', error)
       }
     })
   }
@@ -87,13 +90,13 @@ class NarrativeService {
    */
   setupBridgeListener(): void {
     if (this._initialized) {
-      console.warn('[NarrativeService] Already initialized')
+      logger.warn('Already initialized')
       return
     }
 
     const adapter = getBridgeAdapter()
     if (!adapter) {
-      console.log('[NarrativeService] Bridge adapter not available yet, will setup when connected')
+      logger.debug('Bridge adapter not available yet, will setup when connected')
       // 标记为待初始化，等 Bridge 连接后再设置
       this._pendingSetup = true
       return
@@ -111,13 +114,13 @@ class NarrativeService {
     // 监听完整同步（首次加载或刷新时）
     const unsubFullSync = adapter.on('bridge:full_sync', (payload: unknown) => {
       const syncPayload = payload as SyncPayload
-      console.log('[NarrativeService] 收到 full_sync，消息数:', syncPayload.messages?.length || 0)
+      logger.debug('收到 full_sync，消息数:', syncPayload.messages?.length || 0)
       if (syncPayload.messages && syncPayload.messages.length > 0) {
         // 拼接所有消息为完整叙事
         const narrativeContent = this._buildNarrativeFromMessages(syncPayload.messages as SyncedMessage[])
         const lastMsg = syncPayload.messages[syncPayload.messages.length - 1] as SyncedMessage
         
-        console.log('[NarrativeService] 从 full_sync 发布叙事，共', syncPayload.messages.length, '条消息')
+        logger.debug('从 full_sync 发布叙事，共', syncPayload.messages.length, '条消息')
         this.publish({
           sessionId: lastMsg.sessionId || adapter.getCurrentSessionId() || '',
           messageId: lastMsg.message_id,
@@ -131,11 +134,11 @@ class NarrativeService {
     // 监听新消息（增量更新）
     const unsubMessage = adapter.on('message_received', (payload: unknown) => {
       const syncPayload = payload as SyncPayload
-      console.log('[NarrativeService] 收到 message_received，消息数:', syncPayload.messages?.length || 0)
+      logger.debug('收到 message_received，消息数:', syncPayload.messages?.length || 0)
       if (syncPayload.messages && syncPayload.messages.length > 0) {
         const lastMsg = syncPayload.messages[syncPayload.messages.length - 1] as SyncedMessage
         if (lastMsg.message) {
-          console.log('[NarrativeService] 从 message_received 发布叙事，楼层:', lastMsg.message_id)
+          logger.debug('从 message_received 发布叙事，楼层:', lastMsg.message_id)
           this.publish({
             sessionId: lastMsg.sessionId || adapter.getCurrentSessionId() || '',
             messageId: lastMsg.message_id,
@@ -150,7 +153,7 @@ class NarrativeService {
     // 监听 Swipe 切换
     const unsubSwipe = adapter.on('swipe_changed', (payload: unknown) => {
       const swipeEvent = payload as SwipeChangedEvent
-      console.log('[NarrativeService] 收到 swipe_changed，楼层:', swipeEvent.messageId)
+      logger.debug('收到 swipe_changed，楼层:', swipeEvent.messageId)
       this.publish({
         sessionId: adapter.getCurrentSessionId() || '',
         messageId: swipeEvent.messageId,
@@ -163,7 +166,7 @@ class NarrativeService {
 
     this._unsubscribers.push(unsubFullSync, unsubMessage, unsubSwipe)
     this._initialized = true
-    console.log('[NarrativeService] Bridge listener setup complete')
+    logger.info('Bridge listener setup complete')
   }
 
   /**

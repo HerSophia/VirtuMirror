@@ -4,6 +4,9 @@
  */
 
 import type { LLMTaskDefinition } from './types';
+import { loggerService } from '@/services/logger';
+
+const logger = loggerService.child('service:taskRegistry');
 
 /**
  * 任务定义注册表
@@ -27,9 +30,7 @@ export class TaskRegistry {
 
     // 检查 ID 冲突
     if (this.definitions.has(definition.id)) {
-      console.warn(
-        `[TaskRegistry] 任务定义 "${definition.id}" 已存在，将被覆盖`
-      );
+      logger.warn(`任务定义 "${definition.id}" 已存在，将被覆盖`);
     }
 
     // 存储定义
@@ -41,9 +42,7 @@ export class TaskRegistry {
     }
     this.byApp.get(definition.appId)!.add(definition.id);
 
-    console.log(
-      `[TaskRegistry] 已注册任务定义: ${definition.id} (${definition.name})`
-    );
+    logger.debug(`已注册任务定义: ${definition.id} (${definition.name})`);
   }
 
   /**
@@ -53,9 +52,7 @@ export class TaskRegistry {
     for (const def of definitions) {
       this.register(def);
     }
-    console.log(
-      `[TaskRegistry] 批量注册完成，共 ${definitions.length} 个定义`
-    );
+    logger.info(`批量注册完成，共 ${definitions.length} 个定义`);
   }
 
   /**
@@ -81,7 +78,7 @@ export class TaskRegistry {
       }
     }
 
-    console.log(`[TaskRegistry] 已注销任务定义: ${id}`);
+    logger.debug(`已注销任务定义: ${id}`);
     return true;
   }
 
@@ -160,7 +157,7 @@ export class TaskRegistry {
   clear(): void {
     this.definitions.clear();
     this.byApp.clear();
-    console.log('[TaskRegistry] 已清空所有任务定义');
+    logger.debug('已清空所有任务定义');
   }
 
   /**

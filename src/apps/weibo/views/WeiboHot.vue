@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { useWeiboStore } from '@/stores/weiboStore';
+import { loggerService } from '@/services/logger/loggerService';
 import { useLLMTaskStore } from '../stores';
 import { storeToRefs } from 'pinia';
 
@@ -43,12 +44,12 @@ async function handleUpdateTrending() {
       // 刷新热搜列表
       await store.refreshHotSearch();
     } else {
-      console.warn('[WeiboHot] 未找到更新热榜任务');
+      loggerService.warn('WeiboHot', '未找到更新热榜任务');
       // 降级：使用普通刷新
       await store.refreshHotSearch();
     }
   } catch (error) {
-    console.error('[WeiboHot] 更新热榜失败:', error);
+    loggerService.error('WeiboHot', '更新热榜失败:', error);
   } finally {
     isUpdating.value = false;
   }

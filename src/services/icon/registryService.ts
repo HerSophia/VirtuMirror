@@ -15,6 +15,7 @@ import type {
   AppCategory,
   QuickActionConfig,
 } from '@/types/icon'
+import { loggerService } from '@/services/logger/loggerService'
 
 // 重新导出类型以保持兼容性
 export type { RegisteredAppIcon, IconRegistrationOptions, AppCategory, QuickActionConfig }
@@ -30,7 +31,7 @@ class IconRegistryServiceFacade {
     try {
       useIconStore()
     } catch (e) {
-      console.warn('[IconRegistry] Failed to initialize store (Pinia not active?)', e)
+      loggerService.warn('IconRegistry', 'Failed to initialize store (Pinia not active?)', e)
     }
   }
 

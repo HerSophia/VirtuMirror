@@ -7,6 +7,7 @@ import { db, sessionService } from '@/services/database'
 import { getBridgeAdapter } from '@/adapters/bridgeAdapter'
 import { exportDB, importInto } from 'dexie-export-import'
 import type { Session } from '@/services/database/schema'
+import { loggerService } from '@/services/logger/loggerService'
 
 export interface SyncStatus {
   lastSyncTime: number | null
@@ -57,7 +58,7 @@ export class CloudSyncService {
     this._status.error = null
     
     try {
-      console.log(`[CloudSync] 开始备份会话: ${sessionId}`)
+      loggerService.info('CloudSync', `开始备份会话: ${sessionId}`)
       
       // 1. 导出数据 (Blob)
       let rowCount = 0
@@ -87,7 +88,7 @@ export class CloudSyncService {
         prettyJson: true
       })
       
-      console.log(`[CloudSync] 导出完成，共匹配 ${rowCount} 条记录 (sessionId=${sessionId})`)
+      loggerService.info('CloudSync', `导出完成，共匹配 ${rowCount} 条记录 (sessionId=${sessionId})`)
 
       // 2. 读取 Blob 为 JSON 对象
       const text = await blob.text()
@@ -120,10 +121,10 @@ export class CloudSyncService {
       }
 
       this._status.lastSyncTime = result.syncedAt || Date.now()
-      console.log(`[CloudSync] 备份成功，时间: ${this._status.lastSyncTime}`)
+      loggerService.info('CloudSync', `备份成功，时间: ${this._status.lastSyncTime}`)
       
     } catch (error) {
-      console.error('[CloudSync] 备份失败:', error)
+      loggerService.error('CloudSync', '备份失败:', error)
       this._status.error = error instanceof Error ? error.message : String(error)
       throw error
     } finally {
@@ -145,7 +146,7 @@ export class CloudSyncService {
     this._status.error = null
 
     try {
-      console.log(`[CloudSync] 开始恢复会话: ${sessionId}`)
+      loggerService.info('CloudSync', `开始恢复会话: ${sessionId}`)
 
       // 1. 获取云端备份
       const url = `${this.getServerUrl()}/api/v1/storage/${sessionId}`
@@ -159,7 +160,7 @@ export class CloudSyncService {
       const response = await fetch(url, { headers })
       
       if (response.status === 404) {
-        console.log('[CloudSync] 云端无备份')
+        loggerService.info('CloudSync', '云端无备份')
         return // 无备份，无需恢复
       }
       
@@ -177,11 +178,11 @@ export class CloudSyncService {
 
       // 2. 清理本地数据 (为了避免合并导致的数据残留)
       // 注意：这里需要事务吗？deleteSession 已经是一个事务了
-      console.log('[CloudSync] 清理本地数据...')
+      loggerService.info('CloudSync', '清理本地数据...')
       await sessionService.deleteSession(sessionId)
 
       // 3. 导入数据
-      console.log('[CloudSync] 导入数据...')
+      loggerService.info('CloudSync', '导入数据...')
       const blob = new Blob([JSON.stringify(result.data)], { type: 'application/json' })
       
       await importInto(db, blob, {
@@ -199,10 +200,10 @@ export class CloudSyncService {
       // 这一步通常由调用者处理，或者通过事件总线通知
 
       this._status.lastSyncTime = result.timestamp
-      console.log(`[CloudSync] 恢复成功`)
+      loggerService.info('CloudSync', '恢复成功')
 
     } catch (error) {
-      console.error('[CloudSync] 恢复失败:', error)
+      loggerService.error('CloudSync', '恢复失败:', error)
       this._status.error = error instanceof Error ? error.message : String(error)
       throw error
     } finally {
@@ -243,7 +244,7 @@ export class CloudSyncService {
       
       return { exists: false }
     } catch (error) {
-      console.error('[CloudSync] 检查备份失败:', error)
+      loggerService.error('CloudSync', '检查备份失败:', error)
       return { exists: false }
     }
   }

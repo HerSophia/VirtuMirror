@@ -14,6 +14,10 @@ import type { PhoneChatData } from '@/types/persistedData'
 import type { PhoneGlobalConfig } from '@/types/globalConfig'
 import { CHAT_DATA_KEY } from '@/types/persistedData'
 import { GLOBAL_CONFIG_KEY } from '@/types/globalConfig'
+import { loggerService } from '@/services/logger'
+
+// 创建模块专属日志器
+const logger = loggerService.child('sillytavern-adapter')
 
 /**
  * 获取父窗口引用
@@ -90,7 +94,7 @@ export class SillyTavernAdapter implements HostAdapter {
     if (!this.isAvailable()) {
       throw new Error('[SillyTavernAdapter] SillyTavern context not available')
     }
-    console.log('[SillyTavernAdapter] Initialized')
+    logger.info('Initialized')
   }
   
   /**
@@ -158,7 +162,7 @@ export class SillyTavernAdapter implements HostAdapter {
       const variables = this.getVariables({ type: 'chat' })
       return (variables[CHAT_DATA_KEY] as PhoneChatData) ?? null
     } catch (error) {
-      console.error('[SillyTavernAdapter] Failed to get chat data:', error)
+      logger.error('Failed to get chat data:', error)
       return null
     }
   }
@@ -167,9 +171,9 @@ export class SillyTavernAdapter implements HostAdapter {
     try {
       data._meta.lastUpdated = new Date().toISOString()
       this.insertOrAssignVariables({ [CHAT_DATA_KEY]: data }, { type: 'chat' })
-      console.log('[SillyTavernAdapter] Chat data saved')
+      logger.debug('Chat data saved')
     } catch (error) {
-      console.error('[SillyTavernAdapter] Failed to save chat data:', error)
+      logger.error('Failed to save chat data:', error)
     }
   }
   
@@ -178,7 +182,7 @@ export class SillyTavernAdapter implements HostAdapter {
       const variables = this.getVariables({ type: 'global' })
       return (variables[GLOBAL_CONFIG_KEY] as PhoneGlobalConfig) ?? null
     } catch (error) {
-      console.error('[SillyTavernAdapter] Failed to get global config:', error)
+      logger.error('Failed to get global config:', error)
       return null
     }
   }
@@ -187,9 +191,9 @@ export class SillyTavernAdapter implements HostAdapter {
     try {
       config._meta.lastUpdated = new Date().toISOString()
       this.insertOrAssignVariables({ [GLOBAL_CONFIG_KEY]: config }, { type: 'global' })
-      console.log('[SillyTavernAdapter] Global config saved')
+      logger.debug('Global config saved')
     } catch (error) {
-      console.error('[SillyTavernAdapter] Failed to save global config:', error)
+      logger.error('Failed to save global config:', error)
     }
   }
   
@@ -226,7 +230,7 @@ export class SillyTavernAdapter implements HostAdapter {
   
   stopGeneration(): void {
     // TODO: 实现停止生成的逻辑
-    console.log('[SillyTavernAdapter] Stop generation requested')
+    logger.debug('Stop generation requested')
   }
   
   // ==================== 消息操作 ====================
@@ -246,7 +250,7 @@ export class SillyTavernAdapter implements HostAdapter {
   
   async sendUserMessage(content: string): Promise<void> {
     // TODO: 实现发送用户消息的逻辑
-    console.log('[SillyTavernAdapter] Send user message:', content)
+    logger.debug('Send user message:', content)
   }
   
   // ==================== 事件系统 ====================

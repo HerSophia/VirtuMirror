@@ -4,6 +4,7 @@
  */
 import type { DesktopItem, AppItem, DesktopPage } from '../types'
 import { getIconRegistryService, type AppCategory } from '@/services/icon'
+import { loggerService } from '@/services/logger/loggerService'
 
 /**
  * App 分类配置（静态配置，作为后备）
@@ -169,7 +170,7 @@ export function useDesktopOrganize() {
         y: slot.y,
       }
       pages[slot.pageIndex].items.push(itemWithPosition)
-      console.log('[useDesktopOrganize] 添加 App 到页面', slot.pageIndex, '位置:', slot.x, slot.y)
+      loggerService.debug('DesktopOrganize', `添加 App 到页面 ${slot.pageIndex} 位置: ${slot.x}, ${slot.y}`)
       return slot.pageIndex
     } else {
       // 需要新建页面
@@ -179,7 +180,7 @@ export function useDesktopOrganize() {
         items: [{ ...newItem, x: 0, y: 0 }]
       }
       pages.push(newPage)
-      console.log('[useDesktopOrganize] 创建新页面添加 App')
+      loggerService.debug('DesktopOrganize', '创建新页面添加 App')
       return pages.length - 1
     }
   }
@@ -258,7 +259,7 @@ export function useDesktopOrganize() {
       newPages.push({ id: 'page-1', items: [] })
     }
     
-    console.log('[useDesktopOrganize] 整理完成，共', sortedApps.length, '个 App，分布在', newPages.length, '页')
+    loggerService.info('DesktopOrganize', `整理完成，共 ${sortedApps.length} 个 App，分布在 ${newPages.length} 页`)
     
     return newPages
   }

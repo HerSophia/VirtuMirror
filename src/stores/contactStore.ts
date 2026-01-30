@@ -6,6 +6,9 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { Contact, ContactDirectory, ContactId } from '@/types'
 import { PLAYER_ID } from '@/types'
+import { loggerService } from '@/services/logger'
+
+const logger = loggerService.child('store:contact')
 
 export const useContactStore = defineStore('contact', () => {
   // ==================== 状态 ====================
@@ -61,6 +64,7 @@ export const useContactStore = defineStore('contact', () => {
   /** 批量更新联系人 */
   function upsertContacts(contactsToUpdate: Contact[]) {
     contactsToUpdate.forEach(contact => upsertContact(contact))
+    logger.debug('批量更新联系人', { count: contactsToUpdate.length })
   }
   
   /** 删除联系人 */
@@ -181,8 +185,10 @@ export const useContactStore = defineStore('contact', () => {
   
   /** 清空所有联系人 */
   function clearAll() {
+    const count = Object.keys(contacts.value).length
     contacts.value = {}
     avatarCache.value = {}
+    logger.info('所有联系人已清空', { clearedCount: count })
   }
   
   return {

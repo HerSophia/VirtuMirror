@@ -5,6 +5,9 @@
 
 import type { ContextProvider } from './types';
 import { getContextProviderRegistry } from './ContextProviderRegistry';
+import { loggerService } from '@/services/logger';
+
+const logger = loggerService.child('service:variableResolver');
 
 // ==================== 类型定义 ====================
 
@@ -135,7 +138,7 @@ export class VariableResolver {
         try {
           customVariables[key] = await resolver();
         } catch (error) {
-          console.warn(`[VariableResolver] 自定义解析器 "${key}" 执行失败:`, error);
+          logger.warn(`自定义解析器 "${key}" 执行失败:`, error);
         }
       }
     }

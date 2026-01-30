@@ -34,6 +34,9 @@ import { getTaskScheduler, resetTaskScheduler } from './TaskScheduler';
 import { registerBuiltinProviders } from './builtinProviders';
 import { createTaskFromDefinition, syncTaskWithDefinition } from './utils';
 import { useAIStore } from '@/stores/aiStore';
+import { loggerService } from '@/services/logger';
+
+const logger = loggerService.child('service:llmTask');
 
 // ==================== 服务实现 ====================
 
@@ -64,11 +67,11 @@ export class LLMTaskService implements ILLMTaskService {
 
   async initialize(): Promise<void> {
     if (this._initialized) {
-      console.log('[LLMTaskService] 服务已初始化，跳过');
+      logger.debug('服务已初始化，跳过');
       return;
     }
 
-    console.log('[LLMTaskService] 开始初始化服务...');
+    logger.info('开始初始化服务...');
 
     // 1. 注册内置上下文提供器
     registerBuiltinProviders();
@@ -101,7 +104,7 @@ export class LLMTaskService implements ILLMTaskService {
     }
 
     this._initialized = true;
-    console.log('[LLMTaskService] 服务初始化完成');
+    logger.info('服务初始化完成');
   }
 
   // ==================== 任务定义注册 ====================
@@ -115,9 +118,7 @@ export class LLMTaskService implements ILLMTaskService {
   registerTaskDefinitions(definitions: LLMTaskDefinition[]): void {
     const registry = getTaskRegistry();
     registry.registerBatch(definitions);
-    console.log(
-      `[LLMTaskService] 批量注册 ${definitions.length} 个任务定义`
-    );
+    logger.info(`批量注册 ${definitions.length} 个任务定义`);
   }
 
   unregisterTaskDefinition(id: string): boolean {
@@ -146,23 +147,23 @@ export class LLMTaskService implements ILLMTaskService {
 
   registerTaskTemplate(template: LLMTaskTemplate): void {
     if (this.templates.has(template.id)) {
-      console.warn(`[LLMTaskService] 模板已存在，将覆盖: ${template.id}`);
+      logger.warn(`模板已存在，将覆盖: ${template.id}`);
     }
     this.templates.set(template.id, template);
-    console.log(`[LLMTaskService] 已注册模板: ${template.id} (${template.name})`);
+    logger.debug(`已注册模板: ${template.id} (${template.name})`);
   }
 
   registerTaskTemplates(templates: LLMTaskTemplate[]): void {
     for (const template of templates) {
       this.templates.set(template.id, template);
     }
-    console.log(`[LLMTaskService] 批量注册 ${templates.length} 个任务模板`);
+    logger.info(`批量注册 ${templates.length} 个任务模板`);
   }
 
   unregisterTaskTemplate(id: string): boolean {
     const result = this.templates.delete(id);
     if (result) {
-      console.log(`[LLMTaskService] 已注销模板: ${id}`);
+      logger.debug(`已注销模板: ${id}`);
     }
     return result;
   }
@@ -234,9 +235,7 @@ export class LLMTaskService implements ILLMTaskService {
     this.addLog(task.id, 'info', '任务已创建');
     this.emit('task-created', task);
 
-    console.log(
-      `[LLMTaskService] 已创建任务: ${task.id} (${task.name})`
-    );
+    logger.debug(`已创建任务: ${task.id} (${task.name})`);
 
     return task;
   }
@@ -272,7 +271,7 @@ export class LLMTaskService implements ILLMTaskService {
     this.tasks.delete(taskId);
     this.logs.delete(taskId);
 
-    console.log(`[LLMTaskService] 已删除任务: ${taskId}`);
+    logger.debug(`已删除任务: ${taskId}`);
     return true;
   }
 
@@ -595,10 +594,7 @@ export class LLMTaskService implements ILLMTaskService {
         try {
           handler(task, data);
         } catch (error) {
-          console.error(
-            `[LLMTaskService] 事件处理器错误 (${event}):`,
-            error
-          );
+          logger.error(`事件处理器错误 (${event}):`, error);
         }
       }
     }
@@ -630,7 +626,7 @@ export class LLMTaskService implements ILLMTaskService {
       }
     }
 
-    console.log('[LLMTaskService] 已同步任务定义');
+    logger.debug('已同步任务定义');
   }
 
   /**
@@ -668,7 +664,7 @@ export class LLMTaskService implements ILLMTaskService {
     this.eventHandlers.clear();
 
     this._initialized = false;
-    console.log('[LLMTaskService] 服务已销毁');
+    logger.info('服务已销毁');
   }
 }
 

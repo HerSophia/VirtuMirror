@@ -6,6 +6,7 @@ import type {
   SystemSoundKey,
   AudioFocusChange
 } from '@/types/audio'
+import { loggerService } from '@/services/logger/loggerService'
 
 /**
  * 内置音效映射表 (示例 URL)
@@ -163,7 +164,7 @@ export class AudioService {
     }
 
     const handleError = (e: Event) => {
-      console.error('[AudioService] Playback error:', source, e)
+      loggerService.error('AudioService', 'Playback error:', { source, event: e })
       cleanup()
     }
 
@@ -177,7 +178,7 @@ export class AudioService {
     const playPromise = audio.play().catch(err => {
       // 只有非用户中断的错误才打印，避免 "The play() request was interrupted" 刷屏
       if (err.name !== 'AbortError') {
-        console.warn('[AudioService] Play failed:', err)
+        loggerService.warn('AudioService', 'Play failed:', err)
       }
       cleanup()
     })
@@ -191,7 +192,7 @@ export class AudioService {
         cleanup()
       },
       pause: () => audio.pause(),
-      resume: () => audio.play().catch(console.warn),
+      resume: () => audio.play().catch(err => loggerService.warn('AudioService', 'Resume failed:', err)),
       setVolume: (v: number) => {
         playbackItem.baseVolume = v
         this.updateItemVolume(playbackItem)
@@ -215,7 +216,7 @@ export class AudioService {
       })
     } else {
       // 避免在开发环境刷屏，仅在首次调用时提示或使用 debug 级别
-      console.debug(`[AudioService] System sound not configured for key: ${key}`)
+      loggerService.debug('AudioService', `System sound not configured for key: ${key}`)
     }
   }
 

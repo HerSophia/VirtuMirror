@@ -8,6 +8,7 @@
 
 import { db } from '@/services/database';
 import { writeQueue } from '@/services/database/writeQueue';
+import { loggerService } from '@/services/logger/loggerService';
 import { getNarrativeCacheMetadata } from './llm/narrativeIntegration';
 import { accountService } from '@/services/account/accountService';
 import { useAccountStore } from '@/stores/accountStore';
@@ -56,7 +57,7 @@ async function migrateSocialPosts(): Promise<number> {
     return 0;
   }
   
-  console.log(`[DataMigration] 发现 ${postsToMigrate.length} 条博文需要迁移`);
+  loggerService.info('DataMigration', `发现 ${postsToMigrate.length} 条博文需要迁移`);
   
   // 批量更新
   await writeQueue.enqueue('system', 'weibo:migration', async () => {
@@ -86,7 +87,7 @@ async function migrateSocialComments(): Promise<number> {
     return 0;
   }
   
-  console.log(`[DataMigration] 发现 ${commentsToMigrate.length} 条评论需要迁移`);
+  loggerService.info('DataMigration', `发现 ${commentsToMigrate.length} 条评论需要迁移`);
   
   // 批量更新
   await writeQueue.enqueue('system', 'weibo:migration', async () => {
@@ -116,7 +117,7 @@ async function migrateSocialTopics(): Promise<number> {
     return 0;
   }
   
-  console.log(`[DataMigration] 发现 ${topicsToMigrate.length} 条热搜需要迁移`);
+  loggerService.info('DataMigration', `发现 ${topicsToMigrate.length} 条热搜需要迁移`);
   
   // 批量更新
   await writeQueue.enqueue('system', 'weibo:migration', async () => {
@@ -142,11 +143,11 @@ export async function migrateWeiboData(): Promise<{
 }> {
   // 检查是否已完成迁移
   if (await isMigrationCompleted()) {
-    console.log('[DataMigration] 数据迁移已完成，跳过');
+    loggerService.debug('DataMigration', '数据迁移已完成，跳过');
     return { skipped: true, posts: 0, comments: 0, topics: 0 };
   }
   
-  console.log('[DataMigration] 开始微博数据迁移...');
+  loggerService.info('DataMigration', '开始微博数据迁移...');
   
   try {
     // 执行各表迁移
@@ -157,7 +158,7 @@ export async function migrateWeiboData(): Promise<{
     // 标记迁移完成
     await markMigrationCompleted();
     
-    console.log('[DataMigration] 微博数据迁移完成:', {
+    loggerService.info('DataMigration', '微博数据迁移完成:', {
       posts,
       comments,
       topics,
@@ -165,7 +166,7 @@ export async function migrateWeiboData(): Promise<{
     
     return { skipped: false, posts, comments, topics };
   } catch (error) {
-    console.error('[DataMigration] 微博数据迁移失败:', error);
+    loggerService.error('DataMigration', '微博数据迁移失败:', error);
     throw error;
   }
 }
@@ -175,7 +176,7 @@ export async function migrateWeiboData(): Promise<{
  */
 export async function resetMigrationStatus(): Promise<void> {
   await db.appSettings.delete(MIGRATION_KEY);
-  console.log('[DataMigration] 迁移状态已重置');
+  loggerService.info('DataMigration', '迁移状态已重置');
 }
 
 // ==================== 会话绑定迁移 ====================
@@ -224,7 +225,7 @@ export async function bindDataToSession(
   comments: number;
   topics: number;
 }> {
-  console.log('[SessionBinding] 开始将数据绑定到会话:', { sessionId, messageId, swipeId });
+  loggerService.info('SessionBinding', '开始将数据绑定到会话:', { sessionId, messageId, swipeId });
   
   const source: ContentSourceTracking = {
     sessionId,
@@ -246,7 +247,7 @@ export async function bindDataToSession(
       .toArray();
     
     if (allPosts.length > 0) {
-      console.log(`[SessionBinding] 发现 ${allPosts.length} 条博文需要绑定`);
+      loggerService.info('SessionBinding', `发现 ${allPosts.length} 条博文需要绑定`);
       
       await writeQueue.enqueue('system', 'weibo:session-binding', async () => {
         const updates = allPosts.map(post => ({
@@ -267,7 +268,7 @@ export async function bindDataToSession(
       .toArray();
     
     if (allComments.length > 0) {
-      console.log(`[SessionBinding] 发现 ${allComments.length} 条评论需要绑定`);
+      loggerService.info('SessionBinding', `发现 ${allComments.length} 条评论需要绑定`);
       
       await writeQueue.enqueue('system', 'weibo:session-binding', async () => {
         const updates = allComments.map(comment => ({
@@ -288,7 +289,7 @@ export async function bindDataToSession(
       .toArray();
     
     if (allTopics.length > 0) {
-      console.log(`[SessionBinding] 发现 ${allTopics.length} 条热搜需要绑定`);
+      loggerService.info('SessionBinding', `发现 ${allTopics.length} 条热搜需要绑定`);
       
       await writeQueue.enqueue('system', 'weibo:session-binding', async () => {
         const updates = allTopics.map(topic => ({
@@ -301,11 +302,11 @@ export async function bindDataToSession(
       topics = allTopics.length;
     }
     
-    console.log('[SessionBinding] 会话绑定完成:', { posts, comments, topics });
+    loggerService.info('SessionBinding', '会话绑定完成:', { posts, comments, topics });
     return { posts, comments, topics };
     
   } catch (error) {
-    console.error('[SessionBinding] 会话绑定失败:', error);
+    loggerService.error('SessionBinding', '会话绑定失败:', error);
     throw error;
   }
 }
@@ -328,7 +329,7 @@ export async function autoBindToCurrentSession(): Promise<{
   const metadata = getNarrativeCacheMetadata();
   
   if (!metadata?.sessionId) {
-    console.log('[SessionBinding] 无会话上下文，跳过自动绑定');
+    loggerService.debug('SessionBinding', '无会话上下文，跳过自动绑定');
     return null;
   }
   
@@ -336,7 +337,7 @@ export async function autoBindToCurrentSession(): Promise<{
   
   // 检查是否已完成此会话的绑定
   if (await isSessionBindingCompleted(sessionId)) {
-    console.log('[SessionBinding] 会话已绑定过，跳过:', sessionId);
+    loggerService.debug('SessionBinding', '会话已绑定过，跳过:', sessionId);
     return null;
   }
   
@@ -355,7 +356,7 @@ export async function autoBindToCurrentSession(): Promise<{
 export async function resetSessionBindingStatus(sessionId?: string): Promise<void> {
   if (sessionId) {
     await db.appSettings.delete(`${SESSION_BINDING_KEY}:${sessionId}`);
-    console.log('[SessionBinding] 会话绑定状态已重置:', sessionId);
+    loggerService.info('SessionBinding', '会话绑定状态已重置:', sessionId);
   } else {
     // 删除所有会话绑定记录
     const allSettings = await db.appSettings.toArray();
@@ -365,7 +366,7 @@ export async function resetSessionBindingStatus(sessionId?: string): Promise<voi
     
     if (bindingKeys.length > 0) {
       await db.appSettings.bulkDelete(bindingKeys);
-      console.log(`[SessionBinding] 已重置 ${bindingKeys.length} 个会话绑定状态`);
+      loggerService.info('SessionBinding', `已重置 ${bindingKeys.length} 个会话绑定状态`);
     }
   }
 }
@@ -429,7 +430,7 @@ message: string;
     }
     
     const sessionId = sessionContext.sessionId;
-    console.log('[AccountBinding] 当前会话 ID:', sessionId);
+    loggerService.debug('AccountBinding', '当前会话 ID:', sessionId);
     
     // 2. 获取玩家的微博账号
     const playerAccount = await accountStore.getPlayerAccountForPlatform('weibo');
@@ -443,7 +444,7 @@ message: string;
     }
     
     const accountId = playerAccount.id;
-    console.log('[AccountBinding] 微博账号 ID:', accountId);
+    loggerService.debug('AccountBinding', '微博账号 ID:', accountId);
     
     // 3. 检查是否已绑定
     if (await isAccountBoundToSession(accountId, sessionId)) {
@@ -464,13 +465,13 @@ message: string;
         scopeSessionId: sessionId,
       });
       
-      console.log('[AccountBinding] 已更新账号 scopeSessionId:', sessionId);
+      loggerService.debug('AccountBinding', '已更新账号 scopeSessionId:', sessionId);
     }
     
     // 5. 标记绑定完成
     await markAccountBoundToSession(accountId, sessionId);
     
-    console.log('[AccountBinding] 账号会话绑定完成:', { accountId, sessionId });
+    loggerService.info('AccountBinding', '账号会话绑定完成:', { accountId, sessionId });
     
     return {
       success: true,
@@ -480,7 +481,7 @@ message: string;
     };
     
   } catch (error: any) {
-    console.error('[AccountBinding] 账号会话绑定失败:', error);
+    loggerService.error('AccountBinding', '账号会话绑定失败:', error);
     return {
       success: false,
       message: `绑定失败: ${error.message || '未知错误'}`,
@@ -501,20 +502,20 @@ export async function autoBindAccountToCurrentSession(): Promise<boolean> {
     
     // 没有会话信息，跳过
     if (!sessionContext?.sessionId || sessionContext.sessionId === 'standalone-session') {
-      console.log('[AccountBinding] 独立模式或无会话，跳过自动绑定');
+      loggerService.debug('AccountBinding', '独立模式或无会话，跳过自动绑定');
       return false;
     }
     
     // 获取玩家账号
     const playerAccount = await accountStore.getPlayerAccountForPlatform('weibo');
     if (!playerAccount) {
-      console.log('[AccountBinding] 无微博账号，跳过自动绑定');
+      loggerService.debug('AccountBinding', '无微博账号，跳过自动绑定');
       return false;
     }
     
     // 检查是否已绑定
     if (await isAccountBoundToSession(playerAccount.id, sessionContext.sessionId)) {
-      console.log('[AccountBinding] 账号已绑定，跳过');
+      loggerService.debug('AccountBinding', '账号已绑定，跳过');
       return false;
     }
     
@@ -523,7 +524,7 @@ export async function autoBindAccountToCurrentSession(): Promise<boolean> {
     return result.success;
     
   } catch (error) {
-    console.warn('[AccountBinding] 自动绑定失败:', error);
+    loggerService.warn('AccountBinding', '自动绑定失败:', error);
     return false;
   }
 }
@@ -570,7 +571,7 @@ export async function getAccountBindingStatus(): Promise<AccountBindingStatus> {
       boundSessionId: playerAccount.scopeSessionId ?? undefined,
     };
   } catch (error) {
-    console.warn('[AccountBinding] 获取绑定状态失败:', error);
+    loggerService.warn('AccountBinding', '获取绑定状态失败:', error);
     return {
       hasAccount: false,
       accountId: undefined,

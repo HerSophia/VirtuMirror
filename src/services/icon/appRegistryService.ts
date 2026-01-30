@@ -24,6 +24,7 @@ import { getGlobalConfigService } from '@/services/globalConfigService'
 import type { RegisteredAppIcon, AppCategory, QuickActionConfig } from '@/types/icon'
 import type { AppIconConfig } from '@/types/appPackage'
 import type { DesktopItem, DesktopPage } from '@/apps/home/types'
+import { loggerService } from '@/services/logger/loggerService'
 
 /**
  * App 注册配置
@@ -92,7 +93,7 @@ class AppRegistryService {
 
     // 检查是否已注册
     if (registeredApps.has(config.id) && !override) {
-      console.warn(`[AppRegistry] App '${config.id}' already registered, skipping`)
+      loggerService.warn('AppRegistry', `App '${config.id}' already registered, skipping`)
       return
     }
 
@@ -107,7 +108,7 @@ class AppRegistryService {
       this.ensureInDesktop(config)
     }
 
-    console.log(`[AppRegistry] Registered app: ${config.id}`)
+    loggerService.info('AppRegistry', `Registered app: ${config.id}`)
   }
 
   /**
@@ -190,7 +191,7 @@ class AppRegistryService {
         layout.currentPageIndex ?? 0
       )
 
-      console.log(`[AppRegistry] Added '${config.id}' to desktop layout`)
+      loggerService.info('AppRegistry', `Added '${config.id}' to desktop layout`)
 
       // 通知桌面更新（如果有回调）
       if (desktopUpdateCallback) {
@@ -199,7 +200,7 @@ class AppRegistryService {
     } catch (error) {
       // GlobalConfigService 可能还未初始化
       pendingDesktopApps.push(config)
-      console.log(`[AppRegistry] Queued '${config.id}' for later desktop addition`)
+      loggerService.debug('AppRegistry', `Queued '${config.id}' for later desktop addition`)
     }
   }
 

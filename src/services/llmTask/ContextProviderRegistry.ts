@@ -4,6 +4,9 @@
  */
 
 import type { ContextProvider } from './types';
+import { loggerService } from '@/services/logger';
+
+const logger = loggerService.child('service:contextProviderRegistry');
 
 /**
  * 上下文提供器注册表
@@ -26,9 +29,7 @@ export class ContextProviderRegistry {
 
     // 检查 ID 冲突
     if (this.providers.has(provider.id)) {
-      console.warn(
-        `[ContextProviderRegistry] 提供器 "${provider.id}" 已存在，将被覆盖`
-      );
+      logger.warn(`提供器 "${provider.id}" 已存在，将被覆盖`);
     }
 
     // 存储提供器
@@ -40,9 +41,7 @@ export class ContextProviderRegistry {
     }
     this.byApp.get(provider.appId)!.add(provider.id);
 
-    console.log(
-      `[ContextProviderRegistry] 已注册提供器: ${provider.id} (${provider.name})`
-    );
+    logger.debug(`已注册提供器: ${provider.id} (${provider.name})`);
   }
 
   /**
@@ -77,7 +76,7 @@ export class ContextProviderRegistry {
       }
     }
 
-    console.log(`[ContextProviderRegistry] 已注销提供器: ${id}`);
+    logger.debug(`已注销提供器: ${id}`);
     return true;
   }
 
@@ -155,10 +154,7 @@ export class ContextProviderRegistry {
           Object.assign(result, context);
         }
       } catch (error) {
-        console.error(
-          `[ContextProviderRegistry] 提供器 "${provider.id}" 执行失败:`,
-          error
-        );
+        logger.error(`提供器 "${provider.id}" 执行失败:`, error);
       }
     }
 
@@ -178,7 +174,7 @@ export class ContextProviderRegistry {
   clear(): void {
     this.providers.clear();
     this.byApp.clear();
-    console.log('[ContextProviderRegistry] 已清空所有提供器');
+    logger.debug('已清空所有提供器');
   }
 
   /**

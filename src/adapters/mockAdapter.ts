@@ -1,6 +1,19 @@
 /**
- * Mock 适配器实现
+ * @deprecated 此文件已废弃，不再维护
+ * 
+ * Mock 适配器实现（已废弃）
  * 用于开发环境模拟宿主环境的 API
+ * 
+ * 废弃原因：
+ * - 开发模式现在使用 BridgeAdapter 连接本地 Bridge Server
+ * - 或使用 SillyTavernAdapter 直接在酒馆环境运行
+ * 
+ * 如需本地开发，请：
+ * 1. 启动 Bridge Server: `cd server && npm run dev`
+ * 2. 使用 BridgeAdapter 连接
+ * 
+ * @see BridgeAdapter
+ * @see SillyTavernAdapter
  */
 
 import type {
@@ -14,6 +27,7 @@ import type { PhoneChatData } from '@/types/persistedData'
 import type { PhoneGlobalConfig } from '@/types/globalConfig'
 import { CHAT_DATA_KEY, createEmptyPhoneChatData } from '@/types/persistedData'
 import { GLOBAL_CONFIG_KEY, createDefaultGlobalConfig } from '@/types/globalConfig'
+import { loggerService } from '@/services/logger/loggerService'
 
 /**
  * 简单事件发射器
@@ -37,7 +51,7 @@ class SimpleEventEmitter {
       try {
         handler(...args)
       } catch (error) {
-        console.error(`[MockAdapter] Event handler error for "${event}":`, error)
+        loggerService.error('MockAdapter', `Event handler error for "${event}":`, error)
       }
     })
   }
@@ -103,7 +117,7 @@ export class MockAdapter implements HostAdapter {
       this.globalVariables[GLOBAL_CONFIG_KEY] = options.initialGlobalConfig
     }
     
-    console.log('[MockAdapter] Initialized in dev mode')
+    loggerService.info('MockAdapter', 'Initialized in dev mode')
   }
   
   // ==================== 变量操作 ====================
@@ -115,7 +129,7 @@ export class MockAdapter implements HostAdapter {
       case 'global':
         return { ...this.globalVariables }
       default:
-        console.warn(`[MockAdapter] Unsupported variable type: ${option.type}`)
+        loggerService.warn('MockAdapter', `Unsupported variable type: ${option.type}`)
         return {}
     }
   }
@@ -129,7 +143,7 @@ export class MockAdapter implements HostAdapter {
         this.globalVariables = { ...variables }
         break
       default:
-        console.warn(`[MockAdapter] Unsupported variable type: ${option.type}`)
+        loggerService.warn('MockAdapter', `Unsupported variable type: ${option.type}`)
         return
     }
     
@@ -189,7 +203,7 @@ export class MockAdapter implements HostAdapter {
   saveChatData(data: PhoneChatData): void {
     data._meta.lastUpdated = new Date().toISOString()
     this.insertOrAssignVariables({ [CHAT_DATA_KEY]: data }, { type: 'chat' })
-    console.log('[MockAdapter] Chat data saved')
+    loggerService.debug('MockAdapter', 'Chat data saved')
   }
   
   getGlobalConfig(): PhoneGlobalConfig | null {
@@ -200,7 +214,7 @@ export class MockAdapter implements HostAdapter {
   saveGlobalConfig(config: PhoneGlobalConfig): void {
     config._meta.lastUpdated = new Date().toISOString()
     this.insertOrAssignVariables({ [GLOBAL_CONFIG_KEY]: config }, { type: 'global' })
-    console.log('[MockAdapter] Global config saved')
+    loggerService.debug('MockAdapter', 'Global config saved')
   }
   
   // ==================== AI 生成 ====================
@@ -251,7 +265,7 @@ export class MockAdapter implements HostAdapter {
   
   stopGeneration(): void {
     this.isGenerating = false
-    console.log('[MockAdapter] Generation stopped')
+    loggerService.debug('MockAdapter', 'Generation stopped')
   }
   
   // ==================== 消息操作 ====================
@@ -275,7 +289,7 @@ export class MockAdapter implements HostAdapter {
   }
   
   async sendUserMessage(content: string): Promise<void> {
-    console.log('[MockAdapter] User message sent:', content)
+    loggerService.debug('MockAdapter', 'User message sent:', content)
     // 在 Mock 环境中只是记录消息
   }
   
@@ -340,7 +354,7 @@ export class MockAdapter implements HostAdapter {
   simulateAIMessage(content: string): void {
     const msgId = Date.now()
     this.emit('message_received', msgId, content)
-    console.log('[MockAdapter] Simulated AI message:', msgId)
+    loggerService.debug('MockAdapter', `Simulated AI message: ${msgId}`)
   }
   
   /**
@@ -358,7 +372,7 @@ export class MockAdapter implements HostAdapter {
     
     // 触发事件
     this.emit('chat_changed', chatFileName)
-    console.log('[MockAdapter] Simulated chat change:', chatFileName)
+    loggerService.debug('MockAdapter', `Simulated chat change: ${chatFileName}`)
   }
   
   /**
@@ -385,7 +399,7 @@ export class MockAdapter implements HostAdapter {
       localStorage.removeItem(`${STORAGE_PREFIX}chat`)
       localStorage.removeItem(`${STORAGE_PREFIX}global`)
     }
-    console.log('[MockAdapter] Reset all data')
+    loggerService.info('MockAdapter', 'Reset all data')
   }
   
   // ==================== 私有方法 ====================
@@ -400,16 +414,16 @@ export class MockAdapter implements HostAdapter {
       const chatData = localStorage.getItem(`${STORAGE_PREFIX}chat`)
       if (chatData) {
         this.chatVariables = JSON.parse(chatData)
-        console.log('[MockAdapter] Loaded chat data from localStorage')
+        loggerService.debug('MockAdapter', 'Loaded chat data from localStorage')
       }
       
       const globalData = localStorage.getItem(`${STORAGE_PREFIX}global`)
       if (globalData) {
         this.globalVariables = JSON.parse(globalData)
-        console.log('[MockAdapter] Loaded global data from localStorage')
+        loggerService.debug('MockAdapter', 'Loaded global data from localStorage')
       }
     } catch (error) {
-      console.error('[MockAdapter] Failed to load from localStorage:', error)
+      loggerService.error('MockAdapter', 'Failed to load from localStorage:', error)
     }
   }
   
@@ -418,7 +432,7 @@ export class MockAdapter implements HostAdapter {
       localStorage.setItem(`${STORAGE_PREFIX}chat`, JSON.stringify(this.chatVariables))
       localStorage.setItem(`${STORAGE_PREFIX}global`, JSON.stringify(this.globalVariables))
     } catch (error) {
-      console.error('[MockAdapter] Failed to save to localStorage:', error)
+      loggerService.error('MockAdapter', 'Failed to save to localStorage:', error)
     }
   }
 }

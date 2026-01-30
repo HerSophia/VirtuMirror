@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useAccountStore } from '@/stores/accountStore';
 import { useNotificationStore } from '@/stores/notificationStore';
 import { useWeiboStore } from '@/stores/weiboStore';
+import { loggerService } from '@/services/logger/loggerService';
 import { useFeedStore, useUserActionStore } from '../stores';
 import type { FullProfile } from '@/types/account';
 import { getVerifyTypeConfig, type WeiboVerifyType } from '../types';
@@ -107,7 +108,7 @@ async function loadProfile() {
       }
     }
   } catch (error: any) {
-    console.error('[WeiboProfile] Failed to load profile:', error);
+    loggerService.error('WeiboProfile', 'Failed to load profile:', error);
     hasError.value = true;
     // 显示友好的错误提示
     notificationStore.createNotification({
@@ -294,7 +295,7 @@ function handleMenuClick(action: string) {
       emit('open-history');
       break;
     default:
-      console.log('Menu action:', action);
+      loggerService.debug('WeiboProfile', 'Menu action:', action);
   }
 }
 

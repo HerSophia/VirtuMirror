@@ -5,6 +5,9 @@
 
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import { loggerService } from '@/services/logger'
+
+const logger = loggerService.child('store:wallet')
 
 export const useWalletStore = defineStore('wallet', () => {
   // 零钱余额
@@ -48,8 +51,10 @@ export const useWalletStore = defineStore('wallet', () => {
     if (amount > 0 && amount <= balance.value) {
       balance.value -= amount
       fundBalance.value += amount
+      logger.info('转入零钱通', { amount, newBalance: balance.value, newFundBalance: fundBalance.value })
       return true
     }
+    logger.warn('转入零钱通失败：余额不足', { amount, currentBalance: balance.value })
     return false
   }
   
@@ -58,8 +63,10 @@ export const useWalletStore = defineStore('wallet', () => {
     if (amount > 0 && amount <= fundBalance.value) {
       fundBalance.value -= amount
       balance.value += amount
+      logger.info('转出零钱通', { amount, newBalance: balance.value, newFundBalance: fundBalance.value })
       return true
     }
+    logger.warn('转出零钱通失败：余额不足', { amount, currentFundBalance: fundBalance.value })
     return false
   }
   

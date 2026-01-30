@@ -1,5 +1,6 @@
 import { type Ref, isRef } from 'vue'
 import type { RegisteredAppIcon, IconRegistrationOptions, AppCategory } from '@/types/icon'
+import { loggerService } from '@/services/logger/loggerService'
 
 /**
  * 图标服务 - 核心逻辑层
@@ -28,7 +29,7 @@ export class IconService {
    */
   init(state: { icons: Ref<Map<string, RegisteredAppIcon>> }) {
     this._icons = state.icons
-    console.log('[IconService] Initialized with store state')
+    loggerService.info('IconService', 'Initialized with store state')
   }
 
   /**
@@ -36,7 +37,7 @@ export class IconService {
    */
   register(icon: RegisteredAppIcon, options: IconRegistrationOptions = {}): boolean {
     if (!this._icons) {
-      console.warn('[IconService] Service not initialized, caching registration or failing...')
+      loggerService.warn('IconService', 'Service not initialized, caching registration or failing...')
       // 在实际生产中，这里可能需要一个临时队列，等 init 后再应用。
       // 但现在我们假设 Store 会在 App 启动最早阶段初始化。
       return false
@@ -46,19 +47,19 @@ export class IconService {
     const iconsMap = this._icons.value
     
     if (iconsMap.has(icon.id) && !override) {
-      console.warn(`[IconService] 图标 ${icon.id} 已存在，跳过注册。使用 override: true 覆盖。`)
+      loggerService.warn('IconService', `图标 ${icon.id} 已存在，跳过注册。使用 override: true 覆盖。`)
       return false
     }
     
     // 验证必要字段
     if (!icon.id || !icon.name) {
-      console.error('[IconService] 注册失败：缺少 id 或 name', icon)
+      loggerService.error('IconService', '注册失败：缺少 id 或 name', icon)
       return false
     }
     
     iconsMap.set(icon.id, icon)
     this._notifyListeners()
-    console.debug(`[IconService] 已注册图标: ${icon.id} (${icon.name})`)
+    loggerService.debug('IconService', `已注册图标: ${icon.id} (${icon.name})`)
     return true
   }
   
@@ -78,7 +79,7 @@ export class IconService {
     const success = this._icons.value.delete(id)
     if (success) {
       this._notifyListeners()
-      console.debug(`[IconService] 已取消注册图标: ${id}`)
+      loggerService.debug('IconService', `已取消注册图标: ${id}`)
     }
     return success
   }
@@ -127,7 +128,7 @@ export class IconService {
       try {
         listener()
       } catch (e) {
-        console.error('[IconService] 监听器执行出错:', e)
+        loggerService.error('IconService', '监听器执行出错:', e)
       }
     })
   }

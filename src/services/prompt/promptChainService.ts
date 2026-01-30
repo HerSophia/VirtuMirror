@@ -10,6 +10,9 @@ import type {
   StoredPromptChain,
 } from '@/types/promptChain'
 import { db } from '../database'
+import { loggerService } from '@/services/logger'
+
+const logger = loggerService.child('service:promptChain')
 
 /**
  * App 注册的链定义（不包含 id/createdAt/updatedAt）
@@ -58,7 +61,7 @@ export class PromptChainService {
     }))
 
     this.appChains.set(appId, registeredChains)
-    console.info(`[PromptChainService] 注册 ${appId} 的 ${chains.length} 个链`)
+    logger.info(`注册 ${appId} 的 ${chains.length} 个链`)
   }
 
   /**
@@ -66,7 +69,7 @@ export class PromptChainService {
    */
   unregisterAppChains(appId: string): void {
     this.appChains.delete(appId)
-    console.info(`[PromptChainService] 注销 ${appId} 的链`)
+    logger.info(`注销 ${appId} 的链`)
   }
 
   /**
@@ -159,7 +162,7 @@ export class PromptChainService {
     }
 
     await db.promptChains.add(newChain as StoredPromptChain)
-    console.info(`[PromptChainService] 创建链: ${newChain.name} (${newChain.id})`)
+    logger.info(`创建链: ${newChain.name} (${newChain.id})`)
 
     return newChain
   }
@@ -179,7 +182,7 @@ export class PromptChainService {
     }
 
     await db.promptChains.put(updatedChain as StoredPromptChain)
-    console.info(`[PromptChainService] 更新链: ${id}`)
+    logger.info(`更新链: ${id}`)
 
     return true
   }
@@ -193,12 +196,12 @@ export class PromptChainService {
 
     // 内置链不可删除
     if (existing.source === 'builtin') {
-      console.warn(`[PromptChainService] 无法删除内置链: ${id}`)
+      logger.warn(`无法删除内置链: ${id}`)
       return false
     }
 
     await db.promptChains.delete(id)
-    console.info(`[PromptChainService] 删除链: ${id}`)
+    logger.info(`删除链: ${id}`)
 
     return true
   }
@@ -284,7 +287,7 @@ export class PromptChainService {
       .filter((s): s is ChainStep => s !== undefined)
 
     if (reordered.length !== chain.steps.length) {
-      console.warn('[PromptChainService] 步骤排序时发现缺失')
+      logger.warn('步骤排序时发现缺失')
       return false
     }
 
@@ -372,7 +375,7 @@ export class PromptChainService {
         outputs: rest.outputs || {},
       })
     } catch (error) {
-      console.error('[PromptChainService] 导入链失败:', error)
+      logger.error('导入链失败:', error)
       return null
     }
   }

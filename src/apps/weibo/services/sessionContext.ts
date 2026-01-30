@@ -15,6 +15,7 @@ import { ref, computed, watch } from 'vue';
 import { useAccountStore } from '@/stores/accountStore';
 import { getNarrativeCacheMetadata } from '../stores/llm/narrativeIntegration';
 import type { ContentSourceTracking } from '@/types/social';
+import { loggerService } from '@/services/logger/loggerService';
 
 // ==================== 类型定义 ====================
 
@@ -67,11 +68,11 @@ export function syncSessionIdFromAccountStore(): void {
     
     if (sessionContext?.sessionId) {
       context.value.sessionId = sessionContext.sessionId;
-      console.log('[SessionContext] 已从 accountStore 同步 sessionId:', sessionContext.sessionId);
+      loggerService.debug('SessionContext', '已从 accountStore 同步 sessionId:', sessionContext.sessionId);
     }
   } catch (e) {
     // accountStore 可能还未初始化，忽略错误
-    console.warn('[SessionContext] accountStore 未就绪，跳过 sessionId 同步');
+    loggerService.warn('SessionContext', 'accountStore 未就绪，跳过 sessionId 同步');
   }
 }
 
@@ -91,7 +92,7 @@ export function syncFromNarrativeCache(): void {
       context.value.sessionId = metadata.sessionId;
     }
     
-    console.log('[SessionContext] 已从叙事缓存同步楼层/Swipe:', {
+    loggerService.debug('SessionContext', '已从叙事缓存同步楼层/Swipe:', {
       messageId: context.value.lastMessageId,
       swipeId: context.value.currentSwipeId,
     });
@@ -114,7 +115,7 @@ export function syncContextFromNarrative(): void {
   // 2. 从叙事缓存同步楼层/Swipe 信息
   syncFromNarrativeCache();
   
-  console.log('[SessionContext] 完整同步完成:', context.value);
+  loggerService.debug('SessionContext', '完整同步完成:', context.value);
 }
 
 /**
@@ -123,7 +124,7 @@ export function syncContextFromNarrative(): void {
  */
 export function setSessionId(sessionId: string | null): void {
   context.value.sessionId = sessionId;
-  console.log('[SessionContext] 手动设置 sessionId:', sessionId);
+  loggerService.debug('SessionContext', '手动设置 sessionId:', sessionId);
 }
 
 /**
@@ -158,7 +159,7 @@ export function getCurrentSourceTracking(): ContentSourceTracking | undefined {
   }
   
   if (!sessionId) {
-    console.warn('[SessionContext] 无法获取会话信息，内容将不带来源追踪');
+    loggerService.warn('SessionContext', '无法获取会话信息，内容将不带来源追踪');
     return undefined;
   }
   
@@ -187,7 +188,7 @@ export function getCurrentSourceTracking(): ContentSourceTracking | undefined {
  */
 export function setFilterMode(mode: FilterMode): void {
   context.value.filterMode = mode;
-  console.log('[SessionContext] 已更新过滤模式:', mode);
+  loggerService.debug('SessionContext', '已更新过滤模式:', mode);
 }
 
 /**

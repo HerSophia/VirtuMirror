@@ -5,6 +5,7 @@
 
 import { eventBus } from '@/services/eventBus';
 import { formatContexts } from './formatters';
+import { loggerService } from '@/services/logger';
 import type {
   ContextType,
   ContextVisibility,
@@ -49,6 +50,9 @@ export class ContextSharingService {
   /** ID 计数器 */
   private idCounter: number = 0;
 
+  /** 日志实例 */
+  private logger = loggerService.child('service:contextSharing');
+
   constructor() {
     // 定期清理过期缓存
     setInterval(() => this.cleanExpiredCache(), 60 * 1000);
@@ -81,7 +85,7 @@ export class ContextSharingService {
 
     // 检查是否已存在
     if (this.contexts.has(id)) {
-      console.warn(`[ContextSharingService] 上下文 ${id} 已存在，将被覆盖`);
+      this.logger.warn(`上下文 ${id} 已存在，将被覆盖`);
     }
 
     const context: SharedContext<T> = {
@@ -121,7 +125,7 @@ export class ContextSharingService {
 
     // 检查权限
     if (context.publisherId !== this.currentAppId && this.currentAppId !== 'system') {
-      console.warn(`[ContextSharingService] 无权取消发布上下文 ${id}`);
+      this.logger.warn(`无权取消发布上下文 ${id}`);
       return false;
     }
 
@@ -152,7 +156,7 @@ export class ContextSharingService {
 
     // 检查权限
     if (context.publisherId !== this.currentAppId && this.currentAppId !== 'system') {
-      console.warn(`[ContextSharingService] 无权更新上下文 ${id}`);
+      this.logger.warn(`无权更新上下文 ${id}`);
       return false;
     }
 
@@ -248,7 +252,7 @@ export class ContextSharingService {
 
         return value as T;
       } catch (error) {
-        console.error(`[ContextSharingService] getter 执行失败 (${id}):`, error);
+        this.logger.error(`getter 执行失败 (${id}):`, error);
         return undefined;
       }
     }
@@ -598,7 +602,7 @@ export class ContextSharingService {
       try {
         callback(value);
       } catch (error) {
-        console.error(`[ContextSharingService] 订阅回调执行失败:`, error);
+        this.logger.error(`订阅回调执行失败:`, error);
       }
     }
   }
@@ -616,7 +620,7 @@ export class ContextSharingService {
       try {
         callback(contexts);
       } catch (error) {
-        console.error(`[ContextSharingService] 类型订阅回调执行失败:`, error);
+        this.logger.error(`类型订阅回调执行失败:`, error);
       }
     }
   }

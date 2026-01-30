@@ -12,8 +12,12 @@
 
 import { db } from '../database/schema';
 import { accountService } from './accountService';
+import { loggerService } from '@/services/logger';
 import type { PlatformAccount as OldPlatformAccount } from '@/types/social';
 import type { EntityScope, Gender } from '@/types/account';
+
+// 创建模块专属日志器
+const logger = loggerService.child('account:migration');
 
 export interface MigrationResult {
   success: boolean;
@@ -61,10 +65,10 @@ async function migrateOneAccount(old: OldPlatformAccount): Promise<{ success: bo
       }
     );
 
-    console.log(`[Migration] Migrated: ${old.nickname} (${old.platformId})`);
+    logger.info(`Migrated: ${old.nickname} (${old.platformId})`);
     return { success: true };
   } catch (error: any) {
-    console.error(`[Migration] Failed to migrate ${old.nickname}:`, error);
+    logger.error(`Failed to migrate ${old.nickname}:`, error);
     return { success: false, error: error.message || String(error) };
   }
 }
@@ -82,8 +86,8 @@ export async function migrateSocialAccounts(options?: {
 }): Promise<MigrationResult> {
   const { dryRun = false, deleteOld = false } = options || {};
   
-  console.log('[Migration] Starting social accounts migration...');
-  console.log(`[Migration] Options: dryRun=${dryRun}, deleteOld=${deleteOld}`);
+  logger.info('Starting social accounts migration...');
+  logger.debug(`Options: dryRun=${dryRun}, deleteOld=${deleteOld}`);
   
   const result: MigrationResult = {
     success: true,
@@ -96,15 +100,15 @@ export async function migrateSocialAccounts(options?: {
   try {
     // 获取所有旧账号
     const oldAccounts = await db.socialAccounts.toArray();
-    console.log(`[Migration] Found ${oldAccounts.length} old accounts to migrate`);
+    logger.info(`Found ${oldAccounts.length} old accounts to migrate`);
 
     if (oldAccounts.length === 0) {
-      console.log('[Migration] No accounts to migrate');
+      logger.info('No accounts to migrate');
       return result;
     }
 
     if (dryRun) {
-      console.log('[Migration] Dry run mode - no changes will be made');
+      logger.info('Dry run mode - no changes will be made');
       result.migrated = oldAccounts.length;
       return result;
     }
@@ -130,18 +134,18 @@ export async function migrateSocialAccounts(options?: {
 
     // 可选：删除旧数据
     if (deleteOld && migratedIds.length > 0) {
-      console.log(`[Migration] Deleting ${migratedIds.length} old accounts...`);
+      logger.info(`Deleting ${migratedIds.length} old accounts...`);
       await db.socialAccounts.bulkDelete(migratedIds);
-      console.log('[Migration] Old accounts deleted');
+      logger.info('Old accounts deleted');
     }
 
     result.success = result.failed === 0;
     
-    console.log('[Migration] Migration complete:', result);
+    logger.info('Migration complete:', result);
     return result;
     
   } catch (error: any) {
-    console.error('[Migration] Migration failed:', error);
+    logger.error('Migration failed:', error);
     result.success = false;
     result.errors.push(error.message || String(error));
     return result;
@@ -173,9 +177,9 @@ if (typeof window !== 'undefined') {
   (window as any).__migrateSocialAccounts = migrateSocialAccounts;
   (window as any).__checkMigrationStatus = checkMigrationStatus;
   
-  console.log('[Migration] Migration tools available:');
-  console.log('  - window.__checkMigrationStatus() - Check migration status');
-  console.log('  - window.__migrateSocialAccounts() - Run migration');
-  console.log('  - window.__migrateSocialAccounts({ dryRun: true }) - Dry run');
-  console.log('  - window.__migrateSocialAccounts({ deleteOld: true }) - Migrate and delete old');
+  logger.info('Migration tools available:');
+  logger.debug('  - window.__checkMigrationStatus() - Check migration status');
+  logger.debug('  - window.__migrateSocialAccounts() - Run migration');
+  logger.debug('  - window.__migrateSocialAccounts({ dryRun: true }) - Dry run');
+  logger.debug('  - window.__migrateSocialAccounts({ deleteOld: true }) - Migrate and delete old');
 }

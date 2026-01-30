@@ -12,6 +12,7 @@ import { tryUseAppRuntime } from '@/services/appRuntime'
 import type { ScopedStorage } from '@/services/appRuntime/types'
 import { db } from '@/services/database'
 import { writeQueue } from '@/services/database/writeQueue'
+import { loggerService } from '@/services/logger/loggerService'
 import { PromptService } from '@/services/prompt/promptService'
 import { useAccountStore } from '@/stores/accountStore'
 import { useAIStore } from '@/stores/aiStore'
@@ -85,7 +86,7 @@ export const useComposeStore = defineStore('weiboCompose', () => {
       return
     }
 
-    console.log('[ComposeStore] 开始迁移草稿数据...')
+    loggerService.info('ComposeStore', '开始迁移草稿数据...')
 
     try {
       const legacyData = localStorage.getItem(LEGACY_DRAFTS_KEY)
@@ -93,14 +94,14 @@ export const useComposeStore = defineStore('weiboCompose', () => {
         const parsedDrafts = JSON.parse(legacyData) as WeiboDraft[]
         if (parsedDrafts.length > 0) {
           await storage.set(STORAGE_KEYS.DRAFTS, parsedDrafts)
-          console.log(`[ComposeStore] 迁移 ${parsedDrafts.length} 条草稿`)
+          loggerService.info('ComposeStore', `迁移 ${parsedDrafts.length} 条草稿`)
         }
       }
 
       await storage.set(STORAGE_KEYS.MIGRATED, true)
-      console.log('[ComposeStore] 草稿迁移完成')
+      loggerService.info('ComposeStore', '草稿迁移完成')
     } catch (error) {
-      console.error('[ComposeStore] 草稿迁移失败:', error)
+      loggerService.error('ComposeStore', '草稿迁移失败:', error)
     }
   }
 
@@ -112,7 +113,7 @@ export const useComposeStore = defineStore('weiboCompose', () => {
   async function loadDrafts(): Promise<WeiboDraft[]> {
     const storage = getStorage()
     if (!storage) {
-      console.warn('[ComposeStore] ScopedStorage 不可用，使用空草稿列表')
+      loggerService.warn('ComposeStore', 'ScopedStorage 不可用，使用空草稿列表')
       return drafts.value
     }
 
@@ -126,9 +127,9 @@ export const useComposeStore = defineStore('weiboCompose', () => {
       }
 
       isInitialized.value = true
-      console.log(`[ComposeStore] 加载 ${drafts.value.length} 条草稿`)
+      loggerService.info('ComposeStore', `加载 ${drafts.value.length} 条草稿`)
     } catch (e) {
-      console.error('[ComposeStore] Failed to load drafts:', e)
+      loggerService.error('ComposeStore', 'Failed to load drafts:', e)
     }
     return drafts.value
   }
@@ -139,14 +140,14 @@ export const useComposeStore = defineStore('weiboCompose', () => {
   async function persistDrafts(): Promise<void> {
     const storage = getStorage()
     if (!storage) {
-      console.warn('[ComposeStore] ScopedStorage 不可用，草稿未保存')
+      loggerService.warn('ComposeStore', 'ScopedStorage 不可用，草稿未保存')
       return
     }
 
     try {
       await storage.set(STORAGE_KEYS.DRAFTS, drafts.value)
     } catch (e) {
-      console.error('[ComposeStore] Failed to persist drafts:', e)
+      loggerService.error('ComposeStore', 'Failed to persist drafts:', e)
     }
   }
 
@@ -169,7 +170,7 @@ export const useComposeStore = defineStore('weiboCompose', () => {
           updatedAt: now,
         }
         await persistDrafts()
-        console.log(`[ComposeStore] 更新草稿: ${draftId}`)
+        loggerService.debug('ComposeStore', `更新草稿: ${draftId}`)
         return drafts.value[index]
       }
     }
@@ -184,7 +185,7 @@ export const useComposeStore = defineStore('weiboCompose', () => {
 
     drafts.value.unshift(newDraft)
     await persistDrafts()
-    console.log(`[ComposeStore] 保存新草稿: ${newDraft.id}`)
+    loggerService.debug('ComposeStore', `保存新草稿: ${newDraft.id}`)
     return newDraft
   }
 
@@ -203,7 +204,7 @@ export const useComposeStore = defineStore('weiboCompose', () => {
     if (index !== -1) {
       drafts.value.splice(index, 1)
       await persistDrafts()
-      console.log(`[ComposeStore] 删除草稿: ${draftId}`)
+      loggerService.debug('ComposeStore', `删除草稿: ${draftId}`)
       return true
     }
     return false
@@ -216,7 +217,7 @@ export const useComposeStore = defineStore('weiboCompose', () => {
     const count = drafts.value.length
     drafts.value = []
     await persistDrafts()
-    console.log(`[ComposeStore] 清空 ${count} 条草稿`)
+    loggerService.info('ComposeStore', `清空 ${count} 条草稿`)
     return count
   }
 
@@ -287,7 +288,7 @@ export const useComposeStore = defineStore('weiboCompose', () => {
         suggestedTopics: parsed.suggestedTopics || [],
       }
     } catch (error: any) {
-      console.error('[ComposeStore] Failed to expand content:', error)
+      loggerService.error('ComposeStore', 'Failed to expand content:', error)
       return { success: false, error: error.message || 'AI 扩展失败' }
     } finally {
       isExpanding.value = false
@@ -348,7 +349,7 @@ export const useComposeStore = defineStore('weiboCompose', () => {
         expandedDescription: parsed.expandedDescription || result,
       }
     } catch (error: any) {
-      console.error('[ComposeStore] Failed to expand image description:', error)
+      loggerService.error('ComposeStore', 'Failed to expand image description:', error)
       return { success: false, error: error.message || '图片描述扩展失败' }
     } finally {
       isExpanding.value = false
@@ -415,7 +416,7 @@ export const useComposeStore = defineStore('weiboCompose', () => {
           : undefined,
       }
     } catch (error: any) {
-      console.error('[ComposeStore] Failed to expand video description:', error)
+      loggerService.error('ComposeStore', 'Failed to expand video description:', error)
       return { success: false, error: error.message || '视频描述扩展失败' }
     } finally {
       isExpanding.value = false
@@ -462,7 +463,7 @@ export const useComposeStore = defineStore('weiboCompose', () => {
 
       // 如果没有微博账号，尝试创建一个
       if (!currentAccount) {
-        console.log('[ComposeStore] 玩家没有微博账号，尝试创建...')
+        loggerService.info('ComposeStore', '玩家没有微博账号，尝试创建...')
         const player = accountStore.currentPlayer
         if (!player) {
           return { success: false, error: '请先初始化账号系统' }
@@ -473,7 +474,7 @@ export const useComposeStore = defineStore('weiboCompose', () => {
           nickname: player.displayName || '微博用户',
           scope: 'global',
         })
-        console.log('[ComposeStore] 已为玩家创建微博账号:', currentAccount.id)
+        loggerService.info('ComposeStore', '已为玩家创建微博账号:', currentAccount.id)
       }
 
       const now = Date.now()
@@ -596,14 +597,14 @@ export const useComposeStore = defineStore('weiboCompose', () => {
         source: sourceTracking,
       }
 
-      console.log('[ComposeStore] universalPost to save:', JSON.stringify(universalPost, null, 2))
+      loggerService.debug('ComposeStore', 'universalPost to save:', JSON.stringify(universalPost, null, 2))
 
       // 保存到数据库（通过写入队列，按 App + 命名空间串行化写入）
       await writeQueue.enqueue('app', namespace || 'weibo', async () => {
         await db.socialPosts.add(universalPost)
       })
 
-      console.log(`[ComposeStore] 发布博文成功: ${postId}`)
+      loggerService.info('ComposeStore', `发布博文成功: ${postId}`)
 
       // 刷新首页信息流
       await feedStore.refreshFeed()
@@ -619,13 +620,13 @@ export const useComposeStore = defineStore('weiboCompose', () => {
         }
 
         feedStore.generatePostEngagement(postId, finalContent, authorInfo).catch((err) => {
-          console.warn('[ComposeStore] 自动生成互动失败:', err)
+          loggerService.warn('ComposeStore', '自动生成互动失败:', err)
         })
       }
 
       return { success: true, postId }
     } catch (error: any) {
-      console.error('[ComposeStore] Failed to publish post:', error)
+      loggerService.error('ComposeStore', 'Failed to publish post:', error)
       return { success: false, error: error.message || '发布失败' }
     } finally {
       isPublishing.value = false

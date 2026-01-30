@@ -39,6 +39,7 @@ import {
   initializeNarrativeSubscription,
   getNarrativeContext as getNarrativeContextFn,
 } from './llm/narrativeIntegration';
+import { loggerService } from '@/services/logger/loggerService';
 
 // ==================== 类型转换 ====================
 
@@ -126,7 +127,7 @@ export const useLLMTaskStore = defineStore('weiboLLMTask', () => {
         const { useSettingsStore } = require('./settingsStore');
         useSettingsStore().toggleAutoNarrativeAnalysis(value);
       } catch {
-        console.warn('[LLMTaskStore] settingsStore not available');
+        loggerService.warn('LLMTaskStore', 'settingsStore not available');
       }
     }
   });
@@ -243,7 +244,7 @@ export const useLLMTaskStore = defineStore('weiboLLMTask', () => {
   // ==================== 日志管理 ====================
 
   function addLog(taskId: string, level: TaskLog['level'], message: string, data?: any) {
-    console.log(`[LLMTask:${taskId}] ${level}: ${message}`, data || '');
+    loggerService.debug('LLMTask', `[${taskId}] ${level}: ${message}`, data || '');
   }
 
   function getTaskLogs(taskId: string): TaskLog[] {
@@ -291,7 +292,7 @@ export const useLLMTaskStore = defineStore('weiboLLMTask', () => {
       (t) => !t.definitionId.startsWith(`${WEIBO_APP_ID}:`)
     );
     if (oldFormatTasks.length > 0) {
-      console.log(`[LLMTaskStore] 清理 ${oldFormatTasks.length} 个旧格式任务`);
+      loggerService.info('LLMTaskStore', `清理 ${oldFormatTasks.length} 个旧格式任务`);
       oldFormatTasks.forEach((t) => service.deleteTask(t.id));
     }
 
@@ -299,7 +300,7 @@ export const useLLMTaskStore = defineStore('weiboLLMTask', () => {
     const definitions = service.getTaskDefinitionsByApp(WEIBO_APP_ID);
 
     if (definitions.length === 0) {
-      console.warn('[LLMTaskStore] 没有找到微博任务定义，请确保先调用 registerWeiboLLMExtensions()');
+      loggerService.warn('LLMTaskStore', '没有找到微博任务定义，请确保先调用 registerWeiboLLMExtensions()');
       return;
     }
 
@@ -312,21 +313,21 @@ export const useLLMTaskStore = defineStore('weiboLLMTask', () => {
         if (existingTasks.length === 0) {
           try {
             service.createTask(def.id);
-            console.log(`[LLMTaskStore] 已创建内置任务: ${def.name}`);
+            loggerService.info('LLMTaskStore', `已创建内置任务: ${def.name}`);
           } catch (e) {
-            console.error(`[LLMTaskStore] 创建任务失败: ${def.name}`, e);
+            loggerService.error('LLMTaskStore', `创建任务失败: ${def.name}`, e);
           }
         }
       });
 
     // 初始化叙事订阅
     initializeNarrativeSubscription((level, msg) => {
-      console.log(`[LLMTaskStore] ${level}: ${msg}`);
+      loggerService.debug('LLMTaskStore', `${level}: ${msg}`);
     });
 
     builtinTasksInitialized.value = true;
     triggerUpdate();
-    console.log('[LLMTaskStore] 内置任务初始化完成');
+    loggerService.info('LLMTaskStore', '内置任务初始化完成');
   }
 
   function resetBuiltinTask(taskId: string): boolean {
@@ -338,7 +339,7 @@ export const useLLMTaskStore = defineStore('weiboLLMTask', () => {
     const systemDef = service.getTaskDefinition(definitionId);
 
     if (!systemDef) {
-      console.warn(`[LLMTaskStore] 找不到任务定义: ${definitionId}`);
+      loggerService.warn('LLMTaskStore', `找不到任务定义: ${definitionId}`);
       return false;
     }
 
@@ -525,7 +526,7 @@ export const useLLMTaskStore = defineStore('weiboLLMTask', () => {
     }
 
     if (!template) {
-      console.warn(`[LLMTaskStore] 找不到模板: ${templateId}`);
+      loggerService.warn('LLMTaskStore', `找不到模板: ${templateId}`);
       return null;
     }
 
@@ -536,7 +537,7 @@ export const useLLMTaskStore = defineStore('weiboLLMTask', () => {
     );
 
     if (!suitableDefinition) {
-      console.warn(`[LLMTaskStore] 找不到模板对应的任务定义类型: ${template.type}`);
+      loggerService.warn('LLMTaskStore', `找不到模板对应的任务定义类型: ${template.type}`);
       return null;
     }
 
@@ -550,7 +551,7 @@ export const useLLMTaskStore = defineStore('weiboLLMTask', () => {
       triggerUpdate();
       return systemTaskToWeiboTask(systemTask);
     } catch (e) {
-      console.error('[LLMTaskStore] 从模板创建任务失败:', e);
+      loggerService.error('LLMTaskStore', '从模板创建任务失败:', e);
       return null;
     }
   }

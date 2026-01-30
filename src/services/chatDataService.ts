@@ -18,6 +18,7 @@ import type {
   LiveUserData,
 } from '@/types/persistedData'
 import { createEmptyPhoneChatData, CHAT_DATA_KEY } from '@/types/persistedData'
+import { loggerService } from '@/services/logger/loggerService'
 
 /**
  * 深度合并对象
@@ -83,7 +84,7 @@ export class ChatDataService {
       this.isDirty = false
       return data
     } catch (error) {
-      console.error('[ChatDataService] 获取聊天数据失败:', error)
+      loggerService.error('ChatDataService', '获取聊天数据失败:', error)
       return null
     }
   }
@@ -113,7 +114,7 @@ export class ChatDataService {
       this.isDirty = false
       console.info('[ChatDataService] 数据已保存到聊天变量')
     } catch (error) {
-      console.error('[ChatDataService] 保存聊天数据失败:', error)
+      loggerService.error('ChatDataService', '保存聊天数据失败:', error)
     }
   }
   
@@ -165,7 +166,7 @@ export class ChatDataService {
       this.isDirty = false
       console.info('[ChatDataService] 聊天数据已清除')
     } catch (error) {
-      console.error('[ChatDataService] 清除聊天数据失败:', error)
+      loggerService.error('ChatDataService', '清除聊天数据失败:', error)
     }
   }
   
@@ -320,7 +321,7 @@ export class ChatDataService {
       this.saveData(data)
       return true
     } catch (error) {
-      console.error('[ChatDataService] 导入数据失败:', error)
+      loggerService.error('ChatDataService', '导入数据失败:', error)
       return false
     }
   }

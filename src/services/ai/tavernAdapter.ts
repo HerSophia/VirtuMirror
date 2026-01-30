@@ -13,6 +13,10 @@ import type {
 } from './types';
 import { createAIError, generateRequestId, normalizeFinishReason } from './utils';
 import { getGlobalConfigService } from '../globalConfigService';
+import { loggerService } from '@/services/logger';
+
+// 创建模块专属日志器
+const logger = loggerService.child('ai:tavern-adapter');
 
 /**
  * TavernHelper 类型定义
@@ -313,7 +317,7 @@ export class TavernAdapter {
         yield chunkBuffer.shift()!;
       }
     } catch (error) {
-      console.error('[TavernAdapter] Stream error:', error);
+      logger.error('Stream error:', error);
     }
   }
 

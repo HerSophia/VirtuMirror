@@ -35,6 +35,10 @@ export type {
 import type { HostAdapter } from './types'
 import { MockAdapter } from './mockAdapter'
 import { SillyTavernAdapter, isSillyTavernAvailable } from './sillyTavernAdapter'
+import { loggerService } from '@/services/logger'
+
+// 创建模块专属日志器
+const logger = loggerService.child('adapter')
 
 /**
  * 全局适配器实例
@@ -53,10 +57,10 @@ export function createAdapter(): HostAdapter {
   
   // 检查是否在 SillyTavern 环境中
   if (isSillyTavernAvailable()) {
-    console.log('[Adapter] Using SillyTavern adapter')
+    logger.info('Using SillyTavern adapter')
     adapterInstance = new SillyTavernAdapter()
   } else {
-    console.log('[Adapter] Using Mock adapter (dev mode)')
+    logger.info('Using Mock adapter (dev mode)')
     adapterInstance = new MockAdapter({
       useLocalStorage: true,
     })

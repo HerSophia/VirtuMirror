@@ -1,6 +1,9 @@
 import { ref, computed, watch } from 'vue'
 import { defineStore } from 'pinia'
 import { useChatStore } from '@/stores/chatStore'
+import { loggerService } from '@/services/logger'
+
+const logger = loggerService.child('service:time')
 
 // Time Modes as defined in documentation
 export type TimeMode = 'system' | 'offset' | 'virtual' | 'frozen' | 'simulated' // added simulated for chat-sync
@@ -213,7 +216,7 @@ class TimeService {
       this._virtualBaseTime.value = parsedDate.getTime()
       this._realBaseTime.value = Date.now()
       this.updateTime()
-      console.log(`[TimeService] Time Synced to: ${this.formatTime(parsedDate)} (${parsedDate.toLocaleDateString()})`)
+      logger.info(`Time Synced to: ${this.formatTime(parsedDate)} (${parsedDate.toLocaleDateString()})`)
     }
   }
 
@@ -234,8 +237,7 @@ class TimeService {
     const shouldLog = import.meta.env.DEV
     
     if (shouldLog) {
-        console.groupCollapsed('[TimeService] Parsing Message Content')
-        console.log('Original Content:', content.length > 50 ? content.substring(0, 50) + '...' : content)
+        logger.debug('Parsing Message Content', { content: content.length > 50 ? content.substring(0, 50) + '...' : content })
     }
 
     // 1. Try match full Date + Time (Numeric)
@@ -243,7 +245,7 @@ class TimeService {
     const fullDateTimeRegex = /(\d{4})[年\/\-\.]\s?(\d{1,2})[月\/\-\.]\s?(\d{1,2})[日号]?\s+(?:星期[一二三四五六日]\s+)?(\d{1,2})[:：](\d{1,2})/
     const fullMatch = content.match(fullDateTimeRegex)
     if (fullMatch) {
-      if (shouldLog) console.log('Matched: Full Date Time (Numeric)', fullMatch[0])
+      if (shouldLog) logger.debug('Matched: Full Date Time (Numeric)', { match: fullMatch[0] })
       resultDate.setFullYear(parseInt(fullMatch[1]))
       resultDate.setMonth(parseInt(fullMatch[2]) - 1)
       resultDate.setDate(parseInt(fullMatch[3]))
@@ -251,8 +253,7 @@ class TimeService {
       resultDate.setMinutes(parseInt(fullMatch[5]))
       resultDate.setSeconds(0)
       if (shouldLog) {
-          console.log('Result:', resultDate.toLocaleString())
-          console.groupEnd()
+          logger.debug('Result:', { result: resultDate.toLocaleString() })
       }
       return resultDate
     }
@@ -261,7 +262,7 @@ class TimeService {
     const dateRegex = /(\d{4})[年\/\-\.]\s?(\d{1,2})[月\/\-\.]\s?(\d{1,2})[日号]?/
     const dateMatch = content.match(dateRegex)
     if (dateMatch) {
-      if (shouldLog) console.log('Matched: Date Only (Numeric)', dateMatch[0])
+      if (shouldLog) logger.debug('Matched: Date Only (Numeric)', { match: dateMatch[0] })
       resultDate.setFullYear(parseInt(dateMatch[1]))
       resultDate.setMonth(parseInt(dateMatch[2]) - 1)
       resultDate.setDate(parseInt(dateMatch[3]))
@@ -273,7 +274,7 @@ class TimeService {
     const cnDateRegex = /([零一二三四五六七八九十]{2,4})年([零一二三四五六七八九十]{1,2})月([零一二三四五六七八九十]{1,3})日/
     const cnDateMatch = content.match(cnDateRegex)
     if (cnDateMatch) {
-      if (shouldLog) console.log('Matched: Chinese Date', cnDateMatch[0])
+      if (shouldLog) logger.debug('Matched: Chinese Date', { match: cnDateMatch[0] })
       resultDate.setFullYear(cnToInt(cnDateMatch[1]))
       resultDate.setMonth(cnToInt(cnDateMatch[2]) - 1)
       resultDate.setDate(cnToInt(cnDateMatch[3]))
@@ -285,7 +286,7 @@ class TimeService {
     const timeRegex = /\b([0-1]?[0-9]|2[0-3])[:：]([0-5][0-9])\b/
     const timeMatch = content.match(timeRegex)
     if (timeMatch) {
-      if (shouldLog) console.log('Matched: Time Only (Numeric)', timeMatch[0])
+      if (shouldLog) logger.debug('Matched: Time Only (Numeric)', { match: timeMatch[0] })
       resultDate.setHours(parseInt(timeMatch[1]))
       resultDate.setMinutes(parseInt(timeMatch[2]))
       resultDate.setSeconds(0)
@@ -293,15 +294,13 @@ class TimeService {
       // If we matched date earlier, return combined result
       if (matched) {
           if (shouldLog) {
-              console.log('Result (Date + Time):', resultDate.toLocaleString())
-              console.groupEnd()
+              logger.debug('Result (Date + Time):', { result: resultDate.toLocaleString() })
           }
           return resultDate
       }
       
       if (shouldLog) {
-          console.log('Result (Time Only update):', resultDate.toLocaleString())
-          console.groupEnd()
+          logger.debug('Result (Time Only update):', { result: resultDate.toLocaleString() })
       }
       return resultDate // If explicit time found, return immediately
     }
@@ -311,7 +310,7 @@ class TimeService {
     const cnTimeRegex = /(凌晨|早上|上午|中午|下午|晚上)?\s?([零一二三四五六七八九十两\d]{1,2})点(半|[零一二三四五六七八九十\d]{1,2}分?)?/
     const cnTimeMatch = content.match(cnTimeRegex)
     if (cnTimeMatch) {
-      if (shouldLog) console.log('Matched: Chinese Time', cnTimeMatch[0])
+      if (shouldLog) logger.debug('Matched: Chinese Time', { match: cnTimeMatch[0] })
       const period = cnTimeMatch[1]
       let hourStr = cnTimeMatch[2]
       let minuteStr = cnTimeMatch[3]
@@ -339,13 +338,12 @@ class TimeService {
         }
       }
 
-      if (shouldLog) console.log(`Parsed Time: ${period || ''} ${hour}:${minute}`)
+      if (shouldLog) logger.debug(`Parsed Time: ${period || ''} ${hour}:${minute}`)
       resultDate.setHours(hour)
       resultDate.setMinutes(minute)
       resultDate.setSeconds(0)
       if (shouldLog) {
-          console.log('Result:', resultDate.toLocaleString())
-          console.groupEnd()
+          logger.debug('Result:', { result: resultDate.toLocaleString() })
       }
       return resultDate
     }
@@ -361,7 +359,7 @@ class TimeService {
         const enMatch = content.match(enDateRegex)
         if (enMatch) {
             const dateStr = enMatch[0]
-            if (shouldLog) console.log('Matched: English Date', dateStr)
+            if (shouldLog) logger.debug('Matched: English Date', { dateStr })
             const timestamp = Date.parse(dateStr)
             if (!isNaN(timestamp)) {
                 const enDate = new Date(timestamp)
@@ -375,11 +373,10 @@ class TimeService {
 
     if (shouldLog) {
         if (matched) {
-            console.log('Result (Date Only update):', resultDate.toLocaleString())
+            logger.debug('Result (Date Only update):', { result: resultDate.toLocaleString() })
         } else {
-            console.log('No time information found.')
+            logger.debug('No time information found.')
         }
-        console.groupEnd()
     }
 
     return matched ? resultDate : null

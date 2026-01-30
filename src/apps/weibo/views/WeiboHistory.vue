@@ -3,6 +3,7 @@ import { ref, onMounted, computed } from 'vue';
 import { useFeedStore, useUserActionStore } from '../stores';
 import type { DisplayPost } from '@/types/social';
 import WeiboPost from '../components/WeiboPost.vue';
+import { loggerService } from '@/services/logger/loggerService';
 
 const emit = defineEmits<{
   (e: 'back'): void;
@@ -37,7 +38,7 @@ async function loadHistory() {
     
     posts.value = loadedPosts;
   } catch (error) {
-    console.error('[WeiboHistory] Failed to load history:', error);
+    loggerService.error('WeiboHistory', 'Failed to load history:', error);
   } finally {
     isLoading.value = false;
   }

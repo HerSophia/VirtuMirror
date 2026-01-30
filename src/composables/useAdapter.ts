@@ -17,6 +17,7 @@ import {
 import type { ChatDataService } from '@/services/chatDataService'
 import type { GlobalConfigService } from '@/services/globalConfigService'
 import type { ChatSyncService } from '@/services/chatSyncService'
+import { loggerService } from '@/services/logger/loggerService'
 
 // ==================== Injection Keys ====================
 
@@ -66,7 +67,7 @@ export function provideAdapterServices(): {
   provide(GlobalConfigServiceKey, globalConfigService)
   provide(ChatSyncServiceKey, chatSyncService)
   
-  console.log('[useAdapter] Services provided to component tree')
+  loggerService.info('useAdapter', 'Services provided to component tree')
   
   return {
     adapter,
@@ -85,7 +86,7 @@ export function useAdapter(): HostAdapter {
   const adapter = inject(AdapterKey)
   if (!adapter) {
     // 如果没有提供，返回全局单例
-    console.warn('[useAdapter] No adapter provided, using global instance')
+    loggerService.warn('useAdapter', 'No adapter provided, using global instance')
     return getAdapter()
   }
   return adapter
@@ -97,7 +98,7 @@ export function useAdapter(): HostAdapter {
 export function useChatDataService(): ChatDataService {
   const service = inject(ChatDataServiceKey)
   if (!service) {
-    console.warn('[useChatDataService] No service provided, using global instance')
+    loggerService.warn('useChatDataService', 'No service provided, using global instance')
     return getChatDataService()
   }
   return service
@@ -109,7 +110,7 @@ export function useChatDataService(): ChatDataService {
 export function useGlobalConfigService(): GlobalConfigService {
   const service = inject(GlobalConfigServiceKey)
   if (!service) {
-    console.warn('[useGlobalConfigService] No service provided, using global instance')
+    loggerService.warn('useGlobalConfigService', 'No service provided, using global instance')
     return getGlobalConfigService()
   }
   return service
@@ -121,7 +122,7 @@ export function useGlobalConfigService(): GlobalConfigService {
 export function useChatSyncService(): ChatSyncService {
   const service = inject(ChatSyncServiceKey)
   if (!service) {
-    console.warn('[useChatSyncService] No service provided, using global instance')
+    loggerService.warn('useChatSyncService', 'No service provided, using global instance')
     return getChatSyncService()
   }
   return service

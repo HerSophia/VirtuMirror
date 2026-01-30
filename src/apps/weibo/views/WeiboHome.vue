@@ -4,6 +4,7 @@ import WeiboPost from '../components/WeiboPost.vue';
 import ComposePostDialog from '../components/ComposePostDialog.vue';
 import DraftsDialog from '../components/DraftsDialog.vue';
 import { useWeiboStore } from '@/stores/weiboStore';
+import { loggerService } from '@/services/logger/loggerService';
 import type { WeiboDraft } from '../types';
 import { useLLMTaskStore } from '../stores';
 import { storeToRefs } from 'pinia';
@@ -53,10 +54,10 @@ async function handleGeneratePosts() {
       // 刷新信息流以显示新生成的博文
       await store.refreshFeed();
     } else {
-      console.warn('[WeiboHome] 未找到批量生成博文任务');
+      loggerService.warn('WeiboHome', '未找到批量生成博文任务');
     }
   } catch (error) {
-    console.error('[WeiboHome] 生成博文失败:', error);
+    loggerService.error('WeiboHome', '生成博文失败:', error);
   } finally {
     isGenerating.value = false;
   }
@@ -89,7 +90,7 @@ function handlePostSuccess(postId: string) {
     store.deleteDraft(selectedDraft.value.id);
     selectedDraft.value = null;
   }
-  console.log('[WeiboHome] 博文发布成功:', postId);
+  loggerService.info('WeiboHome', '博文发布成功:', postId);
 }
 </script>
 

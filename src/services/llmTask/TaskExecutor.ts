@@ -9,6 +9,9 @@ import { promptChainService } from '@/services/prompt/promptChainService'
 import { PromptService } from '@/services/prompt/promptService'
 import { useAIStore } from '@/stores/aiStore'
 import type { ChainExecutionEvent, ChainExecutionResult } from '@/types/promptChain'
+import { loggerService } from '@/services/logger'
+
+const logger = loggerService.child('service:taskExecutor')
 
 import type {
   ExecutionResult,
@@ -65,7 +68,7 @@ export class TaskExecutor {
    */
   initialize(context: ExecutorContext): void {
     this.context = context
-    console.log('[TaskExecutor] 执行器已初始化')
+    logger.info('执行器已初始化')
   }
 
   /**

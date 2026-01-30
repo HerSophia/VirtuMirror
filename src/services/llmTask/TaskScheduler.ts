@@ -4,6 +4,9 @@
  */
 
 import type { LLMTask, AutoExecutionConfig, TaskExecutionMode } from './types';
+import { loggerService } from '@/services/logger';
+
+const logger = loggerService.child('service:taskScheduler');
 
 // ==================== 类型定义 ====================
 
@@ -38,7 +41,7 @@ export class TaskScheduler {
    */
   initialize(context: SchedulerContext): void {
     this.context = context;
-    console.log('[TaskScheduler] 调度器已初始化');
+    logger.info('调度器已初始化');
   }
 
   /**
@@ -48,18 +51,18 @@ export class TaskScheduler {
    */
   start(taskId: string, executeImmediately = true): boolean {
     if (!this.context) {
-      console.error('[TaskScheduler] 调度器未初始化');
+      logger.error('调度器未初始化');
       return false;
     }
 
     const task = this.context.getTask(taskId);
     if (!task) {
-      console.warn(`[TaskScheduler] 任务不存在: ${taskId}`);
+      logger.warn(`任务不存在: ${taskId}`);
       return false;
     }
 
     if (task.executionMode !== 'auto') {
-      console.warn(`[TaskScheduler] 任务 ${taskId} 不是自动执行模式`);
+      logger.warn(`任务 ${taskId} 不是自动执行模式`);
       return false;
     }
 
@@ -320,7 +323,7 @@ export class TaskScheduler {
       clearTimeout(timer);
     }
     this.timers.clear();
-    console.log('[TaskScheduler] 已清除所有定时器');
+    logger.debug('已清除所有定时器');
   }
 
   /**
@@ -329,7 +332,7 @@ export class TaskScheduler {
   destroy(): void {
     this.clearAll();
     this.context = null;
-    console.log('[TaskScheduler] 调度器已销毁');
+    logger.info('调度器已销毁');
   }
 
   /**

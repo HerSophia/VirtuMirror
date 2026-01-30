@@ -43,6 +43,7 @@ import type {
   WeiboUser,
 } from '../types'
 import { useSettingsStore } from './settingsStore'
+import { loggerService } from '@/services/logger/loggerService'
 
 export const useFeedStore = defineStore('weiboFeed', () => {
   // ==================== 状态 ====================
@@ -113,7 +114,7 @@ export const useFeedStore = defineStore('weiboFeed', () => {
     if (storedPosts.length === 0) {
       const settingsStore = useSettingsStore()
       if (settingsStore.autoGenerateConfig.onEmptyFeed) {
-        console.log('[FeedStore] No posts found, triggering Director (autoGenerate enabled)...')
+        loggerService.info('FeedStore', 'No posts found, triggering Director (autoGenerate enabled)...')
         await DirectorService.getInstance().triggerManualEvent()
 
         const topics = await TrendService.getInstance().getTrendingList('weibo')
@@ -129,7 +130,7 @@ export const useFeedStore = defineStore('weiboFeed', () => {
           await mapPostsToDisplay(retryPosts)
         }
       } else {
-        console.log('[FeedStore] No posts found. Auto-generation is disabled.')
+        loggerService.debug('FeedStore', 'No posts found. Auto-generation is disabled.')
       }
     } else {
       await mapPostsToDisplay(storedPosts)
@@ -272,7 +273,7 @@ export const useFeedStore = defineStore('weiboFeed', () => {
     const settingsStore = useSettingsStore()
     if (comments.length < 3 && settingsStore.autoGenerateConfig.onFewComments) {
       try {
-        console.log('[FeedStore] Generating comments for post (autoGenerate enabled)', postId)
+        loggerService.debug('FeedStore', 'Generating comments for post (autoGenerate enabled)', postId)
         const generated = await ContentFactory.getInstance().generateComments(
           'weibo',
           post.payload.text || '',
@@ -297,7 +298,7 @@ export const useFeedStore = defineStore('weiboFeed', () => {
           comments.push(newComment as any)
         }
       } catch (err) {
-        console.error('Failed to generate comments', err)
+        loggerService.error('FeedStore', 'Failed to generate comments', err)
       }
     }
 
@@ -404,7 +405,7 @@ export const useFeedStore = defineStore('weiboFeed', () => {
 
     // 如果账号不存在，返回默认用户信息
     // 注意：这种情况只应在数据迁移期间出现
-    console.warn(`[FeedStore] Account not found: ${authorId}, using default profile`)
+    loggerService.warn('FeedStore', `Account not found: ${authorId}, using default profile`)
     return {
       id: authorId,
       name: '未知用户',
@@ -535,14 +536,14 @@ export const useFeedStore = defineStore('weiboFeed', () => {
       accountType: string
     }
   ): Promise<void> {
-    console.log('[FeedStore] 开始为博文生成互动数据:', postId)
+    loggerService.info('FeedStore', '开始为博文生成互动数据:', postId)
 
     try {
       const aiStore = useAIStore()
       const prompt = PromptService.getPromptByScene('social.post.engagement.weibo')
 
       if (!prompt) {
-        console.warn('[FeedStore] 未找到互动生成提示词')
+        loggerService.warn('FeedStore', '未找到互动生成提示词')
         return
       }
 
@@ -559,7 +560,7 @@ export const useFeedStore = defineStore('weiboFeed', () => {
           narrativeContent = narrativeContext.content
         }
       } catch (e) {
-        console.warn('[FeedStore] 获取叙事内容失败:', e)
+        loggerService.warn('FeedStore', '获取叙事内容失败:', e)
       }
 
       // 填充模板
@@ -590,7 +591,7 @@ export const useFeedStore = defineStore('weiboFeed', () => {
       const result = generateResult.text
 
       if (!result) {
-        console.warn('[FeedStore] LLM 返回空结果')
+        loggerService.warn('FeedStore', 'LLM 返回空结果')
         return
       }
 
@@ -608,7 +609,7 @@ export const useFeedStore = defineStore('weiboFeed', () => {
         }
         parsed = JSON.parse(cleanJson.trim())
       } catch (e) {
-        console.error('[FeedStore] 解析互动数据失败:', e)
+        loggerService.error('FeedStore', '解析互动数据失败:', e)
         return
       }
 
@@ -626,7 +627,7 @@ export const useFeedStore = defineStore('weiboFeed', () => {
               },
             })
           })
-          console.log('[FeedStore] 已更新博文统计:', parsed.stats)
+          loggerService.debug('FeedStore', '已更新博文统计:', parsed.stats)
         }
       }
 
@@ -652,13 +653,13 @@ export const useFeedStore = defineStore('weiboFeed', () => {
           })
         }
 
-        console.log(`[FeedStore] 已保存 ${parsed.comments.length} 条评论`)
+        loggerService.info('FeedStore', `已保存 ${parsed.comments.length} 条评论`)
       }
 
       // 刷新首页以显示更新后的数据
       await refreshFeed()
     } catch (error) {
-      console.error('[FeedStore] 生成互动数据失败:', error)
+      loggerService.error('FeedStore', '生成互动数据失败:', error)
     }
   }
 
@@ -694,8 +695,9 @@ export const useFeedStore = defineStore('weiboFeed', () => {
 
     displayPosts.value = []
 
-    console.log(
-      `[FeedStore] 已清除 ${weiboPostIds.length} 条博文, ${weiboCommentIds.length} 条评论`
+    loggerService.info(
+      'FeedStore',
+      `已清除 ${weiboPostIds.length} 条博文, ${weiboCommentIds.length} 条评论`
     )
     return weiboPostIds.length
   }
@@ -709,7 +711,7 @@ export const useFeedStore = defineStore('weiboFeed', () => {
   ) {
     const settingsStore = useSettingsStore()
     settingsStore.setAutoGenerateConfig(config)
-    console.log('[FeedStore] Auto-generate config updated (via settingsStore)')
+    loggerService.debug('FeedStore', 'Auto-generate config updated (via settingsStore)')
   }
 
   /**
@@ -750,7 +752,7 @@ export const useFeedStore = defineStore('weiboFeed', () => {
       scope: 'session',
     })
 
-    console.log(`[FeedStore] Created commenter account: ${nickname} (${account.id})`)
+    loggerService.debug('FeedStore', `Created commenter account: ${nickname} (${account.id})`)
     return account.id
   }
 
@@ -818,10 +820,10 @@ export const useFeedStore = defineStore('weiboFeed', () => {
         displayPosts.value.splice(index, 1)
       }
 
-      console.log(`[FeedStore] 已删除博文 ${postId} 及 ${commentIds.length} 条评论`)
+      loggerService.info('FeedStore', `已删除博文 ${postId} 及 ${commentIds.length} 条评论`)
       return true
     } catch (error) {
-      console.error('[FeedStore] 删除博文失败:', error)
+      loggerService.error('FeedStore', '删除博文失败:', error)
       return false
     }
   }
@@ -839,7 +841,7 @@ export const useFeedStore = defineStore('weiboFeed', () => {
     try {
       const post = await db.socialPosts.get(postId)
       if (!post) {
-        console.warn('[FeedStore] 博文不存在:', postId)
+        loggerService.warn('FeedStore', '博文不存在:', postId)
         return false
       }
 
@@ -869,10 +871,10 @@ export const useFeedStore = defineStore('weiboFeed', () => {
         }
       }
 
-      console.log('[FeedStore] 已更新博文:', postId)
+      loggerService.info('FeedStore', '已更新博文:', postId)
       return true
     } catch (error) {
-      console.error('[FeedStore] 更新博文失败:', error)
+      loggerService.error('FeedStore', '更新博文失败:', error)
       return false
     }
   }
@@ -884,12 +886,12 @@ export const useFeedStore = defineStore('weiboFeed', () => {
     postId: string,
     count: number = 5
   ): Promise<{ success: boolean; count: number }> {
-    console.log('[FeedStore] 开始为博文生成评论:', postId, '数量:', count)
+    loggerService.info('FeedStore', '开始为博文生成评论:', postId, '数量:', count)
 
     try {
       const post = await db.socialPosts.get(postId)
       if (!post) {
-        console.warn('[FeedStore] 博文不存在:', postId)
+        loggerService.warn('FeedStore', '博文不存在:', postId)
         return { success: false, count: 0 }
       }
 
@@ -897,7 +899,7 @@ export const useFeedStore = defineStore('weiboFeed', () => {
       const prompt = PromptService.getPromptByScene('social.comment.batch.weibo')
 
       if (!prompt) {
-        console.warn('[FeedStore] 未找到评论生成提示词')
+        loggerService.warn('FeedStore', '未找到评论生成提示词')
         return { success: false, count: 0 }
       }
 
@@ -914,7 +916,7 @@ export const useFeedStore = defineStore('weiboFeed', () => {
           narrativeContent = narrativeContext.content
         }
       } catch (e) {
-        console.warn('[FeedStore] 获取叙事内容失败:', e)
+        loggerService.warn('FeedStore', '获取叙事内容失败:', e)
       }
 
       // 填充模板
@@ -941,7 +943,7 @@ export const useFeedStore = defineStore('weiboFeed', () => {
       const result = generateResult.text
 
       if (!result) {
-        console.warn('[FeedStore] LLM 返回空结果')
+        loggerService.warn('FeedStore', 'LLM 返回空结果')
         return { success: false, count: 0 }
       }
 
@@ -959,7 +961,7 @@ export const useFeedStore = defineStore('weiboFeed', () => {
         }
         parsed = JSON.parse(cleanJson.trim())
       } catch (e) {
-        console.error('[FeedStore] 解析评论数据失败:', e)
+        loggerService.error('FeedStore', '解析评论数据失败:', e)
         return { success: false, count: 0 }
       }
 
@@ -1012,10 +1014,10 @@ export const useFeedStore = defineStore('weiboFeed', () => {
         }
       }
 
-      console.log(`[FeedStore] 已生成 ${savedCount} 条评论`)
+      loggerService.info('FeedStore', `已生成 ${savedCount} 条评论`)
       return { success: true, count: savedCount }
     } catch (error) {
-      console.error('[FeedStore] 生成评论失败:', error)
+      loggerService.error('FeedStore', '生成评论失败:', error)
       return { success: false, count: 0 }
     }
   }

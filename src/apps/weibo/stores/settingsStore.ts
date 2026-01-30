@@ -12,6 +12,7 @@
 import { defineStore } from 'pinia';
 import { ref, watch } from 'vue';
 import { tryUseAppRuntime, ScopedStorage } from '@/services/appRuntime';
+import { loggerService } from '@/services/logger/loggerService';
 
 // ==================== 类型定义 ====================
 
@@ -120,7 +121,7 @@ export const useSettingsStore = defineStore('weiboSettings', () => {
       return false;
     }
 
-    console.log('[SettingsStore] 检查 localStorage 旧数据...');
+    loggerService.info('SettingsStore', '检查 localStorage 旧数据...');
     let hasMigratedData = false;
     const migratedSettings: Partial<WeiboSettings> = {};
 
@@ -135,10 +136,10 @@ export const useSettingsStore = defineStore('weiboSettings', () => {
         };
         localStorage.removeItem(LEGACY_KEYS.autoGenerate);
         hasMigratedData = true;
-        console.log('[SettingsStore] 迁移自动生成配置:', migratedSettings.autoGenerate);
+        loggerService.info('SettingsStore', '迁移自动生成配置:', migratedSettings.autoGenerate);
       }
     } catch (e) {
-      console.warn('[SettingsStore] 迁移自动生成配置失败:', e);
+      loggerService.warn('SettingsStore', '迁移自动生成配置失败:', e);
     }
 
     // 尝试迁移自动叙事分析开关
@@ -148,10 +149,10 @@ export const useSettingsStore = defineStore('weiboSettings', () => {
         migratedSettings.autoNarrativeAnalysis = oldNarrative === 'true';
         localStorage.removeItem(LEGACY_KEYS.autoNarrativeAnalysis);
         hasMigratedData = true;
-        console.log('[SettingsStore] 迁移自动叙事分析:', migratedSettings.autoNarrativeAnalysis);
+        loggerService.info('SettingsStore', '迁移自动叙事分析:', migratedSettings.autoNarrativeAnalysis);
       }
     } catch (e) {
-      console.warn('[SettingsStore] 迁移自动叙事分析失败:', e);
+      loggerService.warn('SettingsStore', '迁移自动叙事分析失败:', e);
     }
 
     // 保存迁移后的数据
@@ -161,7 +162,7 @@ export const useSettingsStore = defineStore('weiboSettings', () => {
         ...migratedSettings,
       };
       await storage.set(STORAGE_KEY, fullSettings);
-      console.log('[SettingsStore] 数据迁移完成');
+      loggerService.info('SettingsStore', '数据迁移完成');
     }
 
     // 标记迁移完成
@@ -180,7 +181,7 @@ export const useSettingsStore = defineStore('weiboSettings', () => {
 
     const storage = getStorage();
     if (!storage) {
-      console.warn('[SettingsStore] ScopedStorage 不可用，使用默认设置');
+      loggerService.warn('SettingsStore', 'ScopedStorage 不可用，使用默认设置');
       initialized.value = true;
       return;
     }
@@ -195,14 +196,14 @@ export const useSettingsStore = defineStore('weiboSettings', () => {
         autoGenerateConfig.value = saved.autoGenerate ?? DEFAULT_AUTO_GENERATE_CONFIG;
         autoNarrativeAnalysisEnabled.value = saved.autoNarrativeAnalysis ?? false;
         llmSettings.value = saved.llmSettings ?? DEFAULT_LLM_SETTINGS;
-        console.log('[SettingsStore] 设置已加载:', saved);
+        loggerService.info('SettingsStore', '设置已加载:', saved);
       } else {
-        console.log('[SettingsStore] 使用默认设置');
+        loggerService.debug('SettingsStore', '使用默认设置');
       }
 
       initialized.value = true;
     } catch (e) {
-      console.error('[SettingsStore] 加载设置失败:', e);
+      loggerService.error('SettingsStore', '加载设置失败:', e);
       initialized.value = true;
     }
   }
@@ -213,7 +214,7 @@ export const useSettingsStore = defineStore('weiboSettings', () => {
   async function saveSettings(): Promise<void> {
     const storage = getStorage();
     if (!storage) {
-      console.warn('[SettingsStore] ScopedStorage 不可用，设置未保存');
+      loggerService.warn('SettingsStore', 'ScopedStorage 不可用，设置未保存');
       return;
     }
 
@@ -228,9 +229,9 @@ export const useSettingsStore = defineStore('weiboSettings', () => {
         version: 1,
       };
       await storage.set(STORAGE_KEY, settings);
-      console.log('[SettingsStore] 设置已保存');
+      loggerService.debug('SettingsStore', '设置已保存');
     } catch (e) {
-      console.error('[SettingsStore] 保存设置失败:', e);
+      loggerService.error('SettingsStore', '保存设置失败:', e);
     } finally {
       isSaving.value = false;
     }
@@ -244,7 +245,7 @@ export const useSettingsStore = defineStore('weiboSettings', () => {
   async function setAutoGenerateConfig(config: Partial<AutoGenerateConfig>): Promise<void> {
     Object.assign(autoGenerateConfig.value, config);
     await saveSettings();
-    console.log('[SettingsStore] 自动生成配置已更新:', autoGenerateConfig.value);
+    loggerService.info('SettingsStore', '自动生成配置已更新:', autoGenerateConfig.value);
   }
 
   /**
@@ -253,7 +254,7 @@ export const useSettingsStore = defineStore('weiboSettings', () => {
   async function toggleAutoNarrativeAnalysis(enabled?: boolean): Promise<void> {
     autoNarrativeAnalysisEnabled.value = enabled ?? !autoNarrativeAnalysisEnabled.value;
     await saveSettings();
-    console.log('[SettingsStore] 自动叙事分析:', autoNarrativeAnalysisEnabled.value);
+    loggerService.info('SettingsStore', '自动叙事分析:', autoNarrativeAnalysisEnabled.value);
   }
 
   /**
@@ -262,7 +263,7 @@ export const useSettingsStore = defineStore('weiboSettings', () => {
   async function setLLMSettings(settings: Partial<LLMSettings>): Promise<void> {
     Object.assign(llmSettings.value, settings);
     await saveSettings();
-    console.log('[SettingsStore] LLM 设置已更新:', llmSettings.value);
+    loggerService.info('SettingsStore', 'LLM 设置已更新:', llmSettings.value);
   }
 
   /**
@@ -273,7 +274,7 @@ export const useSettingsStore = defineStore('weiboSettings', () => {
     autoNarrativeAnalysisEnabled.value = false;
     llmSettings.value = { ...DEFAULT_LLM_SETTINGS };
     await saveSettings();
-    console.log('[SettingsStore] 设置已重置为默认值');
+    loggerService.info('SettingsStore', '设置已重置为默认值');
   }
 
   /**
@@ -302,7 +303,7 @@ export const useSettingsStore = defineStore('weiboSettings', () => {
       llmSettings.value = { ...DEFAULT_LLM_SETTINGS, ...settings.llmSettings };
     }
     await saveSettings();
-    console.log('[SettingsStore] 设置已导入');
+    loggerService.info('SettingsStore', '设置已导入');
   }
 
   return {

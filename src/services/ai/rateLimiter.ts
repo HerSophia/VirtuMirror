@@ -4,6 +4,10 @@
  */
 
 import { sleep } from './utils';
+import { loggerService } from '@/services/logger';
+
+// 创建模块专属日志器
+const logger = loggerService.child('ai:rate-limiter');
 
 /**
  * 重试选项
@@ -66,7 +70,7 @@ export async function withRateLimitRetry<T>(
         maxDelay
       );
 
-      console.warn(`Rate limited, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`);
+      logger.warn(`Rate limited, retrying in ${delay}ms (attempt ${attempt + 1}/${maxRetries})`);
       await sleep(delay);
     }
   }

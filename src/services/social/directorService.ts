@@ -4,6 +4,9 @@ import AIGenerateService from '../aiGenerateService'
 import { PromptService } from '../prompt/promptService'
 import { timeService } from '../time/timeService'
 import { TrendService } from './trendService'
+import { loggerService } from '@/services/logger'
+
+const logger = loggerService.child('service:director')
 
 export class DirectorService {
   private static instance: DirectorService
@@ -61,7 +64,7 @@ export class DirectorService {
   private async generateGlobalEvent(time: number) {
     this.isGenerating = true
     try {
-      console.log('[Director] Generating global event...')
+      logger.info('Generating global event...')
 
       const prompt = PromptService.getPromptByScene('social.event.generate')
       let systemPrompt = ''
@@ -118,7 +121,7 @@ export class DirectorService {
           .trim()
         eventData = JSON.parse(cleanJson)
       } catch (e) {
-        console.error('[Director] Failed to parse event JSON', e)
+        logger.error('Failed to parse event JSON', e)
         return
       }
 
@@ -136,9 +139,9 @@ export class DirectorService {
       await TrendService.getInstance().createTopicFromEvent(event)
 
       this.lastEventTime = time
-      console.log(`[Director] Event generated: ${event.topic}`)
+      logger.info(`Event generated: ${event.topic}`)
     } catch (err) {
-      console.error('[Director] Error generating event', err)
+      logger.error('Error generating event', err)
     } finally {
       this.isGenerating = false
     }

@@ -1,6 +1,9 @@
 import { PlatformConfig } from '../../types/social'
 import { PromptService } from '../prompt/promptService'
 import { socialEnginePrompts } from './prompts'
+import { loggerService } from '@/services/logger'
+
+const logger = loggerService.child('service:socialRegistry')
 
 export class PlatformRegistry {
   private static instance: PlatformRegistry
@@ -15,7 +18,7 @@ export class PlatformRegistry {
     try {
       PromptService.registerAppPrompts('social-engine', socialEnginePrompts)
     } catch (error) {
-      console.warn('[SocialEngine] Failed to register prompts:', error)
+      logger.warn('Failed to register prompts:', error)
     }
   }
 

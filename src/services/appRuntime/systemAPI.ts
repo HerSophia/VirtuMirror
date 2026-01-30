@@ -5,6 +5,7 @@
  */
 
 import type { SystemAPI } from './types'
+import { loggerService } from '@/services/logger/loggerService'
 
 // Toast 回调函数类型
 type ToastCallback = (
@@ -41,17 +42,16 @@ export function createSystemAPI(appId: string): SystemAPI {
       if (globalToastCallback) {
         globalToastCallback(message, type, appId)
       } else {
-        // 降级处理：使用 console
-        const prefix = `[${appId}]`
+        // 降级处理：使用 loggerService
         switch (type) {
           case 'error':
-            console.error(prefix, message)
+            loggerService.error(appId, message)
             break
           case 'success':
-            console.log(prefix, '✓', message)
+            loggerService.info(appId, `✓ ${message}`)
             break
           default:
-            console.log(prefix, message)
+            loggerService.info(appId, message)
         }
       }
     },

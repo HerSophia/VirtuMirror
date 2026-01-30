@@ -30,6 +30,10 @@ import { RequestManager, getRequestManager } from './requestManager';
 import { RequestQueue, getRequestQueue } from './requestQueue';
 import { TavernAdapter, getTavernAdapter } from './tavernAdapter';
 import { withRateLimitRetry, withTimeout } from './rateLimiter';
+import { loggerService } from '@/services/logger';
+
+// 创建模块专属日志器
+const logger = loggerService.child('ai-service');
 
 // 事件类型
 type EventType = 'start' | 'chunk' | 'finish' | 'error' | 'abort';
@@ -86,7 +90,7 @@ export class AIService implements IAIService {
     this.initialized = true;
     
     if (this.config.enableLogging) {
-      console.info('[AIService] 初始化完成', this.getProviderInfo());
+      logger.info('初始化完成', this.getProviderInfo());
     }
   }
 
@@ -255,7 +259,7 @@ export class AIService implements IAIService {
         try {
           handler(...args);
         } catch (e) {
-          console.error(`[AIService] Event handler error (${event}):`, e);
+          logger.error(`Event handler error (${event}):`, e);
         }
       });
     }

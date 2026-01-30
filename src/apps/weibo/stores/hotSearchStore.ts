@@ -19,6 +19,7 @@ import {
   syncContextFromNarrative 
 } from '../services/sessionContext';
 import { getCurrentSourceTracking } from './llm/sourceTracking';
+import { loggerService } from '@/services/logger/loggerService';
 
 /**
  * LLM 生成的热搜项类型
@@ -72,7 +73,7 @@ export const useHotSearchStore = defineStore('weiboHotSearch', () => {
   async function refreshHotSearch() {
     const now = Date.now();
     
-    console.log('[HotSearchStore] 正在刷新热搜榜...');
+    loggerService.debug('HotSearchStore', '正在刷新热搜榜...');
 
     // 同步会话上下文
     syncContextFromNarrative();
@@ -83,7 +84,7 @@ export const useHotSearchStore = defineStore('weiboHotSearch', () => {
     const sourceFilter = buildSourceFilter(ctx);
 
     const topics = await TrendService.getInstance().getTrendingList('weibo');
-    console.log(`[HotSearchStore] 从 TrendService 获取到 ${topics.length} 条热搜`);
+    loggerService.debug('HotSearchStore', `从 TrendService 获取到 ${topics.length} 条热搜`);
 
     // 按命名空间和来源过滤热搜
     const scopedTopics = topics.filter((t) => 
@@ -189,9 +190,9 @@ export const useHotSearchStore = defineStore('weiboHotSearch', () => {
           await db.socialTopics.add(topic);
         });
         savedTopics.push(topic);
-        console.log(`[HotSearchStore] 已保存热搜到数据库: ${topic.keyword} (ID: ${topic.id})`);
+        loggerService.debug('HotSearchStore', `已保存热搜到数据库: ${topic.keyword} (ID: ${topic.id})`);
       } catch (e) {
-        console.warn('[HotSearchStore] 保存热搜话题失败:', e);
+        loggerService.warn('HotSearchStore', '保存热搜话题失败:', e);
         savedTopics.push(topic);
       }
     }
@@ -300,7 +301,7 @@ export const useHotSearchStore = defineStore('weiboHotSearch', () => {
 
     hotSearches.value[category] = mergedItems;
     
-    console.log(`[HotSearchStore] 已应用 ${newItems.length} 条 LLM 生成的热搜，当前共 ${mergedItems.length} 条`);
+    loggerService.info('HotSearchStore', `已应用 ${newItems.length} 条 LLM 生成的热搜，当前共 ${mergedItems.length} 条`);
     
     return mergedItems.length;
   }
@@ -341,7 +342,7 @@ export const useHotSearchStore = defineStore('weiboHotSearch', () => {
       const count = await applyGeneratedHotSearch(validItems, mode);
       return { success: true, count };
     } catch (e: any) {
-      console.error('[HotSearchStore] 解析热搜 JSON 失败:', e);
+      loggerService.error('HotSearchStore', '解析热搜 JSON 失败:', e);
       return { success: false, count: 0, error: e.message || '解析失败' };
     }
   }
@@ -358,7 +359,7 @@ export const useHotSearchStore = defineStore('weiboHotSearch', () => {
       .filter(t => t.platformId === 'weibo' && (!namespace || t.namespace === namespace))
       .map(t => t.id);
     
-    console.log(`[HotSearchStore] 找到 ${weiboTopicIds.length} 条微博热搜待删除`);
+    loggerService.debug('HotSearchStore', `找到 ${weiboTopicIds.length} 条微博热搜待删除`);
     
     if (weiboTopicIds.length > 0) {
       await writeQueue.enqueue('app', namespace || 'weibo', async () => {
@@ -368,7 +369,7 @@ export const useHotSearchStore = defineStore('weiboHotSearch', () => {
     
     hotSearches.value = {};
     
-    console.log(`[HotSearchStore] 已清除 ${weiboTopicIds.length} 条热搜`);
+    loggerService.info('HotSearchStore', `已清除 ${weiboTopicIds.length} 条热搜`);
     return weiboTopicIds.length;
   }
 

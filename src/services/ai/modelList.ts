@@ -6,6 +6,10 @@
  */
 
 import type { ProviderSource, ApiConfig } from './types';
+import { loggerService } from '@/services/logger';
+
+// 创建模块专属日志器
+const logger = loggerService.child('ai:model-list');
 
 // ==================== 类型定义 ====================
 
@@ -189,13 +193,13 @@ export async function fetchOpenAIModels(
       const data: OpenAIModelsResponse = await response.json();
 
       // 调试：打印原始响应
-      console.log('[ModelList] 原始响应:', JSON.stringify(data, null, 2));
+      logger.debug('原始响应:', JSON.stringify(data, null, 2));
 
       if (!data.data || !Array.isArray(data.data)) {
         // 某些 API 可能返回不同的格式，尝试兼容处理
         if (Array.isArray(data)) {
           // 直接是数组的情况
-          console.log('[ModelList] 检测到数组格式响应');
+          logger.debug('检测到数组格式响应');
           const models: ModelInfo[] = (data as unknown as OpenAIModelObject[]).map((model) => ({
             id: model.id,
             name: model.id,
@@ -221,7 +225,7 @@ export async function fetchOpenAIModels(
 
       // 如果 data.data 是空数组，给出提示
       if (data.data.length === 0) {
-        console.warn('[ModelList] API 返回了空的模型列表，该 API 可能不支持 /models 端点');
+        logger.warn('API 返回了空的模型列表，该 API 可能不支持 /models 端点');
       }
 
       // 转换为统一的 ModelInfo 格式

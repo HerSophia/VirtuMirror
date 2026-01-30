@@ -3,6 +3,7 @@ import { ref, onMounted, computed } from 'vue';
 import { useAccountStore } from '@/stores/accountStore';
 import { useAIStore } from '@/stores/aiStore';
 import { useWeiboStore } from '@/stores/weiboStore';
+import { loggerService } from '@/services/logger/loggerService';
 import { useLLMTaskStore, useSettingsStore, useUserActionStore } from '../stores';
 import { 
   getSessionContext, 
@@ -147,7 +148,7 @@ async function loadBindingStats() {
   try {
     bindingStats.value = await getBindingStats();
   } catch (error) {
-    console.error('Failed to load binding stats:', error);
+    loggerService.error('WeiboSettings', 'Failed to load binding stats:', error);
   }
 }
 
@@ -156,7 +157,7 @@ async function loadAccountBindingStatus() {
   try {
     accountBindingStatus.value = await getAccountBindingStatus();
   } catch (error) {
-    console.error('Failed to load account binding status:', error);
+    loggerService.error('WeiboSettings', 'Failed to load account binding status:', error);
   }
 }
 
@@ -179,7 +180,7 @@ async function handleBindAccountToSession() {
       alert(`❌ ${result.message}`);
     }
   } catch (error) {
-    console.error('Failed to bind account:', error);
+    loggerService.error('WeiboSettings', 'Failed to bind account:', error);
     alert('绑定失败，请查看控制台');
   } finally {
     isBindingAccount.value = false;
@@ -216,7 +217,7 @@ async function handleBindDataToSession() {
     await loadBindingStats();
     alert(`绑定完成！\n博文: ${result.posts} 条\n评论: ${result.comments} 条\n热搜: ${result.topics} 条`);
   } catch (error) {
-    console.error('Failed to bind data:', error);
+    loggerService.error('WeiboSettings', 'Failed to bind data:', error);
     alert('绑定失败，请查看控制台');
   } finally {
     isBindingData.value = false;
@@ -227,7 +228,7 @@ async function loadCacheStats() {
   try {
     cacheStats.value = await weiboStore.getCacheStats();
   } catch (error) {
-    console.error('Failed to load cache stats:', error);
+    loggerService.error('WeiboSettings', 'Failed to load cache stats:', error);
   }
 }
 
@@ -244,7 +245,7 @@ async function loadAccounts() {
       currentAccountId.value = result.id;
     }
   } catch (error) {
-    console.error('Failed to load accounts:', error);
+    loggerService.error('WeiboSettings', 'Failed to load accounts:', error);
   } finally {
     isLoading.value = false;
   }
@@ -289,7 +290,7 @@ function handleSettingClick(action: string) {
       }
       break;
     default:
-      console.log('Setting action:', action);
+      loggerService.debug('WeiboSettings', 'Setting action:', action);
   }
 }
 
@@ -338,7 +339,7 @@ async function confirmClearCache() {
       alert('没有需要清除的数据');
     }
   } catch (error) {
-    console.error('Failed to clear cache:', error);
+    loggerService.error('WeiboSettings', 'Failed to clear cache:', error);
     alert('清除缓存失败');
   } finally {
     clearCacheLoading.value = false;

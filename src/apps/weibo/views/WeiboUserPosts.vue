@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { useFeedStore } from '../stores/feedStore';
+import { loggerService } from '@/services/logger/loggerService';
 import type { DisplayPost } from '@/types/social';
 import WeiboPost from '../components/WeiboPost.vue';
 
@@ -37,7 +38,7 @@ async function loadPosts() {
   try {
     posts.value = await feedStore.getPostsByAuthor(props.authorId);
   } catch (error) {
-    console.error('[WeiboUserPosts] Failed to load posts:', error);
+    loggerService.error('WeiboUserPosts', 'Failed to load posts:', error);
     hasError.value = true;
   } finally {
     isLoading.value = false;

@@ -5,6 +5,9 @@
  */
 
 import type { DeviceStatus, HeartbeatResponse } from './types'
+import { loggerService } from '@/services/logger'
+
+const logger = loggerService.child('service:deviceSync')
 
 class DeviceSyncManager {
   private deviceId: string
@@ -82,7 +85,7 @@ class DeviceSyncManager {
 
   private async sendHeartbeat(): Promise<void> {
     if (!this.serverUrl || !this.sessionId) {
-      console.warn('[DeviceSync] 未配置服务器信息')
+      logger.warn('未配置服务器信息')
       return
     }
 
@@ -113,14 +116,14 @@ class DeviceSyncManager {
 
       // 检测到其他设备时记录日志
       if (!this.status.isOnlyDevice) {
-        console.log(
-          `[DeviceSync] 检测到其他设备: ${this.status.otherDevices
+        logger.info(
+          `检测到其他设备: ${this.status.otherDevices
             .map((d) => `${d.name} (${d.lastActive})`)
             .join(', ')}`
         )
       }
     } catch (e) {
-      console.error('[DeviceSync] 心跳失败:', e)
+      logger.error('心跳失败:', e)
       // 心跳失败时保持之前的状态
     }
   }

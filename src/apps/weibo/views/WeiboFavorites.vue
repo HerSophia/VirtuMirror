@@ -3,6 +3,7 @@ import { ref, onMounted, computed } from 'vue';
 import { useFeedStore, useUserActionStore } from '../stores';
 import type { DisplayPost } from '@/types/social';
 import WeiboPost from '../components/WeiboPost.vue';
+import { loggerService } from '@/services/logger/loggerService';
 
 const emit = defineEmits<{
   (e: 'back'): void;
@@ -36,7 +37,7 @@ async function loadFavorites() {
     
     posts.value = loadedPosts;
   } catch (error) {
-    console.error('[WeiboFavorites] Failed to load favorites:', error);
+    loggerService.error('WeiboFavorites', 'Failed to load favorites:', error);
   } finally {
     isLoading.value = false;
   }

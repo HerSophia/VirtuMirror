@@ -9,6 +9,7 @@
 
 import { v4 as uuidv4 } from 'uuid'
 import { db } from '@/services/database'
+import { loggerService } from '@/services/logger'
 import type {
   CharacterEntity,
   PlatformAccount,
@@ -35,6 +36,9 @@ import type {
  * - 社交关系管理：基于账号的关注、好友等关系
  * - 可见性查询：根据会话上下文过滤可见实体和账号
  */
+// 创建模块专属日志器
+const logger = loggerService.child('account-service')
+
 export class AccountService {
   private static instance: AccountService
   
@@ -919,7 +923,7 @@ export class AccountService {
     toEntityId: string,
     platformId?: string
   ): Promise<SocialRelation> {
-    console.warn('follow() is deprecated, use followAccount() instead')
+    logger.warn('follow() is deprecated, use followAccount() instead')
     // 简化实现：返回一个模拟的关系
     return {
       id: uuidv4(),
@@ -938,28 +942,28 @@ export class AccountService {
     toEntityId: string,
     platformId?: string
   ): Promise<void> {
-    console.warn('unfollow() is deprecated, use unfollowAccount() instead')
+    logger.warn('unfollow() is deprecated, use unfollowAccount() instead')
   }
 
   /**
    * @deprecated 使用 addFriendAccounts 代替
    */
   async addFriend(entityIdA: string, entityIdB: string): Promise<void> {
-    console.warn('addFriend() is deprecated, use addFriendAccounts() instead')
+    logger.warn('addFriend() is deprecated, use addFriendAccounts() instead')
   }
 
   /**
    * @deprecated 使用 removeFriendAccounts 代替
    */
   async removeFriend(entityIdA: string, entityIdB: string): Promise<void> {
-    console.warn('removeFriend() is deprecated, use removeFriendAccounts() instead')
+    logger.warn('removeFriend() is deprecated, use removeFriendAccounts() instead')
   }
 
   /**
    * @deprecated 使用 getFollowingAccounts 代替
    */
   async getFollowing(entityId: string, platformId?: string): Promise<CharacterEntity[]> {
-    console.warn('getFollowing() is deprecated, use getFollowingAccounts() instead')
+    logger.warn('getFollowing() is deprecated, use getFollowingAccounts() instead')
     return []
   }
 
@@ -967,7 +971,7 @@ export class AccountService {
    * @deprecated 使用 getFollowerAccounts 代替
    */
   async getFollowers(entityId: string, platformId?: string): Promise<CharacterEntity[]> {
-    console.warn('getFollowers() is deprecated, use getFollowerAccounts() instead')
+    logger.warn('getFollowers() is deprecated, use getFollowerAccounts() instead')
     return []
   }
 
@@ -975,7 +979,7 @@ export class AccountService {
    * @deprecated 使用 getFriendAccounts 代替
    */
   async getFriends(entityId: string): Promise<CharacterEntity[]> {
-    console.warn('getFriends() is deprecated, use getFriendAccounts() instead')
+    logger.warn('getFriends() is deprecated, use getFriendAccounts() instead')
     return []
   }
 
@@ -988,7 +992,7 @@ export class AccountService {
     type: RelationType,
     platformId?: string
   ): Promise<boolean> {
-    console.warn('hasRelation() is deprecated, use hasAccountRelation() instead')
+    logger.warn('hasRelation() is deprecated, use hasAccountRelation() instead')
     return false
   }
 

@@ -4,6 +4,9 @@
  */
 
 import type { OutputHandler } from './types';
+import { loggerService } from '@/services/logger';
+
+const logger = loggerService.child('service:outputHandlerRegistry');
 
 /**
  * 输出处理器注册表
@@ -26,9 +29,7 @@ export class OutputHandlerRegistry {
 
     // 检查 ID 冲突
     if (this.handlers.has(handler.id)) {
-      console.warn(
-        `[OutputHandlerRegistry] 处理器 "${handler.id}" 已存在，将被覆盖`
-      );
+      logger.warn(`处理器 "${handler.id}" 已存在，将被覆盖`);
     }
 
     // 存储处理器
@@ -40,9 +41,7 @@ export class OutputHandlerRegistry {
     }
     this.byApp.get(handler.appId)!.add(handler.id);
 
-    console.log(
-      `[OutputHandlerRegistry] 已注册处理器: ${handler.id} (${handler.name})`
-    );
+    logger.debug(`已注册处理器: ${handler.id} (${handler.name})`);
   }
 
   /**
@@ -77,7 +76,7 @@ export class OutputHandlerRegistry {
       }
     }
 
-    console.log(`[OutputHandlerRegistry] 已注销处理器: ${id}`);
+    logger.debug(`已注销处理器: ${id}`);
     return true;
   }
 
@@ -133,7 +132,7 @@ export class OutputHandlerRegistry {
   clear(): void {
     this.handlers.clear();
     this.byApp.clear();
-    console.log('[OutputHandlerRegistry] 已清空所有处理器');
+    logger.debug('已清空所有处理器');
   }
 
   /**

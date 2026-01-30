@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue';
 import { useFeedStore, useUserActionStore } from '../stores';
+import { loggerService } from '@/services/logger/loggerService';
 import type { DisplayPost } from '@/types/social';
 import WeiboPost from '../components/WeiboPost.vue';
 
@@ -36,7 +37,7 @@ async function loadLikes() {
     
     posts.value = loadedPosts;
   } catch (error) {
-    console.error('[WeiboLikes] Failed to load likes:', error);
+    loggerService.error('WeiboLikes', 'Failed to load likes:', error);
   } finally {
     isLoading.value = false;
   }

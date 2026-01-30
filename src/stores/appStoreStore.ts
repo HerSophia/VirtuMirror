@@ -32,6 +32,9 @@ import {
   createMigrationRecord,
   createVerificationStatus,
 } from '@/services/appRuntime'
+import { loggerService } from '@/services/logger'
+
+const logger = loggerService.child('store:appStore')
 
 // ===== 示例应用数据 =====
 
@@ -563,7 +566,7 @@ export const useAppStoreStore = defineStore('appStore', () => {
         installed.migrationHistory.push(migrationRecord)
         
         if (!migrationResult.success) {
-          console.error('[AppStore] 数据迁移失败:', migrationResult.error)
+          logger.error('数据迁移失败', { error: migrationResult.error, appId })
           // 迁移失败不阻止更新，但记录错误
         }
         
@@ -616,7 +619,7 @@ export const useAppStoreStore = defineStore('appStore', () => {
       
       // 显示警告信息（如果有）
       if (verifyResult.warnings && verifyResult.warnings.length > 0) {
-        console.warn('[AppStore] 本地导入警告:', verifyResult.warnings)
+        logger.warn('本地导入警告', { warnings: verifyResult.warnings, fileName })
         // TODO: 显示警告对话框让用户确认
       }
       
@@ -695,7 +698,7 @@ export const useAppStoreStore = defineStore('appStore', () => {
       
       // 显示警告信息
       if (verifyResult.warnings && verifyResult.warnings.length > 0) {
-        console.warn('[AppStore] URL 导入警告:', verifyResult.warnings)
+        logger.warn('URL 导入警告', { warnings: verifyResult.warnings, url })
         // TODO: 显示警告对话框让用户确认
       }
       
@@ -764,8 +767,9 @@ export const useAppStoreStore = defineStore('appStore', () => {
   function saveInstalledApps() {
     try {
       localStorage.setItem('phone-sim-installed-apps', JSON.stringify(installedApps.value))
+      logger.debug('已安装应用列表已保存', { count: installedApps.value.length })
     } catch (e) {
-      console.error('[AppStore] 保存已安装应用失败:', e)
+      logger.error('保存已安装应用失败', e)
     }
   }
   
@@ -777,9 +781,10 @@ export const useAppStoreStore = defineStore('appStore', () => {
       const saved = localStorage.getItem('phone-sim-installed-apps')
       if (saved) {
         installedApps.value = JSON.parse(saved)
+        logger.debug('已加载已安装应用', { count: installedApps.value.length })
       }
     } catch (e) {
-      console.error('[AppStore] 加载已安装应用失败:', e)
+      logger.error('加载已安装应用失败', e)
     }
   }
   

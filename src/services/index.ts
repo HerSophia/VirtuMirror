@@ -188,6 +188,12 @@ export { DirectorService } from './social/directorService'
 export { PlatformRegistry } from './social/registry'
 export { TrendService } from './social/trendService'
 export { UserPool } from './social/userPool'
+export {
+  topicContentLoader,
+  preloadTopTopics,
+  warmupTopicCache,
+  type TopicContentResult,
+} from './social/topicContentLoader'
 
 // Account Service (统一身份管理)
 export {
@@ -407,3 +413,76 @@ export type {
   BuiltinStrategyName,
   TypeGuard,
 } from './jsonParser'
+
+// Lazy Loader 服务
+export {
+  createLazyLoader,
+  createNamespacedLoader,
+  LazyLoaderRegistry,
+  LazyLoader,
+  LRUCache,
+  FIFOCache,
+  ConcurrencyLimiter,
+  RequestDeduplicator,
+} from './lazyLoader'
+export type {
+  ILazyLoader,
+  LazyLoaderOptions,
+  LazyLoaderStats,
+  CacheOptions,
+} from './lazyLoader'
+
+// Feed Service (信息流服务)
+export {
+  FeedService,
+  getFeedService,
+  resetFeedService,
+  feedService,
+  AlgorithmRegistry,
+  algorithmRegistry,
+  DEFAULT_ALGORITHM_CONFIG,
+  ScoreCalculator,
+  scoreCalculator,
+  DiversityController,
+  diversityController,
+  DEFAULT_DIVERSITY_RULES,
+  FilterChain,
+  filterChain,
+  FeedCache,
+  feedCache,
+  DEFAULT_CACHE_CONFIG,
+} from './feed'
+export type {
+  FeedServiceConfig,
+  ContentProvider,
+  FeedType,
+  FeedItem,
+  FeedReason,
+  FeedReasonType,
+  FeedOptions,
+  TimeRange,
+  CategoryFeedOptions,
+  TopicFeedOptions,
+  TrendingOptions,
+  FeedResult,
+  FeedDebugInfo,
+  AlgorithmConfig,
+  AlgorithmWeights,
+  DiversityRules,
+  ColdStartStrategy,
+  FeedFilter,
+  PrioritizedFilter,
+  BuiltinFilterType,
+  FeedCacheEntry,
+  FeedCacheConfig,
+  FeedCacheStats,
+  ScoreComponents,
+  ScoreContext,
+  NormalizationParams,
+  FeedEvent,
+  FeedEventType,
+  ContentSource,
+  ContentSourceType,
+  AggregateOptions,
+  IFeedService,
+} from './feed'

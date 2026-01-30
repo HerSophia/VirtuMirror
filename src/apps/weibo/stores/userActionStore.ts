@@ -17,6 +17,7 @@ import { tryUseAppRuntime } from '@/services/appRuntime';
 import type { ScopedStorage } from '@/services/appRuntime/types';
 import { getNarrativeCacheMetadata } from './llm/narrativeIntegration';
 import type { ContentSourceTracking } from '@/types/social';
+import { loggerService } from '@/services/logger/loggerService';
 
 // 存储键名（ScopedStorage）
 const STORAGE_KEYS = {
@@ -162,11 +163,11 @@ export const useUserActionStore = defineStore('weiboUserAction', () => {
     // 检查是否已迁移
     const migrated = await storage.get<boolean>(STORAGE_KEYS.MIGRATED);
     if (migrated) {
-      console.log('[UserActionStore] 数据已迁移，跳过');
+      loggerService.debug('UserActionStore', '数据已迁移，跳过');
       return;
     }
     
-    console.log('[UserActionStore] 开始从 localStorage 迁移数据...');
+    loggerService.info('UserActionStore', '开始从 localStorage 迁移数据...');
     
     try {
       // 迁移点赞
@@ -175,7 +176,7 @@ export const useUserActionStore = defineStore('weiboUserAction', () => {
         const parsedLikes = JSON.parse(likesData) as UserAction[];
         if (parsedLikes.length > 0) {
           await storage.set(STORAGE_KEYS.LIKES, parsedLikes);
-          console.log(`[UserActionStore] 迁移 ${parsedLikes.length} 条点赞记录`);
+          loggerService.info('UserActionStore', `迁移 ${parsedLikes.length} 条点赞记录`);
         }
       }
       
@@ -185,7 +186,7 @@ export const useUserActionStore = defineStore('weiboUserAction', () => {
         const parsedFavorites = JSON.parse(favoritesData) as UserAction[];
         if (parsedFavorites.length > 0) {
           await storage.set(STORAGE_KEYS.FAVORITES, parsedFavorites);
-          console.log(`[UserActionStore] 迁移 ${parsedFavorites.length} 条收藏记录`);
+          loggerService.info('UserActionStore', `迁移 ${parsedFavorites.length} 条收藏记录`);
         }
       }
       
@@ -195,7 +196,7 @@ export const useUserActionStore = defineStore('weiboUserAction', () => {
         const parsedHistory = JSON.parse(historyData) as ViewHistory[];
         if (parsedHistory.length > 0) {
           await storage.set(STORAGE_KEYS.VIEW_HISTORY, parsedHistory);
-          console.log(`[UserActionStore] 迁移 ${parsedHistory.length} 条浏览历史`);
+          loggerService.info('UserActionStore', `迁移 ${parsedHistory.length} 条浏览历史`);
         }
       }
       
@@ -207,9 +208,9 @@ export const useUserActionStore = defineStore('weiboUserAction', () => {
       // localStorage.removeItem(LEGACY_STORAGE_KEYS.FAVORITES);
       // localStorage.removeItem(LEGACY_STORAGE_KEYS.VIEW_HISTORY);
       
-      console.log('[UserActionStore] 数据迁移完成');
+      loggerService.info('UserActionStore', '数据迁移完成');
     } catch (error) {
-      console.error('[UserActionStore] 数据迁移失败:', error);
+      loggerService.error('UserActionStore', '数据迁移失败:', error);
     }
   }
   
@@ -219,7 +220,7 @@ export const useUserActionStore = defineStore('weiboUserAction', () => {
   async function loadFromStorage(): Promise<void> {
     const storage = getStorage();
     if (!storage) {
-      console.warn('[UserActionStore] ScopedStorage 不可用，使用空数据');
+      loggerService.warn('UserActionStore', 'ScopedStorage 不可用，使用空数据');
       return;
     }
     
@@ -245,13 +246,13 @@ export const useUserActionStore = defineStore('weiboUserAction', () => {
         viewHistory.value = historyData;
       }
       
-      console.log('[UserActionStore] 从 ScopedStorage 加载完成:', {
+      loggerService.info('UserActionStore', '从 ScopedStorage 加载完成:', {
         likes: likes.value.length,
         favorites: favorites.value.length,
         viewHistory: viewHistory.value.length,
       });
     } catch (error) {
-      console.error('[UserActionStore] 加载数据失败:', error);
+      loggerService.error('UserActionStore', '加载数据失败:', error);
     }
   }
   
@@ -261,14 +262,14 @@ export const useUserActionStore = defineStore('weiboUserAction', () => {
   async function saveLikesToStorage(): Promise<void> {
     const storage = getStorage();
     if (!storage) {
-      console.warn('[UserActionStore] ScopedStorage 不可用，点赞未保存');
+      loggerService.warn('UserActionStore', 'ScopedStorage 不可用，点赞未保存');
       return;
     }
     
     try {
       await storage.set(STORAGE_KEYS.LIKES, likes.value);
     } catch (error) {
-      console.error('[UserActionStore] 保存点赞失败:', error);
+      loggerService.error('UserActionStore', '保存点赞失败:', error);
     }
   }
   
@@ -278,14 +279,14 @@ export const useUserActionStore = defineStore('weiboUserAction', () => {
   async function saveFavoritesToStorage(): Promise<void> {
     const storage = getStorage();
     if (!storage) {
-      console.warn('[UserActionStore] ScopedStorage 不可用，收藏未保存');
+      loggerService.warn('UserActionStore', 'ScopedStorage 不可用，收藏未保存');
       return;
     }
     
     try {
       await storage.set(STORAGE_KEYS.FAVORITES, favorites.value);
     } catch (error) {
-      console.error('[UserActionStore] 保存收藏失败:', error);
+      loggerService.error('UserActionStore', '保存收藏失败:', error);
     }
   }
   
@@ -295,14 +296,14 @@ export const useUserActionStore = defineStore('weiboUserAction', () => {
   async function saveViewHistoryToStorage(): Promise<void> {
     const storage = getStorage();
     if (!storage) {
-      console.warn('[UserActionStore] ScopedStorage 不可用，浏览历史未保存');
+      loggerService.warn('UserActionStore', 'ScopedStorage 不可用，浏览历史未保存');
       return;
     }
     
     try {
       await storage.set(STORAGE_KEYS.VIEW_HISTORY, viewHistory.value);
     } catch (error) {
-      console.error('[UserActionStore] 保存浏览历史失败:', error);
+      loggerService.error('UserActionStore', '保存浏览历史失败:', error);
     }
   }
 
@@ -313,7 +314,7 @@ export const useUserActionStore = defineStore('weiboUserAction', () => {
    */
   async function initialize(userId: string): Promise<void> {
     if (isLoading.value) {
-      console.log('[UserActionStore] 正在初始化中，跳过');
+      loggerService.debug('UserActionStore', '正在初始化中，跳过');
       return;
     }
     
@@ -329,7 +330,7 @@ export const useUserActionStore = defineStore('weiboUserAction', () => {
       viewHistory.value = viewHistory.value.filter(v => v.userId === userId);
       
       isInitialized.value = true;
-      console.log('[UserActionStore] 初始化完成，用户:', userId);
+      loggerService.info('UserActionStore', '初始化完成，用户:', userId);
     } finally {
       isLoading.value = false;
     }
@@ -356,7 +357,7 @@ export const useUserActionStore = defineStore('weiboUserAction', () => {
    */
   async function toggleLike(targetId: string, targetType: 'post' | 'comment' = 'post'): Promise<boolean> {
     if (!currentUserId.value) {
-      console.warn('[UserActionStore] No user logged in');
+      loggerService.warn('UserActionStore', 'No user logged in');
       return false;
     }
     
@@ -368,7 +369,7 @@ export const useUserActionStore = defineStore('weiboUserAction', () => {
       // 取消点赞
       likes.value.splice(existingIndex, 1);
       await saveLikesToStorage();
-      console.log('[UserActionStore] 取消点赞:', targetId);
+      loggerService.debug('UserActionStore', '取消点赞:', targetId);
       return false;
     } else {
       // 添加点赞，包含来源追踪
@@ -384,7 +385,7 @@ export const useUserActionStore = defineStore('weiboUserAction', () => {
       };
       likes.value.push(action);
       await saveLikesToStorage();
-      console.log('[UserActionStore] 点赞:', targetId);
+      loggerService.debug('UserActionStore', '点赞:', targetId);
       return true;
     }
   }
@@ -394,7 +395,7 @@ export const useUserActionStore = defineStore('weiboUserAction', () => {
    */
   async function toggleFavorite(targetId: string): Promise<boolean> {
     if (!currentUserId.value) {
-      console.warn('[UserActionStore] No user logged in');
+      loggerService.warn('UserActionStore', 'No user logged in');
       return false;
     }
     
@@ -404,7 +405,7 @@ export const useUserActionStore = defineStore('weiboUserAction', () => {
       // 取消收藏
       favorites.value.splice(existingIndex, 1);
       await saveFavoritesToStorage();
-      console.log('[UserActionStore] 取消收藏:', targetId);
+      loggerService.debug('UserActionStore', '取消收藏:', targetId);
       return false;
     } else {
       // 添加收藏，包含来源追踪
@@ -420,7 +421,7 @@ export const useUserActionStore = defineStore('weiboUserAction', () => {
       };
       favorites.value.push(action);
       await saveFavoritesToStorage();
-      console.log('[UserActionStore] 收藏:', targetId);
+      loggerService.debug('UserActionStore', '收藏:', targetId);
       return true;
     }
   }
@@ -528,7 +529,7 @@ export const useUserActionStore = defineStore('weiboUserAction', () => {
   async function clearViewHistory(): Promise<void> {
     viewHistory.value = [];
     await saveViewHistoryToStorage();
-    console.log('[UserActionStore] 浏览历史已清空');
+    loggerService.info('UserActionStore', '浏览历史已清空');
   }
   
   /**
@@ -561,7 +562,7 @@ export const useUserActionStore = defineStore('weiboUserAction', () => {
     if (enabled) {
       updateCurrentSession();
     }
-    console.log('[UserActionStore] 会话过滤:', enabled ? '开启' : '关闭');
+    loggerService.debug('UserActionStore', '会话过滤:', enabled ? '开启' : '关闭');
   }
   
   /**

@@ -7,6 +7,9 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { StagedAction, StagedActionType, UniqueId } from '@/types'
 import { PLAYER_ID } from '@/types'
+import { loggerService } from '@/services/logger'
+
+const logger = loggerService.child('store:stagedActions')
 
 export const useStagedActionsStore = defineStore('stagedActions', () => {
   // ==================== 状态 ====================
@@ -221,6 +224,7 @@ export const useStagedActionsStore = defineStore('stagedActions', () => {
       return ''
     }
     
+    const actionCount = actions.value.length
     const formatted = formatActionsForSubmit()
     
     // 注入到SillyTavern输入框或发送
@@ -236,6 +240,8 @@ export const useStagedActionsStore = defineStore('stagedActions', () => {
     
     // 清空暂存
     clearActions()
+    
+    logger.info('暂存操作已提交', { actionCount })
     
     return formatted
   }

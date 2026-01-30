@@ -14,6 +14,7 @@ import { getAIService, RequestPriority } from './ai'
 import type { GenerateResult as AIServiceResult, StreamChunk } from './ai/types'
 import { PromptService } from './prompt/promptService'
 import { SystemPromptService } from './prompt/systemPromptService'
+import { loggerService } from '@/services/logger/loggerService'
 
 /**
  * 生成配置
@@ -146,7 +147,7 @@ export class AIGenerateService {
 
       return this.convertResult(result)
     } catch (error) {
-      console.error('[AIGenerateService] 生成失败:', error)
+      loggerService.error('AIGenerateService', '生成失败:', error)
       return {
         text: '',
         success: false,
@@ -197,7 +198,7 @@ export class AIGenerateService {
             }
           },
           onError: (error) => {
-            console.error('[AIGenerateService] 流式生成错误:', error)
+            loggerService.error('AIGenerateService', '流式生成错误:', error)
             callback('', true)
           },
           onAbort: () => {
@@ -216,7 +217,7 @@ export class AIGenerateService {
         requestId: handle.requestId,
       }
     } catch (error) {
-      console.error('[AIGenerateService] 流式生成失败:', error)
+      loggerService.error('AIGenerateService', '流式生成失败:', error)
       callback('', true)
       return {
         text: '',

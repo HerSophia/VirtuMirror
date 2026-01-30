@@ -13,6 +13,7 @@
 
 import type { SystemPromptDefinition } from './prompt/systemPromptService'
 import { SystemPromptService } from './prompt/systemPromptService'
+import { loggerService } from '@/services/logger/loggerService'
 
 // ========== 内置提示词定义 ==========
 
@@ -150,7 +151,7 @@ const registeredPromptIds = new Set<string>()
  * 如果提示词已存在（用户可能已修改），则不会覆盖。
  */
 export function registerBuiltinNarrativePrompts(): void {
-  console.log('[BuiltinNarrativePrompts] 开始注册内置叙事理解提示词...')
+  loggerService.info('BuiltinNarrativePrompts', '开始注册内置叙事理解提示词...')
 
   for (const definition of BUILTIN_NARRATIVE_PROMPTS) {
     // 检查是否已存在同名的系统提示词
@@ -161,17 +162,17 @@ export function registerBuiltinNarrativePrompts(): void {
     if (existing) {
       // 已存在，跳过（保留用户的修改）
       registeredPromptIds.add(existing.id)
-      console.log(`[BuiltinNarrativePrompts] 跳过已存在的: ${definition.name}`)
+      loggerService.info('BuiltinNarrativePrompts', `跳过已存在的: ${definition.name}`)
       continue
     }
 
     // 创建新的系统提示词
     const created = SystemPromptService.create(definition)
     registeredPromptIds.add(created.id)
-    console.log(`[BuiltinNarrativePrompts] 已创建: ${definition.name}`)
+    loggerService.info('BuiltinNarrativePrompts', `已创建: ${definition.name}`)
   }
 
-  console.log(`[BuiltinNarrativePrompts] 注册完成，共 ${registeredPromptIds.size} 个提示词`)
+  loggerService.info('BuiltinNarrativePrompts', `注册完成，共 ${registeredPromptIds.size} 个提示词`)
 }
 
 /**
@@ -194,7 +195,7 @@ export function isBuiltinNarrativePrompt(id: string): boolean {
  * 注意：这会删除用户对内置提示词的修改
  */
 export function resetBuiltinNarrativePrompts(): void {
-  console.log('[BuiltinNarrativePrompts] 重置所有内置提示词...')
+  loggerService.info('BuiltinNarrativePrompts', '重置所有内置提示词...')
 
   // 删除现有的内置提示词
   for (const id of registeredPromptIds) {
@@ -208,7 +209,7 @@ export function resetBuiltinNarrativePrompts(): void {
     registeredPromptIds.add(created.id)
   }
 
-  console.log('[BuiltinNarrativePrompts] 重置完成')
+  loggerService.info('BuiltinNarrativePrompts', '重置完成')
 }
 
 /**

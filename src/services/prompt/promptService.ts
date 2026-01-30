@@ -13,6 +13,9 @@ import type {
   PromptVariable,
 } from '@/types/prompts';
 import { contextSharingService } from '@/services/contextSharing';
+import { loggerService } from '@/services/logger';
+
+const logger = loggerService.child('service:prompt');
 
 // 定义内置提示词数组
 // 注意：2024-05 根据重构，内置提示词已被清空。
@@ -43,7 +46,7 @@ function getVariables(option: { type: string }): Record<string, unknown> {
       return parentWin.getVariables(option);
     }
   } catch (e) {
-    console.warn('[PromptService] 无法访问父窗口变量系统');
+    logger.warn('无法访问父窗口变量系统');
   }
   return {};
 }
@@ -75,7 +78,7 @@ function insertOrAssignVariables(
       parentWin.insertOrAssignVariables(variables, option);
     }
   } catch (e) {
-    console.warn('[PromptService] 无法访问父窗口变量系统');
+    logger.warn('无法访问父窗口变量系统');
   }
 }
 
@@ -98,7 +101,7 @@ export class PromptService {
       
       return this.createDefaultConfig();
     } catch (error) {
-      console.error('[小手机] 获取提示词配置失败:', error);
+      logger.error('获取提示词配置失败:', error);
       return this.createDefaultConfig();
     }
   }
@@ -113,9 +116,9 @@ export class PromptService {
         { [STORAGE_KEY]: config },
         { type: 'global' }
       );
-      console.info('[小手机] 提示词配置已保存');
+      logger.info('提示词配置已保存');
     } catch (error) {
-      console.error('[小手机] 保存提示词配置失败:', error);
+      logger.error('保存提示词配置失败:', error);
     }
   }
   
@@ -271,7 +274,7 @@ export class PromptService {
         // 格式化值
         result[varDef.name] = this.formatContextValue(value, config.format);
       } catch (error) {
-        console.error(`[PromptService] 解析共享上下文变量 ${varDef.name} 失败:`, error);
+        logger.error(`解析共享上下文变量 ${varDef.name} 失败:`, error);
         result[varDef.name] = varDef.defaultValue?.toString() || '';
       }
     }
@@ -446,7 +449,7 @@ export class PromptService {
       this.saveConfig(merged);
       return true;
     } catch (error) {
-      console.error('[小手机] 导入提示词配置失败:', error);
+      logger.error('导入提示词配置失败:', error);
       return false;
     }
   }
@@ -531,7 +534,7 @@ export class PromptService {
     config.templates.push(...newPrompts);
     this.saveConfig(config);
     
-    console.info(`[小手机] 已注册 App "${appId}" 的 ${prompts.length} 个提示词`);
+    logger.info(`已注册 App "${appId}" 的 ${prompts.length} 个提示词`);
   }
   
   /**
@@ -550,7 +553,7 @@ export class PromptService {
     );
     
     this.saveConfig(config);
-    console.info(`[小手机] 已移除 App "${appId}" 的 ${removedCount} 个提示词`);
+    logger.info(`已移除 App "${appId}" 的 ${removedCount} 个提示词`);
   }
   
   /**

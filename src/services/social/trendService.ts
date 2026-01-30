@@ -1,12 +1,12 @@
 import { db } from '../database/schema';
-import { TrendingTopic, PlatformConfig, WorldEvent } from '../../types/social';
+import { TrendingTopic, PlatformConfig, WorldEvent, UniversalPost } from '../../types/social';
 import { TrafficEngine } from './algorithm';
-import { ContentFactory } from './contentFactory';
 import { PlatformRegistry } from './registry';
 import { v4 as uuidv4 } from 'uuid';
-import { accountService } from '../account/accountService';
-import { UserPool } from '../account/userPool';
-import type { PlatformAccount } from '../../types/account';
+import { topicContentLoader, type TopicContentResult } from './topicContentLoader';
+import { loggerService } from '@/services/logger';
+
+const logger = loggerService.child('service:trend');
 
 export class TrendService {
   private static instance: TrendService;
@@ -74,7 +74,7 @@ export class TrendService {
       t.platformId === platformId && t.createdAt > threeDaysAgo
     );
     
-    console.log(`[TrendService] 数据库中共有 ${allTopics.length} 条热搜，其中 ${topics.length} 条属于 ${platformId} 平台`);
+    logger.debug(`数据库中共有 ${allTopics.length} 条热搜，其中 ${topics.length} 条属于 ${platformId} 平台`);
 
     // 2. 实时计算热度并排序
     const rankedTopics = topics.map(topic => {
@@ -100,85 +100,51 @@ export class TrendService {
   /**
    * 惰性填充：确保话题下有内容
    * 当用户点击热搜时调用
+   * 
+   * 使用 LazyLoader 服务实现：
+   * - 自动缓存已加载的内容
+   * - 并发控制，避免同时生成过多内容
+   * - 请求去重，避免重复生成
    */
-  public async ensureTopicContent(topicId: string): Promise<void> {
-    const topic = await db.socialTopics.get(topicId);
-    if (!topic || !topic.platformId) return;
+  public async ensureTopicContent(topicId: string): Promise<UniversalPost[]> {
+    const result = await topicContentLoader.get(topicId);
+    return result?.posts ?? [];
+  }
 
-    // 检查该话题下是否有博文
-    // 注意：socialPosts 表的 topicTags 是数组，Dexie 支持数组包含查询
-    const postCount = await db.socialPosts
-      .where('topicTags').equals(topic.keyword)
-      .and(p => p.platformId === topic.platformId!)
-      .count();
+  /**
+   * 获取话题内容（带缓存状态）
+   */
+  public async getTopicContent(topicId: string): Promise<TopicContentResult | undefined> {
+    return topicContentLoader.get(topicId);
+  }
 
-    if (postCount > 0) return; // 已经有内容了
+  /**
+   * 预加载热门话题内容
+   * 在用户浏览热搜列表时调用，提前加载前几个话题
+   */
+  public async preloadTopics(topicIds: string[]): Promise<void> {
+    await topicContentLoader.preload(topicIds);
+  }
 
-    // 生成初始内容 (Topic Filler)
-    console.log(`Generating filler content for topic: ${topic.keyword}`);
-    
-    // 生成 3-5 条
-    const generateCount = 3 + Math.floor(Math.random() * 3);
-    
-    for (let i = 0; i < generateCount; i++) {
-      try {
-        // 使用新账号系统获取或创建发帖账号
-        let account: PlatformAccount | undefined;
-        
-        // 尝试获取随机的 NPC 账号
-        const existingAccounts = await accountService.getAccountsByPlatform(topic.platformId);
-        const npcAccounts = existingAccounts.filter(acc => acc.scope === 'session');
-        
-        if (npcAccounts.length > 0) {
-          // 随机选择一个已有账号
-          account = npcAccounts[Math.floor(Math.random() * npcAccounts.length)];
-        } else {
-          // 创建一个新的 NPC 账号
-          const userPool = UserPool.getInstance();
-          const profile = userPool.generateRandomProfile({ platform: topic.platformId });
-          
-          const entity = await accountService.createEntity({
-            type: 'npc',
-            displayName: profile.nickname || '热心网友',
-            avatar: profile.avatar,
-            bio: profile.bio,
-            gender: profile.gender,
-            source: 'social',
-            scope: 'session',
-          });
-          
-          const handle = `user_${Math.random().toString(36).substr(2, 9)}`;
-          account = await accountService.createPlatformAccount(
-            entity.id,
-            topic.platformId,
-            {
-              handle,
-              nickname: profile.nickname || '热心网友',
-              scope: 'session',
-            }
-          );
-        }
+  /**
+   * 检查话题内容是否已加载
+   */
+  public hasTopicContent(topicId: string): boolean {
+    return topicContentLoader.has(topicId);
+  }
 
-        const postData = await ContentFactory.getInstance().generatePost(topic.platformId, topic, account);
-        
-        // 保存到 DB
-        await db.socialPosts.add({
-          id: uuidv4(),
-          platformId: topic.platformId,
-          authorId: account.id,
-          timestamp: Date.now() - Math.floor(Math.random() * 1000 * 60 * 60), // 过去1小时内随机时间
-          topicTags: [topic.keyword],
-          stats: {
-            views: 0,
-            likes: 0,
-            comments: 0,
-            shares: 0
-          },
-          payload: postData
-        });
-      } catch (err) {
-        console.error('Failed to generate filler post', err);
-      }
-    }
+  /**
+   * 使话题内容缓存失效
+   * 当需要刷新话题内容时调用
+   */
+  public invalidateTopicContent(topicId: string): void {
+    topicContentLoader.invalidate(topicId);
+  }
+
+  /**
+   * 获取加载器统计信息
+   */
+  public getLoaderStats() {
+    return topicContentLoader.getStats();
   }
 }

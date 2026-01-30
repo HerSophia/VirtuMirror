@@ -14,6 +14,9 @@ import type {
 } from '@/types'
 import { PLAYER_ID } from '@/types'
 import { useContactStore } from './contactStore'
+import { loggerService } from '@/services/logger'
+
+const logger = loggerService.child('store:chat')
 
 export const useChatStore = defineStore('chat', () => {
   // ==================== 状态 ====================
@@ -149,6 +152,7 @@ export const useChatStore = defineStore('chat', () => {
         recalledMessageId: messageId,
         recallerId,
       } as Message
+      logger.info('消息已撤回', { contactId, messageId, recallerId })
     }
   }
   
@@ -168,12 +172,15 @@ export const useChatStore = defineStore('chat', () => {
   
   /** 清空所有聊天记录 */
   function clearAllHistory() {
+    const count = Object.keys(history.value).length
     history.value = {}
+    logger.info('所有聊天记录已清空', { clearedConversations: count })
   }
   
   /** 设置完整的聊天历史（用于数据加载） */
   function setChatHistory(newHistory: ChatHistory) {
     history.value = newHistory
+    logger.info('聊天历史已加载', { conversationCount: Object.keys(newHistory).length })
   }
   
   /** 合并聊天历史（用于增量更新） */

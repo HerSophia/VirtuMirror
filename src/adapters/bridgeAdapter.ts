@@ -10,11 +10,15 @@
  * - 组合使用 sessionId + message_id 可以唯一定位一条消息
  */
 
+import { loggerService } from '@/services/logger'
 import { timeService } from '@/services/time/timeService'
 import type { PhoneGlobalConfig } from '@/types/globalConfig'
 import type { PhoneChatData } from '@/types/persistedData'
 import type { MessageDeletedEvent, SwipeChangedEvent } from '@/types/swipe'
 import { io, Socket } from 'socket.io-client'
+
+// 创建模块专属日志器
+const logger = loggerService.child('bridge-adapter')
 import type {
   ChatMessage,
   GenerateOptions,
@@ -179,11 +183,11 @@ export class BridgeAdapter implements HostAdapter {
     }
 
     if (this.socket?.connected) {
-      console.log('[BridgeAdapter] 已经连接')
+      logger.debug('已经连接')
       return
     }
 
-    console.log(`[BridgeAdapter] 正在连接到 ${this.options.serverUrl}...`)
+    logger.info(`正在连接到 ${this.options.serverUrl}...`)
 
     // 构建连接选项
     const socketOptions: Parameters<typeof io>[1] = {
@@ -197,7 +201,7 @@ export class BridgeAdapter implements HostAdapter {
     // 如果有 API Key，添加鉴权信息
     if (this.options.apiKey) {
       socketOptions.auth = { apiKey: this.options.apiKey }
-      console.log('[BridgeAdapter] 使用 API Key 鉴权')
+      logger.debug('使用 API Key 鉴权')
     }
 
     this.socket = io(this.options.serverUrl, socketOptions)
@@ -255,7 +259,7 @@ export class BridgeAdapter implements HostAdapter {
   /** 请求同步数据 */
   requestSync(floorRange?: number): void {
     if (!this._connected || !this.socket) {
-      console.warn('[BridgeAdapter] 未连接，无法请求同步')
+      logger.warn('未连接，无法请求同步')
       return
     }
 
@@ -282,7 +286,7 @@ export class BridgeAdapter implements HostAdapter {
         config,
         timestamp: Date.now(),
       })
-      console.log('[BridgeAdapter] 已发送配置更新:', config)
+      logger.debug('已发送配置更新:', config)
     }
 
     this.emit('bridge:config_updated', this._sharedConfig)
@@ -296,7 +300,7 @@ export class BridgeAdapter implements HostAdapter {
     this.socket.on('connect', () => {
       this._connected = true
       this._lastPongTime = Date.now()
-      console.log('[BridgeAdapter] 已连接到 Bridge Server')
+      logger.info('已连接到 Bridge Server')
       this.emit('bridge:connected')
       this.startHeartbeatCheck()
     })
@@ -304,18 +308,18 @@ export class BridgeAdapter implements HostAdapter {
     this.socket.on('disconnect', (reason) => {
       this._connected = false
       this.stopHeartbeatCheck()
-      console.log('[BridgeAdapter] 已断开连接:', reason)
+      logger.info('已断开连接:', reason)
       this.emit('bridge:disconnected', reason)
     })
 
     this.socket.on('connect_error', (error) => {
-      console.error('[BridgeAdapter] 连接错误:', error.message)
+      logger.error('连接错误:', error.message)
       this.emit('bridge:error', error)
     })
 
     // 单一平台模式：接收平台列表（0或1个）
     this.socket.on('connected_platforms', (platforms: PlatformInfo[]) => {
-      console.log('[BridgeAdapter] 已连接平台:', platforms)
+      logger.debug('已连接平台:', platforms)
 
       if (platforms.length > 0) {
         this._platform = platforms[0]
@@ -331,7 +335,7 @@ export class BridgeAdapter implements HostAdapter {
     })
 
     this.socket.on('platform_connected', (info: { platform: string; chatId: string }) => {
-      console.log('[BridgeAdapter] 平台已连接:', info)
+      logger.info('平台已连接:', info)
       // chatId 实际上是 sessionId (UUID)
       this._platform = {
         id: `${info.platform}:${info.chatId}`,
@@ -348,7 +352,7 @@ export class BridgeAdapter implements HostAdapter {
     this.socket.on(
       'platform_disconnected',
       (info: { platform: string; chatId: string; reason?: string }) => {
-        console.log('[BridgeAdapter] 平台断开:', info)
+        logger.info('平台断开:', info)
         this._platform = null
         this.emit('bridge:platform_disconnected', info)
         this.emit('bridge:platform_changed', null)
@@ -362,7 +366,7 @@ export class BridgeAdapter implements HostAdapter {
 
     // 配置同步
     this.socket.on('config_sync', (data: ConfigUpdateMessage) => {
-      console.log('[BridgeAdapter] 收到配置同步:', data)
+      logger.debug('收到配置同步:', data)
       if (data.config) {
         this._sharedConfig = { ...this._sharedConfig, ...data.config }
         this.emit('bridge:config_updated', this._sharedConfig)
@@ -371,7 +375,7 @@ export class BridgeAdapter implements HostAdapter {
 
     // 同步错误
     this.socket.on('sync_error', (error: { error: string }) => {
-      console.error('[BridgeAdapter] 同步错误:', error)
+      logger.error('同步错误:', error)
       this.emit('bridge:sync_error', error)
     })
 
@@ -390,14 +394,14 @@ export class BridgeAdapter implements HostAdapter {
 
     // Swipe 切换处理（直接从服务器推送）
     this.socket.on('swipe_changed', (data: SwipeChangedEvent) => {
-      console.log('[BridgeAdapter] 收到 Swipe 切换:', data)
+      logger.debug('收到 Swipe 切换:', data)
       this.emit('swipe_changed', data)
       this.emit('bridge:swipe_changed', data)
     })
   }
 
   private handleSync(data: SyncMessage): void {
-    console.log('[BridgeAdapter] 收到同步:', data.type, 'sessionId:', data.chatId)
+    logger.debug('收到同步:', data.type, 'sessionId:', data.chatId)
 
     // 更新上下文信息
     this._characterName = data.characterName || this._characterName
@@ -443,7 +447,7 @@ export class BridgeAdapter implements HostAdapter {
         break
       case 'chat_changed':
         // 聊天切换是状态管理的关键事件
-        console.log('[BridgeAdapter] 聊天已切换:', data.chatId)
+        logger.info('聊天已切换:', data.chatId)
         this.emit('chat_changed', data.chatId)
         break
     }
@@ -455,7 +459,7 @@ export class BridgeAdapter implements HostAdapter {
     // 更新消息历史（带 chatId 标识）
     if (payload.messages) {
       this._chatHistory = payload.messages as SyncedMessage[]
-      console.log(`[BridgeAdapter] 收到 ${this._chatHistory.length} 条消息`)
+      logger.debug(`收到 ${this._chatHistory.length} 条消息`)
     }
 
     this.emit('bridge:full_sync', payload)
@@ -510,7 +514,7 @@ export class BridgeAdapter implements HostAdapter {
     const elapsed = now - this._lastPongTime
 
     if (elapsed > this.options.heartbeatTimeout) {
-      console.warn(`[BridgeAdapter] 心跳超时 (${elapsed}ms)，尝试重连...`)
+      logger.warn(`心跳超时 (${elapsed}ms)，尝试重连...`)
       this.emit('bridge:heartbeat_timeout', { elapsed, timeout: this.options.heartbeatTimeout })
       this.socket?.disconnect()
     }
@@ -534,7 +538,7 @@ export class BridgeAdapter implements HostAdapter {
         }
       }
     } catch (e) {
-      console.warn('[BridgeAdapter] 加载配置失败:', e)
+      logger.warn('加载配置失败:', e)
     }
   }
 
@@ -549,7 +553,7 @@ export class BridgeAdapter implements HostAdapter {
         })
       )
     } catch (e) {
-      console.warn('[BridgeAdapter] 保存配置失败:', e)
+      logger.warn('保存配置失败:', e)
     }
   }
 
@@ -603,12 +607,12 @@ export class BridgeAdapter implements HostAdapter {
     try {
       localStorage.setItem('phone_global_config', JSON.stringify(config))
     } catch (e) {
-      console.warn('[BridgeAdapter] 保存全局配置失败:', e)
+      logger.warn('保存全局配置失败:', e)
     }
   }
 
   async generate(_prompt: string, _options?: GenerateOptions): Promise<string> {
-    console.warn('[BridgeAdapter] AI 生成需要通过平台进行')
+    logger.warn('AI 生成需要通过平台进行')
     return '[桥接模式: 请使用平台的 AI 生成功能]'
   }
 
@@ -682,7 +686,7 @@ export class BridgeAdapter implements HostAdapter {
       try {
         handler(...args)
       } catch (e) {
-        console.error(`[BridgeAdapter] 事件处理错误 (${event}):`, e)
+        logger.error(`事件处理错误 (${event}):`, e)
       }
     })
   }

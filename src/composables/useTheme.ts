@@ -6,6 +6,7 @@
 import { ref, computed, watch } from 'vue'
 import type { Theme, ThemeConfig, ThemePreview } from '@/types/theme'
 import { presetThemes, getPresetThemeList, getDefaultTheme, DEFAULT_THEME_ID } from '@/themes/presets'
+import { loggerService } from '@/services/logger/loggerService'
 
 // 存储键名
 const THEME_STORAGE_KEY = 'phone-sim-theme'
@@ -78,7 +79,7 @@ function saveThemeId(themeId: string): void {
   try {
     localStorage.setItem(THEME_STORAGE_KEY, themeId)
   } catch (error) {
-    console.warn('[小手机] 保存主题ID失败:', error)
+    loggerService.warn('Theme', '保存主题ID失败:', error)
   }
 }
 
@@ -89,7 +90,7 @@ function loadThemeId(): string | null {
   try {
     return localStorage.getItem(THEME_STORAGE_KEY)
   } catch (error) {
-    console.warn('[小手机] 读取主题ID失败:', error)
+    loggerService.warn('Theme', '读取主题ID失败:', error)
     return null
   }
 }
@@ -101,7 +102,7 @@ function saveCustomThemes(themes: Theme[]): void {
   try {
     localStorage.setItem(CUSTOM_THEMES_STORAGE_KEY, JSON.stringify(themes))
   } catch (error) {
-    console.warn('[小手机] 保存自定义主题失败:', error)
+    loggerService.warn('Theme', '保存自定义主题失败:', error)
   }
 }
 
@@ -115,7 +116,7 @@ function loadCustomThemes(): Theme[] {
       return JSON.parse(saved)
     }
   } catch (error) {
-    console.warn('[小手机] 读取自定义主题失败:', error)
+    loggerService.warn('Theme', '读取自定义主题失败:', error)
   }
   return []
 }
@@ -207,7 +208,7 @@ export function useTheme() {
       applyTheme(theme)
       return true
     }
-    console.warn(`[小手机] 未找到主题: ${themeId}`)
+    loggerService.warn('Theme', `未找到主题: ${themeId}`)
     return false
   }
 
@@ -321,7 +322,7 @@ export function useTheme() {
       saveCustomThemes(customThemes.value)
       return newTheme
     } catch (error) {
-      console.error('[小手机] 导入主题失败:', error)
+      loggerService.error('Theme', '导入主题失败:', error)
       return null
     }
   }
@@ -362,7 +363,7 @@ export function useTheme() {
 
       return true
     } catch (error) {
-      console.error('[小手机] 导入主题配置失败:', error)
+      loggerService.error('Theme', '导入主题配置失败:', error)
       return false
     }
   }

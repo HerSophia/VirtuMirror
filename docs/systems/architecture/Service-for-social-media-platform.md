@@ -1191,7 +1191,7 @@ interface RateLimitResult {
 | **Event Bus** | 跨服务事件通信 | 🟡 建议开发 |
 | **Vector Store** | 向量存储与相似度查询 | 🟡 建议开发 |
 | **JSON Parser** | 鲁棒的 JSON 解析与修复 | ✅ 已实现 (待抽取) |
-| **Lazy Loader** | 惰性加载框架 | ✅ 已实现 (待抽取) |
+| **Lazy Loader** | 惰性加载框架 | 📋 设计完成 |
 | **Expression Engine** | 表达式求值引擎 | ✅ 已实现 (待抽取) |
 | **Database Service** | IndexedDB 封装 | ✅ 已实现 |
 | **Logger Service** | 统一日志 | 💡 可选 |
@@ -1764,8 +1764,8 @@ interface LogViewer {
 | | **Vector Store** | 🟡 | 🆕 | 向量存储与相似度查询 |
 | | **Logger Service** | 🟡 | ✅ | 统一日志与调试 |
 | | **Deep Link Service** | 🟢 | 🆕 | 跨应用深度链接导航 |
-| | JSON Parser | - | ✅ | 鲁棒 JSON 解析（待抽取）|
-| | Lazy Loader | - | ✅ | 惰性加载框架（待抽取）|
+| | JSON Parser | - | ✅ | 鲁棒 JSON 解析 |
+| | Lazy Loader | - | ✅ | 惰性加载框架 |
 | | Expression Engine | - | ✅ | 表达式求值（待抽取）|
 | | Database (IndexedDB) | - | ✅ | 数据持久化 |
 
@@ -1781,7 +1781,7 @@ interface LogViewer {
 | 现有位置 | 抽取为 | 说明 |
 |----------|--------|------|
 | `ContentFactory.parseAndRepairJSON` | JSON Parser Service | LLM 输出修复 |
-| `TrendService` 惰性填充 | Lazy Loader Framework | 按需内容生成 |
+| `TrendService` 惰性填充 | Lazy Loader Service | 按需内容生成（📋 设计完成）|
 | `PromptChainExecutor` 变量映射 | Expression Engine | 模板变量求值 |
 | 微博 `TrendService` | Trending Service | 热搜管理 |
 | archives.md App 设计 | Archive Service | 知识库注入 |
@@ -1959,6 +1959,7 @@ Phase 5: 验证与迭代
 - [时间服务](../time-service.md)
 - [叙事服务](../narrative-service.md)
 - [用户画像扩展](../user-profile-extension.md)
+- [惰性加载服务](../lazy-loader-service/README.md)
 
 ### 9.2 待集成的设计文档
 
@@ -1971,3 +1972,4 @@ Phase 5: 验证与迭代
 |------|------|----------|
 | 1.0 | 2026-01-08 | 初始版本，服务状态总览 |
 | 1.1 | 2026-01-08 | 新增「理想服务总览」章节，补充 Archive/Trending/Context Sharing 服务设计 |
+| 1.2 | 2025-01-08 | 新增 Lazy Loader 服务设计文档 |

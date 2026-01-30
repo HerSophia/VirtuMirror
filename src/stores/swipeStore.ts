@@ -21,6 +21,9 @@ import {
   removeBySourceMessage,
 } from '@/types/swipe'
 import { useDialogStore } from './dialogStore'
+import { loggerService } from '@/services/logger'
+
+const logger = loggerService.child('store:swipe')
 
 export const useSwipeStore = defineStore('swipe', () => {
   // ==================== 状态 ====================
@@ -133,13 +136,16 @@ export const useSwipeStore = defineStore('swipe', () => {
     
     // 确保是当前会话
     if (event.sessionId !== state.value.sessionId) {
-      console.warn('[SwipeStore] Swipe 事件会话不匹配:', event.sessionId, state.value.sessionId)
+      logger.warn('Swipe 事件会话不匹配', {
+        eventSessionId: event.sessionId,
+        currentSessionId: state.value.sessionId
+      })
       return
     }
     
     // 确保是最后一楼
     if (!state.value.lastFloor || state.value.lastFloor.messageId !== event.messageId) {
-      console.warn('[SwipeStore] Swipe 事件楼层不匹配')
+      logger.warn('Swipe 事件楼层不匹配', { messageId: event.messageId })
       return
     }
     
@@ -152,7 +158,7 @@ export const useSwipeStore = defineStore('swipe', () => {
       state.value.lastFloor.swipeData.set(event.newSwipeId, [])
     }
     
-    console.log('[SwipeStore] Swipe 已切换:', event.newSwipeId)
+    logger.debug('Swipe 已切换', { newSwipeId: event.newSwipeId, swipeCount: event.swipeCount })
   }
   
   /**
@@ -187,7 +193,7 @@ export const useSwipeStore = defineStore('swipe', () => {
         confirmDelete(event.messageId)
       } else {
         pendingDeleteEvent.value = null
-        console.log('[SwipeStore] 用户选择保留楼层数据:', event.messageId)
+        logger.info('用户选择保留楼层数据', { messageId: event.messageId })
       }
     } else {
       // 直接删除
@@ -212,7 +218,7 @@ export const useSwipeStore = defineStore('swipe', () => {
     // 清理状态
     pendingDeleteEvent.value = null
     
-    console.log('[SwipeStore] 已删除楼层数据:', messageId)
+    logger.info('已删除楼层数据', { messageId })
   }
   
   /**

@@ -7,6 +7,7 @@
 
 import { defineStore } from 'pinia';
 import { ref, computed, watch, onUnmounted } from 'vue';
+import { loggerService } from '@/services/logger';
 import {
   getLLMTaskService,
   type LLMTask,
@@ -20,6 +21,8 @@ import {
   type ContextProvider,
   type OutputHandler,
 } from '@/services/llmTask';
+
+const logger = loggerService.child('store:llmTask');
 
 // ==================== Store 定义 ====================
 
@@ -71,9 +74,9 @@ export const useLLMTaskStore = defineStore('llmTask', () => {
       setupEventListeners();
 
       initialized.value = true;
-      console.log('[LLMTaskStore] Store 初始化完成');
+      logger.info('Store 初始化完成');
     } catch (error) {
-      console.error('[LLMTaskStore] 初始化失败:', error);
+      logger.error('初始化失败', error);
     } finally {
       isLoading.value = false;
     }

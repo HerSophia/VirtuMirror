@@ -14,6 +14,9 @@ import type {
   BrowserData,
   LiveCenterData
 } from '@/types'
+import { loggerService } from '@/services/logger'
+
+const logger = loggerService.child('store:phone')
 
 export const usePhoneStore = defineStore('phone', () => {
   // ==================== 子Store引用 ====================
@@ -100,16 +103,16 @@ export const usePhoneStore = defineStore('phone', () => {
     if (isInitialized.value) return
     
     isLoading.value = true
-    console.log('[PhoneStore] Initializing...')
+    logger.info('正在初始化...')
     
     try {
       // 在这里可以从世界书加载数据
       // 开发模式下会使用Mock数据
       
       isInitialized.value = true
-      console.log('[PhoneStore] Initialized successfully')
+      logger.info('初始化成功')
     } catch (error) {
-      console.error('[PhoneStore] Initialization failed:', error)
+      logger.error('初始化失败', error)
     } finally {
       isLoading.value = false
     }
@@ -136,7 +139,7 @@ export const usePhoneStore = defineStore('phone', () => {
       danmakus: {},
     }
     
-    console.log('[PhoneStore] All data reset')
+    logger.info('所有数据已重置')
   }
   
   /** 按来源消息ID删除相关数据 */

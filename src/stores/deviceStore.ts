@@ -5,6 +5,9 @@
 
 import { defineStore } from 'pinia'
 import { ref, computed, watch } from 'vue'
+import { loggerService } from '@/services/logger'
+
+const storeLogger = loggerService.child('store:device')
 
 /** 设备模式类型 */
 export type DeviceMode = 'phone' | 'tablet' | 'desktop'
@@ -485,6 +488,14 @@ export const useDeviceStore = defineStore('device', () => {
     document.documentElement.setAttribute('data-device', mode.value)
     document.documentElement.setAttribute('data-orientation', orientation.value)
     applyCssVariables()
+    
+    storeLogger.info('设备设置已初始化', {
+      mode: mode.value,
+      preset: selectedPresetId.value,
+      orientation: orientation.value,
+      scaleMode: scaleMode.value,
+      navigationMode: navigationMode.value
+    })
   }
   
   // 监听状态变化，保存到本地存储

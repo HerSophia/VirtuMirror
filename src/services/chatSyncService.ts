@@ -11,6 +11,7 @@ import { sessionService } from '@/services/database'
 import { getBridgeAdapter } from '@/adapters/bridgeAdapter'
 import type { PhoneChatData } from '@/types/persistedData'
 import { createEmptyPhoneChatData } from '@/types/persistedData'
+import { loggerService } from '@/services/logger/loggerService'
 
 /**
  * Store 同步回调类型
@@ -37,7 +38,7 @@ export class ChatSyncService {
    */
   init(): void {
     if (this.isInitialized) {
-      console.warn('[ChatSyncService] 服务已初始化')
+      loggerService.warn('ChatSyncService', '服务已初始化')
       return
     }
     
@@ -91,7 +92,7 @@ export class ChatSyncService {
 
     const fullSessionId = bridgeAdapter.getFullSessionId()
     if (fullSessionId) {
-      console.log(`[ChatSyncService] 更新全局 SessionID: ${fullSessionId}`)
+      loggerService.info('ChatSyncService', `更新全局 SessionID: ${fullSessionId}`)
       sessionService.setCurrentSessionId(fullSessionId)
       
       // 确保会话记录存在
@@ -103,7 +104,7 @@ export class ChatSyncService {
           bridgeAdapter.getCharacterName(),
           bridgeAdapter.getPlayerName()
         ).catch(err => {
-          console.error('[ChatSyncService] 创建会话记录失败:', err)
+          loggerService.error('ChatSyncService', '创建会话记录失败:', err)
         })
       }
     }
@@ -225,7 +226,7 @@ export class ChatSyncService {
    */
   private onMessageReceived(msgId: number, content: string): void {
     // TODO: 解析 AI 消息中的指令并更新数据
-    console.log(`[ChatSyncService] 收到消息: ${msgId}`)
+    loggerService.debug('ChatSyncService', `收到消息: ${msgId}`)
   }
   
   /**
@@ -233,7 +234,7 @@ export class ChatSyncService {
    */
   private onMessageDeleted(msgId: number): void {
     // TODO: 删除与该消息关联的数据
-    console.log(`[ChatSyncService] 消息已删除: ${msgId}`)
+    loggerService.debug('ChatSyncService', `消息已删除: ${msgId}`)
   }
   
   /**
@@ -244,7 +245,7 @@ export class ChatSyncService {
       try {
         callback(data)
       } catch (error) {
-        console.error('[ChatSyncService] Store 同步回调执行失败:', error)
+        loggerService.error('ChatSyncService', 'Store 同步回调执行失败:', error)
       }
     })
   }

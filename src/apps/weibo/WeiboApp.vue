@@ -11,6 +11,7 @@ import { createBuiltinAppRuntime, provideAppRuntime, unregisterAppRuntime } from
 import './scripts/clearAllWeiboData';
 import { syncContextFromNarrative } from './services/sessionContext';
 import { useAdapter } from '@/composables/useAdapter';
+import { loggerService } from '@/services/logger/loggerService';
 import type { SwipeChangedEvent } from '@/types/swipe';
 import WeiboHome from './views/WeiboHome.vue';
 import WeiboHot from './views/WeiboHot.vue';
@@ -102,10 +103,10 @@ onMounted(async () => {
     try {
       const migrationResult = await migrateWeiboData();
       if (!migrationResult.skipped) {
-        console.log('[WeiboApp] 数据迁移完成:', migrationResult);
+        loggerService.info('WeiboApp', '数据迁移完成:', migrationResult);
       }
     } catch (e) {
-      console.warn('[WeiboApp] 数据迁移失败，继续初始化:', e);
+      loggerService.warn('WeiboApp', '数据迁移失败，继续初始化:', e);
     }
     
     // 确保账号系统已初始化
@@ -134,18 +135,18 @@ onMounted(async () => {
       // 初始化草稿 store
       await composeStore.loadDrafts();
     } catch (e) {
-      console.log('[WeiboApp] ScopedStorage stores 初始化延迟:', e);
+      loggerService.debug('WeiboApp', 'ScopedStorage stores 初始化延迟:', e);
     }
     
     // 仅当用户开启自动叙事分析时，才启动自动内容生成订阅
     if (settingsStore.autoNarrativeAnalysisEnabled) {
       startSubscription();
-      console.log('[WeiboApp] 已启动自动叙事分析订阅');
+      loggerService.info('WeiboApp', '已启动自动叙事分析订阅');
     } else {
-      console.log('[WeiboApp] 自动叙事分析已关闭，仅缓存叙事内容用于手动任务');
+      loggerService.info('WeiboApp', '自动叙事分析已关闭，仅缓存叙事内容用于手动任务');
     }
   } catch (error: any) {
-    console.error('[WeiboApp] Failed to initialize:', error);
+    loggerService.error('WeiboApp', 'Failed to initialize:', error);
     showErrorToast('账号系统初始化失败');
   }
 });
@@ -154,10 +155,10 @@ onMounted(async () => {
 watch(() => settingsStore.autoNarrativeAnalysisEnabled, (enabled) => {
   if (enabled) {
     startSubscription();
-    console.log('[WeiboApp] 自动叙事分析已开启');
+    loggerService.info('WeiboApp', '自动叙事分析已开启');
   } else {
     stopSubscription();
-    console.log('[WeiboApp] 自动叙事分析已关闭');
+    loggerService.info('WeiboApp', '自动叙事分析已关闭');
   }
 });
 
@@ -167,7 +168,7 @@ let unsubscribeSync: (() => void) | null = null;
 
 // Swipe 切换处理
 async function handleSwipeChanged(event: SwipeChangedEvent) {
-  console.log('[WeiboApp] Swipe 切换:', event);
+  loggerService.debug('WeiboApp', 'Swipe 切换:', event);
   
   // 同步会话上下文
   syncContextFromNarrative();
@@ -197,10 +198,10 @@ function handleSyncEvent() {
   // 尝试自动绑定现有数据到当前会话（仅首次）
   autoBindToCurrentSession().then(result => {
     if (result) {
-      console.log('[WeiboApp] 已将现有数据绑定到当前会话:', result);
+      loggerService.info('WeiboApp', '已将现有数据绑定到当前会话:', result);
     }
   }).catch(e => {
-    console.warn('[WeiboApp] 自动会话绑定失败:', e);
+    loggerService.warn('WeiboApp', '自动会话绑定失败:', e);
   });
 }
 
@@ -246,7 +247,7 @@ async function handleRequestCreateAccount() {
       showCreateDialog.value = true;
     }
   } catch (error: any) {
-    console.error('[WeiboApp] Failed to check account:', error);
+    loggerService.error('WeiboApp', 'Failed to check account:', error);
     showErrorToast('获取账号信息失败，请稍后再试');
   }
 }
@@ -328,7 +329,7 @@ async function handleOpenVerification() {
         }
       }
     } catch (error) {
-      console.error('[WeiboApp] Failed to get profile for verification:', error);
+      loggerService.error('WeiboApp', 'Failed to get profile for verification:', error);
       showErrorToast('获取账号信息失败');
     }
   }
@@ -405,7 +406,7 @@ function handleBackFromPostDetail() {
 // 切换账号
 async function handleSwitchAccount(account: PlatformAccount) {
   // TODO: 实现账号切换逻辑
-  console.log('Switch to account:', account.id);
+  loggerService.debug('WeiboApp', 'Switch to account:', account.id);
   viewMode.value = 'main';
   currentTab.value = 'me';
   await nextTick();
@@ -435,7 +436,7 @@ function handlePostSuccess(postId: string) {
   // 切换到首页查看新发布的博文
   viewMode.value = 'main';
   currentTab.value = 'home';
-  console.log('[WeiboApp] 博文发布成功:', postId);
+  loggerService.info('WeiboApp', '博文发布成功:', postId);
 }
 
 // 关闭发布对话框

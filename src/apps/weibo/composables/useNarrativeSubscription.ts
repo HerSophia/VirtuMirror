@@ -12,6 +12,7 @@ import { AIGenerateService } from '@/services/aiGenerateService'
 import { tryUseAppRuntime } from '@/services/appRuntime'
 import { db } from '@/services/database'
 import { writeQueue } from '@/services/database/writeQueue'
+import { loggerService } from '@/services/logger/loggerService'
 import {
   createNarrativeVariables,
   narrativeService,
@@ -82,7 +83,7 @@ export function useNarrativeSubscription() {
   async function handleNarrativeEvent(event: NarrativeEvent) {
     // 避免重复处理
     if (isProcessing.value) {
-      console.log('[Weibo] 正在处理中，跳过此事件')
+      loggerService.debug('NarrativeSubscription', '正在处理中，跳过此事件')
       return
     }
 
@@ -90,7 +91,7 @@ export function useNarrativeSubscription() {
     if (event.isSwipeChange) {
       // 如果已经处理过这个 Swipe，不再重复处理
       if (hasProcessedSwipe(event)) {
-        console.log('[Weibo] Swipe 已处理过，跳过:', getSwipeKey(event))
+        loggerService.debug('NarrativeSubscription', 'Swipe 已处理过，跳过:', getSwipeKey(event))
         return
       }
     }
@@ -99,7 +100,7 @@ export function useNarrativeSubscription() {
     lastProcessedEvent.value = event
 
     try {
-      console.log('[Weibo] 收到叙事内容:', {
+      loggerService.debug('NarrativeSubscription', '收到叙事内容:', {
         messageId: event.messageId,
         swipeId: event.swipeId,
         isSwipeChange: event.isSwipeChange,
@@ -110,7 +111,7 @@ export function useNarrativeSubscription() {
       const result = await analyzeNarrative(event)
 
       if (result.shouldPost) {
-        console.log('[Weibo] 需要生成微博内容:', result.reason)
+        loggerService.info('NarrativeSubscription', '需要生成微博内容:', result.reason)
 
         // 记录来源追踪
         const sourceTracking: ContentSourceTracking = {
@@ -129,13 +130,13 @@ export function useNarrativeSubscription() {
           await triggerPostGeneration(event.content, sourceTracking)
         }
       } else {
-        console.log('[Weibo] 无需生成微博:', result.reason)
+        loggerService.debug('NarrativeSubscription', '无需生成微博:', result.reason)
       }
 
       // 标记为已处理
       markSwipeProcessed(event)
     } catch (error) {
-      console.error('[Weibo] 处理叙事内容失败:', error)
+      loggerService.error('NarrativeSubscription', '处理叙事内容失败:', error)
     } finally {
       isProcessing.value = false
     }
@@ -171,7 +172,7 @@ export function useNarrativeSubscription() {
       const parsed = parseAnalysisResult(result.text)
       return parsed
     } catch (error) {
-      console.error('[Weibo] 分析叙事内容失败:', error)
+      loggerService.error('NarrativeSubscription', '分析叙事内容失败:', error)
       // 出错时返回不需要发布
       return {
         shouldPost: false,
@@ -206,7 +207,7 @@ export function useNarrativeSubscription() {
         extractedContent: parsed.extractedContent || null,
       }
     } catch (error) {
-      console.error('[Weibo] 解析分析结果失败:', error)
+      loggerService.error('NarrativeSubscription', '解析分析结果失败:', error)
       return {
         shouldPost: false,
         reason: '解析失败',
@@ -257,12 +258,12 @@ export function useNarrativeSubscription() {
       await writeQueue.enqueue('app', namespace || 'weibo', async () => {
         await db.socialPosts.add(post)
       })
-      console.log('[Weibo] 已创建微博帖子:', postId)
+      loggerService.info('NarrativeSubscription', '已创建微博帖子:', postId)
 
       // 刷新信息流
       await weiboStore.refreshFeed()
     } catch (error) {
-      console.error('[Weibo] 创建微博帖子失败:', error)
+      loggerService.error('NarrativeSubscription', '创建微博帖子失败:', error)
     }
   }
 
@@ -303,9 +304,9 @@ ${narrativeContent}
 
       // 立即执行
       await llmTaskStore.executeTask(task.id)
-      console.log('[Weibo] 已触发帖子生成任务:', task.id)
+      loggerService.info('NarrativeSubscription', '已触发帖子生成任务:', task.id)
     } catch (error) {
-      console.error('[Weibo] 触发帖子生成失败:', error)
+      loggerService.error('NarrativeSubscription', '触发帖子生成失败:', error)
     }
   }
 
@@ -314,13 +315,13 @@ ${narrativeContent}
    */
   function startSubscription() {
     if (isSubscribed.value) {
-      console.log('[Weibo] 已经在订阅中')
+      loggerService.debug('NarrativeSubscription', '已经在订阅中')
       return
     }
 
     unsubscribe = narrativeService.subscribe(handleNarrativeEvent)
     isSubscribed.value = true
-    console.log('[Weibo] 开始订阅叙事内容')
+    loggerService.info('NarrativeSubscription', '开始订阅叙事内容')
   }
 
   /**
@@ -332,7 +333,7 @@ ${narrativeContent}
       unsubscribe = null
     }
     isSubscribed.value = false
-    console.log('[Weibo] 停止订阅叙事内容')
+    loggerService.info('NarrativeSubscription', '停止订阅叙事内容')
   }
 
   /**

@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useWeiboStore } from '@/stores/weiboStore';
 import { useAccountStore } from '@/stores/accountStore';
+import { loggerService } from '@/services/logger/loggerService';
 import { useFeedStore, useUserActionStore } from '../stores';
 import WeiboPost from '../components/WeiboPost.vue';
 import PostActionSheet from '../components/PostActionSheet.vue';
@@ -131,7 +132,7 @@ async function handleGenerateEngagement() {
     closeActionSheet();
     alert('互动生成完成！');
   } catch (error) {
-    console.error('生成互动失败:', error);
+    loggerService.error('WeiboPostDetail', '生成互动失败:', error);
     alert('生成互动失败，请重试');
   } finally {
     isActionLoading.value = false;
@@ -156,7 +157,7 @@ async function handleGenerateComments() {
       alert('生成评论失败，请重试');
     }
   } catch (error) {
-    console.error('生成评论失败:', error);
+    loggerService.error('WeiboPostDetail', '生成评论失败:', error);
     alert('生成评论失败，请重试');
   } finally {
     isActionLoading.value = false;

@@ -29,6 +29,9 @@ import {
   executeLoopStep,
   type ExecutorConfig,
 } from './stepExecutors'
+import { loggerService } from '@/services/logger'
+
+const logger = loggerService.child('service:promptChainExecutor')
 
 // 重新导出 ExecutorConfig 类型
 export type { ExecutorConfig }
@@ -316,7 +319,7 @@ export class PromptChainExecutor {
     const compositePrompt = this.composePrompt(chain, context)
 
     if (this.config.debug) {
-      console.log('[PromptChainExecutor] 组装后的提示词:', compositePrompt)
+      logger.debug('组装后的提示词:', compositePrompt)
     }
 
     // 单次调用 LLM
@@ -479,7 +482,7 @@ export class PromptChainExecutor {
       try {
         callback(event)
       } catch (error) {
-        console.error('[PromptChainExecutor] 事件回调错误:', error)
+        logger.error('事件回调错误:', error)
       }
     }
   }
@@ -504,7 +507,7 @@ export class PromptChainExecutor {
 
       await promptChainService.saveExecutionHistory(history)
     } catch (error) {
-      console.error('[PromptChainExecutor] 保存历史失败:', error)
+      logger.error('保存历史失败:', error)
     }
   }
 }

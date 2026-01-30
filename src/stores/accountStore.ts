@@ -30,6 +30,9 @@ import type {
   EntityScope,
   AccountScope,
 } from '@/types/account'
+import { loggerService } from '@/services/logger'
+
+const logger = loggerService.child('store:account')
 
 export const useAccountStore = defineStore('account', () => {
   // === 状态 ===
@@ -143,7 +146,7 @@ export const useAccountStore = defineStore('account', () => {
     
     // 监听会话切换
     const unsubChatChanged = adapter.on('chat_changed', async () => {
-      console.log('[AccountStore] 检测到会话切换，自动更新上下文')
+      logger.info('检测到会话切换，自动更新上下文')
       const newContext = getSessionContextFromBridge()
       await switchSession(newContext)
     })
@@ -151,7 +154,7 @@ export const useAccountStore = defineStore('account', () => {
     
     // 监听平台连接/断开
     const unsubPlatformChanged = adapter.on('bridge:platform_changed', async () => {
-      console.log('[AccountStore] 平台连接状态变化，更新上下文')
+      logger.info('平台连接状态变化，更新上下文')
       const newContext = getSessionContextFromBridge()
       if (newContext.sessionId !== sessionContext.value?.sessionId) {
         await switchSession(newContext)
@@ -163,7 +166,7 @@ export const useAccountStore = defineStore('account', () => {
     const unsubSync = adapter.on('bridge:full_sync', async () => {
       const newContext = getSessionContextFromBridge()
       if (newContext.sessionId !== sessionContext.value?.sessionId) {
-        console.log('[AccountStore] 同步数据包含新会话，更新上下文')
+        logger.info('同步数据包含新会话，更新上下文')
         await switchSession(newContext)
       }
     })
@@ -202,7 +205,7 @@ export const useAccountStore = defineStore('account', () => {
       sessionContext.value = effectiveContext
       accountService.setSessionContext(effectiveContext)
       
-      console.log('[AccountStore] 初始化会话上下文:', effectiveContext)
+      logger.info('初始化会话上下文', { sessionId: effectiveContext.sessionId })
       
       // 获取或创建玩家实体
       const player = await accountService.getOrCreatePlayerEntity(playerName)

@@ -16,8 +16,11 @@ import type {
 } from '@/services/ai/types'
 import { RequestPriority } from '@/services/ai/types'
 import { SystemPromptService } from '@/services/prompt/systemPromptService'
+import { loggerService } from '@/services/logger'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
+
+const logger = loggerService.child('store:ai')
 
 /**
  * 生成记录
@@ -175,10 +178,9 @@ export const useAIStore = defineStore('ai', () => {
 
       // 调试输出
       if (assembled.appliedPrompts.length > 0) {
-        console.log(
-          '[AIStore] 已注入系统提示词:',
-          assembled.appliedPrompts.map((p) => `[${p.scope}] ${p.name}`).join(', ')
-        )
+        logger.debug('已注入系统提示词', {
+          prompts: assembled.appliedPrompts.map((p) => `[${p.scope}] ${p.name}`)
+        })
       }
     }
 
@@ -198,7 +200,7 @@ export const useAIStore = defineStore('ai', () => {
   function streamGenerate(options: StreamOptions, priority?: RequestPriority): StreamHandle {
     if (!initialized.value) {
       // 同步初始化会有问题，应该确保已初始化
-      console.warn('[AIStore] Service not initialized, call initialize() first')
+      logger.warn('Service not initialized, call initialize() first')
     }
 
     const service = getAIService()

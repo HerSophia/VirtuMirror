@@ -19,6 +19,9 @@ import { UserPool as NewUserPool } from '../account/userPool';
 import { db } from '../database/schema';
 import type { PlatformAccount as OldPlatformAccount, SocialIdentity } from '../../types/social';
 import { v4 as uuidv4 } from 'uuid';
+import { loggerService } from '@/services/logger';
+
+const logger = loggerService.child('service:userPool:deprecated');
 
 /**
  * @deprecated 使用 src/services/account/userPool.ts 代替
@@ -39,7 +42,7 @@ export class UserPool {
    * @deprecated 使用 accountService.createEntity() 代替
    */
   public async getOrCreateIdentity(name: string, type: SocialIdentity['type'] = 'celebrity'): Promise<SocialIdentity> {
-    console.warn('[Deprecated] UserPool.getOrCreateIdentity() is deprecated. Use accountService.createEntity() instead.');
+    logger.warn('UserPool.getOrCreateIdentity() is deprecated. Use accountService.createEntity() instead.');
     
     const existing = await db.socialIdentities.where('name').equals(name).first();
     if (existing) {
@@ -64,7 +67,7 @@ export class UserPool {
    * @deprecated 使用 accountService.getPlatformAccount() 代替
    */
   public async getAccount(identityId: string, platformId: string): Promise<OldPlatformAccount | undefined> {
-    console.warn('[Deprecated] UserPool.getAccount() is deprecated. Use accountService.getPlatformAccount() instead.');
+    logger.warn('UserPool.getAccount() is deprecated. Use accountService.getPlatformAccount() instead.');
     
     return await db.socialAccounts
       .where('[platformId+identityId]')
@@ -82,7 +85,7 @@ export class UserPool {
     nickname: string,
     personaPrompt: string
   ): Promise<OldPlatformAccount> {
-    console.warn('[Deprecated] UserPool.registerAccount() is deprecated. Use accountService.createPlatformAccount() instead.');
+    logger.warn('UserPool.registerAccount() is deprecated. Use accountService.createPlatformAccount() instead.');
     
     const account: OldPlatformAccount = {
       id: uuidv4(),
@@ -114,7 +117,7 @@ export class UserPool {
     nickname: string,
     initialContext?: string
   ): Promise<OldPlatformAccount> {
-    console.warn('[Deprecated] UserPool.captureShadowAccount() is deprecated. Use new account system instead.');
+    logger.warn('UserPool.captureShadowAccount() is deprecated. Use new account system instead.');
     
     // 查重
     const existing = await db.socialAccounts
@@ -161,7 +164,7 @@ export class UserPool {
    * @deprecated 使用新的账号系统
    */
   public async getRandomShadowAccount(platformId: string): Promise<OldPlatformAccount | undefined> {
-    console.warn('[Deprecated] UserPool.getRandomShadowAccount() is deprecated.');
+    logger.warn('UserPool.getRandomShadowAccount() is deprecated.');
     
     const count = await db.socialAccounts
       .where({ platformId, origin: 'llm_generated' })

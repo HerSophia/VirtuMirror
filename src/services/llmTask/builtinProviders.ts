@@ -6,6 +6,9 @@
 import { contextSharingService } from '@/services/contextSharing';
 import type { ContextProvider, SharedContextConfig } from './types';
 import { getContextProviderRegistry } from './ContextProviderRegistry';
+import { loggerService } from '@/services/logger';
+
+const logger = loggerService.child('service:builtinProviders');
 
 // ==================== 时间上下文提供器 ====================
 
@@ -184,7 +187,7 @@ export const sharedContextProvider = {
         [`${variableName}Meta`]: JSON.stringify(aggregated.meta),
       };
     } catch (error) {
-      console.error('[SharedContextProvider] 获取共享上下文失败:', error);
+      logger.error('获取共享上下文失败:', error);
       return {
         [config.variableName || 'sharedContext']: '',
       };
@@ -213,7 +216,5 @@ export function registerBuiltinProviders(): void {
     }
   }
 
-  console.log(
-    `[BuiltinProviders] 已注册 ${BUILTIN_CONTEXT_PROVIDERS.length} 个内置提供器`
-  );
+  logger.info(`已注册 ${BUILTIN_CONTEXT_PROVIDERS.length} 个内置提供器`);
 }

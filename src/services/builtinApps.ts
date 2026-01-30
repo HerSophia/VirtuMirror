@@ -5,6 +5,7 @@
  * 在应用初始化时调用 registerBuiltinApps() 注册。
  */
 import { getIconRegistryService, type RegisteredAppIcon, type AppCategory } from './icon'
+import { loggerService } from '@/services/logger/loggerService'
 
 /**
  * 内置 App 配置列表
@@ -175,7 +176,7 @@ export const DEFAULT_DOCK_APP_IDS = ['wechat', 'browser', 'email', 'live']
 export function registerBuiltinApps(): void {
   const service = getIconRegistryService()
   service.registerAll(BUILTIN_APPS, { override: false })
-  console.log(`[BuiltinApps] 已注册 ${BUILTIN_APPS.length} 个内置 App 图标`)
+  loggerService.info('BuiltinApps', `已注册 ${BUILTIN_APPS.length} 个内置 App 图标`)
 }
 
 /**

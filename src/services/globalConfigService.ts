@@ -16,6 +16,7 @@ import type {
 } from '@/types/globalConfig'
 import type { DesktopItem, DesktopPage } from '@/apps/home/types'
 import { createDefaultGlobalConfig, GLOBAL_CONFIG_KEY } from '@/types/globalConfig'
+import { loggerService } from '@/services/logger/loggerService'
 
 /**
  * 深度合并对象
@@ -82,7 +83,7 @@ export class GlobalConfigService {
       this.cache = config
       return config
     } catch (error) {
-      console.error('[GlobalConfigService] 获取全局配置失败:', error)
+      loggerService.error('GlobalConfigService', '获取全局配置失败:', error)
       return null
     }
   }
@@ -111,7 +112,7 @@ export class GlobalConfigService {
       this.cache = config
       console.info('[GlobalConfigService] 全局配置已保存')
     } catch (error) {
-      console.error('[GlobalConfigService] 保存全局配置失败:', error)
+      loggerService.error('GlobalConfigService', '保存全局配置失败:', error)
     }
   }
   
@@ -473,7 +474,7 @@ export class GlobalConfigService {
       this.saveConfig(config)
       return true
     } catch (error) {
-      console.error('[GlobalConfigService] 导入配置失败:', error)
+      loggerService.error('GlobalConfigService', '导入配置失败:', error)
       return false
     }
   }
