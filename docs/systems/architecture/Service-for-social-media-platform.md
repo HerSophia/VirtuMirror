@@ -1947,6 +1947,7 @@ Phase 5: 验证与迭代
 
 ### 9.1 系统服务文档
 
+- [服务集成指南](./Service-Integration-Guide.md) - 服务间依赖关系和通信模式
 - [社交媒体模拟引擎](../social-media-engine.md)
 - [账号服务](../account-service.md)
 - [统一内容模型](../已完成的/social-content-types.md)
@@ -1961,12 +1962,12 @@ Phase 5: 验证与迭代
 - [用户画像扩展](../user-profile-extension.md)
 - [惰性加载服务](../lazy-loader-service/README.md)
 
-### 9.2 待集成的设计文档
+### 9.3 待集成的设计文档
 
 - [档案 App](../../apps/archives.md) - 待抽取为 Archive Service
 - [上下文共享服务](../llm-task-service/context-sharing.md) - 待实现
 
-### 9.3 版本历史
+### 9.4 版本历史
 
 | 版本 | 日期 | 变更内容 |
 |------|------|----------|
