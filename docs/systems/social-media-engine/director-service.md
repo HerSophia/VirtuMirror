@@ -84,16 +84,16 @@ setConfig(config: Partial<DirectorConfig>): void
 **配置项** (`DirectorConfig`):
 
 | 字段 | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
+| ------ | ------ | -------- | ------ |
 | `isEnabled` | `boolean` | `false` | 是否启用自动事件生成 |
-| `frequency` | `'low' \| 'medium' \| 'high'` | `'medium'` | 事件生成频率 |
+| `frequency` | `'low' \ | 'medium' \ | 'high'` | `'medium'` | 事件生成频率 |
 | `worldSetting` | `string` | 见下 | 世界观背景设定 |
 | `costLimit` | `number` | `10000` | Token 预算（占位） |
 
 **频率对应间隔**:
 
 | 频率 | 世界时间间隔 | 说明 |
-|------|-------------|------|
+| ------ | ------------- | ------ |
 | `low` | 12 小时 | 每天 1-2 个事件 |
 | `medium` | 6 小时 | 每天 3-4 个事件 |
 | `high` | 2 小时 | 每天 10+ 个事件 |
@@ -169,7 +169,7 @@ interface EventData {
 **优先级映射**:
 
 | magnitude | priority | 说明 |
-|-----------|----------|------|
+| ----------- | ---------- | ------ |
 | > 80 | `'breaking'` | 突发重大事件 |
 | ≤ 80 | `'normal'` | 普通热点 |
 
@@ -230,7 +230,7 @@ private async generateGlobalEvent(time: number) {
 **变量**:
 
 | 变量名 | 来源 | 说明 |
-|--------|------|------|
+| -------- | ------ | ------ |
 | `timeContext` | 当前时间 | 格式化的日期时间字符串 |
 | `eventType` | 固定 | `'随机'` |
 | `intensity` | 固定 | `'中'` |
@@ -257,7 +257,7 @@ private async generateGlobalEvent(time: number) {
 ### 6.2 LLM 参数
 
 | 参数 | 值 | 说明 |
-|------|-----|------|
+| ------ | ----- | ------ |
 | `temperature` | `0.9` | 高随机性，增加事件多样性 |
 
 ---
@@ -326,7 +326,7 @@ await director.triggerManualEvent();
 ## 9. 相关服务
 
 | 服务 | 文档 | 说明 |
-|------|------|------|
+| ------ | ------ | ------ |
 | **TrendService** | [trend-service.md](./trend-service.md) | 接收事件并创建热搜 |
 | **TimeService** | [../time-service/](../time-service/) | 提供 tick 事件 |
 | **PromptService** | [../prompt-service/](../prompt-service/) | 提示词管理 |
@@ -337,5 +337,5 @@ await director.triggerManualEvent();
 ## 10. 版本历史
 
 | 版本 | 日期 | 变更内容 |
-|------|------|----------|
+| ------ | ------ | ---------- |
 | 1.0 | 2026-01-16 | 初始文档，基于代码实现整理 |

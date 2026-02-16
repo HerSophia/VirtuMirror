@@ -114,7 +114,7 @@ toast(message: string, type?: 'info' | 'success' | 'error'): void
 | 参数 | 类型 | 必填 | 默认值 | 说明 |
 | ---- | ---- | ---- | ------ | ---- |
 | message | `string` | ✓ | - | 提示消息内容 |
-| type | `'info' \| 'success' \| 'error'` | - | `'info'` | 提示类型 |
+| type | `'info' \ | 'success' \ | 'error'` | - | `'info'` | 提示类型 |
 
 **Toast 类型**：
 

@@ -77,7 +77,7 @@ src/apps/prompts/
 ## 路由一览
 
 | 路径 | 组件 | 说明 |
-|:-----|:-----|:-----|
+| :----- | :----- | :----- |
 | `/prompts` | `PromptsApp` | 根容器 |
 | `/prompts/` | `PromptsHome` | 首页 |
 | `/prompts/list/:scope` | `PromptsList` | 列表页 |
@@ -125,7 +125,7 @@ onMounted(() => {
 ## 相关服务
 
 | 服务 | 路径 | 说明 |
-|:-----|:-----|:-----|
+| :----- | :----- | :----- |
 | `PromptService` | `@/services/promptService` | 提示词 CRUD 操作 |
 | `PromptChainService` | `@/services/promptChainService` | 链管理服务 |
 | `PromptChainExecutor` | `@/services/promptChainExecutor` | 链执行引擎 |

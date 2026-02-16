@@ -5,7 +5,7 @@
 ## 实现状态
 
 | 模块 | 状态 | 说明 |
-|------|------|------|
+| ------ | ------ | ------ |
 | 类型定义 (`types.ts`) | ✅ 已完成 | 所有核心类型已定义 |
 | 常量定义 (`constants.ts`) | ✅ 已完成 | 默认配置、Provider 端点等 |
 | 工具函数 (`utils.ts`) | ✅ 已完成 | 错误处理、ID生成等 |
@@ -49,7 +49,7 @@ AI Service 是小手机模拟器的核心系统服务，负责统一管理所有
 ### 技术栈
 
 | 依赖 | 版本 | 用途 |
-|------|------|------|
+| ------ | ------ | ------ |
 | `ai` | ^4.x | Vercel AI SDK Core |
 | `@ai-sdk/openai` | ^1.x | OpenAI Provider |
 | `@ai-sdk/anthropic` | ^1.x | Anthropic Provider |
@@ -87,7 +87,7 @@ AI Service 是小手机模拟器的核心系统服务，负责统一管理所有
 ### 存在的问题
 
 | 问题 | 描述 | 影响 |
-|------|------|------|
+| ------ | ------ | ------ |
 | **入口分散** | `AIGenerateService`、`mockStreamText`、直接调用 `TavernHelper` | 难以统一管理和监控 |
 | **双轨制硬编码** | `isDev` 判断分散在多处 | 无法在生产环境测试自定义 API |
 | **Provider 耦合** | Provider 创建逻辑在 `MockLanguageModelV1.getRealModel()` 中 | 难以扩展和维护 |
@@ -201,7 +201,7 @@ src/types/
 ### 模块职责
 
 | 模块 | 职责 | 依赖 |
-|------|------|------|
+| ------ | ------ | ------ |
 | `AIService` | 对外统一入口，协调各模块 | ProviderManager, RequestManager |
 | `ProviderFactory` | 创建 LanguageModel 实例 | Vercel AI SDK Providers |
 | `ProviderManager` | 管理当前 Provider、缓存、切换 | ProviderFactory, GlobalConfigService |
@@ -1091,7 +1091,7 @@ interface RequestContext {
 根据 Social Media Engine 等系统的需求，AI Service 需要支持以下并发场景：
 
 | 场景 | 来源 | 请求数量 | 优先级 | 说明 |
-|------|------|-------|
+| ------ | ------ | ------- |
 | **用户聊天** | Chat App | 1 | 最高 | 用户等待中，需要快速响应 |
 | **话题内容填充** | Social Media Engine | 3-5 条博文 | 高 | 用户点击话题时触发 |
 | **评论区生成** | Social Media Engine | 5-10 条评论 | 中 | 可并行或批量 |
@@ -1617,7 +1617,7 @@ console.log(`RPM: ${status.currentRPM}`);
 ### 配置建议
 
 | Provider | 推荐 maxConcurrent | 推荐 maxRPM | 说明 |
-|----------|-------------------|-------------|------|
+| ---------- | ------------------- | ------------- | ------ |
 | OpenAI (Free) | 1 | 3 | 免费层限制严格 |
 | OpenAI (Tier 1) | 3 | 60 | 基础付费 |
 | OpenAI (Tier 2+) | 5 | 500 | 高级付费 |
@@ -1700,7 +1700,7 @@ src/services/ai/
 ### 错误分类
 
 | 错误码 | 场景 | 可重试 | 处理建议 |
-|--------|------|--------|----------|
+| -------- | ------ | -------- | ---------- |
 | `PROVIDER_NOT_READY` | Provider 未初始化 | 是 | 等待初始化或切换 Provider |
 | `AUTH_ERROR` | API Key 无效 | 否 | 提示用户检查配置 |
 | `RATE_LIMIT` | 请求过于频繁 | 是 | 自动重试（带退避） |
@@ -2212,7 +2212,7 @@ export const PROVIDER_ENDPOINTS: Record<string, string> = {
 ### B. 事件列表
 
 | 事件 | 触发时机 | 参数 |
-|------|----------|------|
+| ------ | ---------- | ------ |
 | `start` | 请求开始 | `requestId: string` |
 | `chunk` | 收到流式数据 | `requestId: string, chunk: string` |
 | `finish` | 请求完成 | `requestId: string, result: GenerateResult` |

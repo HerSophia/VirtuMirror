@@ -35,7 +35,7 @@ import AppIcon from '@/components/common/AppIcon.vue'
 | Prop | 类型 | 默认值 | 说明 |
 | :--- | :--- | :--- | :--- |
 | `appId` | `string` | - | App ID，用于从主题获取图标配置 |
-| `size` | `'xs' \| 'sm' \| 'md' \| 'lg' \| 'xl'` | `'md'` | 图标尺寸 |
+| `size` | `'xs' \ | 'sm' \ | 'md' \ | 'lg' \ | 'xl'` | `'md'` | 图标尺寸 |
 | `badge` | `number` | - | 徽章数字（0 或负数不显示） |
 | `customBg` | `string` | - | 自定义背景色（覆盖主题配置） |
 | `customIcon` | `string` | - | 自定义图标类名（覆盖主题配置） |
@@ -184,7 +184,7 @@ import DynamicAppIcon from '@/components/common/DynamicAppIcon.vue'
 | :--- | :--- | :--- | :--- |
 | `appId` | `string` | - | 应用 ID，从 iconStore 获取图标 |
 | `icon` | `UnifiedIconConfig` | - | 直接传入的图标配置 |
-| `size` | `'xxs' \| 'xs' \| 'sm' \| 'md' \| 'lg' \| 'xl'` | `'md'` | 图标尺寸 |
+| `size` | `'xxs' \ | 'xs' \ | 'sm' \ | 'md' \ | 'lg' \ | 'xl'` | `'md'` | 图标尺寸 |
 | `rounded` | `boolean` | `true` | 是否圆形 |
 | `showBackground` | `boolean` | `true` | 是否显示背景 |
 | `badge` | `number` | - | 徽章数字 |

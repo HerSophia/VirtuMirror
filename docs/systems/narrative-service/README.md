@@ -11,7 +11,7 @@
 ### 核心原则
 
 | 原则 | 说明 |
-|------|------|
+| ------ | ------ |
 | **不解析** | 服务本身不解析内容，只负责分发 |
 | **不存储** | 服务不保存历史内容，需要的话由订阅者自己存 |
 | **不过滤** | 所有订阅者收到相同的内容，各自决定是否处理 |
@@ -84,7 +84,7 @@ interface NarrativeEvent {
 ### 主要方法
 
 | 方法 | 说明 |
-|------|------|
+| ------ | ------ |
 | `subscribe(callback)` | 订阅叙事内容，返回取消订阅函数 |
 | `publish(event)` | 发布叙事内容（通常由 Bridge 调用） |
 | `setupBridgeListener()` | 设置 Bridge 适配器监听 |
@@ -93,7 +93,7 @@ interface NarrativeEvent {
 ## 4. 文档目录
 
 | 文档 | 说明 |
-|------|------|
+| ------ | ------ |
 | [核心服务实现](./core-service.md) | NarrativeService 类的详细实现 |
 | [变量与注入](./variables.md) | 标准变量定义与注入工具函数 |
 | [内置提示词](./builtin-prompts.md) | 内置叙事理解系统提示词 |
@@ -163,7 +163,7 @@ flowchart TB
 ```
 
 | 服务 | 关系 |
-|------|------|
+| ------ | ------ |
 | **Bridge Adapter** | 数据来源，触发叙事发布 |
 | **AI Service** | App 用它来"理解"叙事并生成结构化数据 |
 | **LLM Task Service** | 可用于调度叙事分析任务 |
@@ -172,6 +172,6 @@ flowchart TB
 ## 7. 源码文件
 
 | 文件 | 说明 |
-|------|------|
+| ------ | ------ |
 | `src/services/narrativeService.ts` | 核心服务实现 |
 | `src/services/builtinNarrativePrompts.ts` | 内置叙事理解提示词 |

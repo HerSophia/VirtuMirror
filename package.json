@@ -13,7 +13,8 @@
     "type-check": "vue-tsc --noEmit",
     "test": "vitest",
     "test:ui": "vitest --ui",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "lint:md:fix": "node scripts/fix-markdown-table-spacing.mjs"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.1",

@@ -46,11 +46,11 @@
 
 ### 1. 会话级 (session)
 
-| 属性     | 说明                                     |
+| 属性 | 说明 |
 | -------- | ---------------------------------------- |
-| 标识     | `scope: 'session'`                       |
-| 可见范围 | 仅在创建它的会话中可见                   |
-| 必填字段 | `scopeSessionId`                         |
+| 标识 | `scope: 'session'` |
+| 可见范围 | 仅在创建它的会话中可见 |
+| 必填字段 | `scopeSessionId` |
 | 适用场景 | 普通 NPC、路人账号、临时角色、一次性互动 |
 
 ```typescript
@@ -69,11 +69,11 @@ const passerbyEntity: CharacterEntity = {
 
 ### 2. 角色卡级 (character)
 
-| 属性     | 说明                                       |
+| 属性 | 说明 |
 | -------- | ------------------------------------------ |
-| 标识     | `scope: 'character'`                       |
-| 可见范围 | 使用相同角色卡的所有会话共享               |
-| 必填字段 | `scopeCharacterCardId`                     |
+| 标识 | `scope: 'character'` |
+| 可见范围 | 使用相同角色卡的所有会话共享 |
+| 必填字段 | `scopeCharacterCardId` |
 | 适用场景 | 玩家的世界专属身份、主角关联 NPC、剧情角色 |
 
 ```typescript
@@ -93,12 +93,12 @@ const playerWeiboAccount: PlatformAccount = {
 
 ### 3. 全局级 (global)
 
-| 属性     | 说明                               |
+| 属性 | 说明 |
 | -------- | ---------------------------------- |
-| 标识     | `scope: 'global'`                  |
-| 可见范围 | 所有会话共享                       |
-| 必填字段 | 无                                 |
-| 适用场景 | 玩家实体、系统角色、跨世界 NPC     |
+| 标识 | `scope: 'global'` |
+| 可见范围 | 所有会话共享 |
+| 必填字段 | 无 |
+| 适用场景 | 玩家实体、系统角色、跨世界 NPC |
 
 ```typescript
 // 全局实体示例：玩家
@@ -281,12 +281,12 @@ isAccountVisible(
 
 ### 实体作用域推断（实际代码）
 
-| 条件                       | 默认作用域  | 说明                       |
+| 条件 | 默认作用域 | 说明 |
 | -------------------------- | ----------- | -------------------------- |
-| `type: 'player'`           | `global`    | **强制** - 玩家必须全局    |
-| `source: 'system'`         | `global`    | 系统预置角色               |
-| `source: 'character_card'` | `character` | 从角色卡导入的角色         |
-| 其他 (chat, social, manual)| `session`   | 默认会话级                 |
+| `type: 'player'` | `global` | **强制** - 玩家必须全局 |
+| `source: 'system'` | `global` | 系统预置角色 |
+| `source: 'character_card'` | `character` | 从角色卡导入的角色 |
+| 其他 (chat, social, manual) | `session` | 默认会话级 |
 
 ```typescript
 // src/services/account/accountService.ts
@@ -331,11 +331,11 @@ private inferEntityScope(data: CreateEntityInput): {
 
 ### 账号作用域推断（实际代码）
 
-| 条件                         | 默认作用域  | 说明                         |
+| 条件 | 默认作用域 | 说明 |
 | ---------------------------- | ----------- | ---------------------------- |
-| 实体是 `session`             | `session`   | **强制** - 只能是这个        |
-| 实体是 `global` + 玩家       | `character` | 推荐每个世界独立身份         |
-| 其他情况                     | 继承实体    | 跟随实体作用域               |
+| 实体是 `session` | `session` | **强制** - 只能是这个 |
+| 实体是 `global` + 玩家 | `character` | 推荐每个世界独立身份 |
+| 其他情况 | 继承实体 | 跟随实体作用域 |
 
 ```typescript
 // src/services/account/accountService.ts

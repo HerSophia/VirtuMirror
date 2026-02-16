@@ -181,6 +181,18 @@ export { NotificationService, notificationService } from './notification/notific
 // 音频服务
 export { AudioService, audioService } from './audio/audioService'
 
+// Trending Service (系统级热搜服务)
+export { getTrendingService, resetTrendingService, trendingService, TrendingService } from './trending'
+export type {
+  CreateOptions as TrendingCreateOptions,
+  ITrendingService,
+  SharePolicy as TrendingSharePolicy,
+  SharedTrendingOptions,
+  TrendingConfig,
+  TrendingQueryOptions,
+  TrendingUpdateEvent,
+} from './trending'
+
 // Social Media Engine Services
 export { TrafficEngine } from './social/algorithm'
 export { ContentFactory } from './social/contentFactory'
@@ -223,6 +235,38 @@ export type {
   SessionContext,
   SocialRelation,
 } from './account'
+
+// Social Graph Service (社交图谱服务)
+export {
+  SocialGraphError,
+  SocialGraphService,
+  getSocialGraphService,
+  resetSocialGraphService,
+  socialGraphService,
+} from './socialGraph'
+export type {
+  BatchFollowOptions,
+  BatchFollowResult,
+  BlockOptions,
+  FollowOptions,
+  FollowRecommendation,
+  GraphAccountNode,
+  ISocialGraphService,
+  MuteOptions,
+  RecommendationOptions,
+  RecommendationReason,
+  RecommendationReasonType,
+  RelationshipStats,
+  SocialGraphErrorCode,
+  SocialGraphEvent,
+  SocialGraphEventType,
+  SocialGraphPageResult,
+  SocialGraphQueryOptions,
+  SocialGraphRelation,
+  SocialGraphRelationScope,
+  SocialGraphRelationStatus,
+  SocialGraphRelationType,
+} from './socialGraph'
 
 // 写入队列服务
 export { writeQueue, type WriteLockState } from './database/writeQueue'
@@ -451,6 +495,7 @@ export {
   FeedCache,
   feedCache,
   DEFAULT_CACHE_CONFIG,
+  SystemContentProvider,
 } from './feed'
 export type {
   FeedServiceConfig,
@@ -486,3 +531,98 @@ export type {
   AggregateOptions,
   IFeedService,
 } from './feed'
+
+// Scheduler Service (定时任务服务)
+export {
+  getSchedulerService,
+  resetSchedulerService,
+  SchedulerService,
+  schedulerService,
+  SCHEDULER_EVENTS,
+} from './scheduler'
+export type {
+  CronSchedule,
+  EventSchedule,
+  ExecutionOutcome as SchedulerExecutionOutcome,
+  ExecutionResult as SchedulerExecutionResult,
+  IntervalSchedule,
+  ScheduleConfig as SchedulerScheduleConfig,
+  ScheduledTask,
+  ScheduledTaskInput,
+  SchedulerEventMap,
+  SchedulerEventName,
+  SchedulerStatistics,
+  TaskResult as SchedulerTaskResult,
+} from './scheduler'
+
+// Search Service (搜索服务)
+export {
+  getSearchService,
+  resetSearchService,
+  SearchService,
+  searchService,
+} from './search'
+export type {
+  ISearchService,
+  IndexableDocument,
+  IndexableType,
+  SearchFilter,
+  SearchPagination,
+  SearchQuery,
+  SearchResult,
+  SearchResultItem,
+  SearchSort,
+  SearchStats,
+  SuggestItem,
+  SuggestOptions,
+} from './search'
+
+// Archive Service (档案服务)
+export {
+  archiveAutoExtractService,
+  archiveService,
+  ArchiveAutoExtractService,
+  destroyArchiveAutoExtractService,
+  getArchiveAutoExtractService,
+  initArchiveAutoExtractService,
+  ArchiveService,
+  ArchiveRepository,
+  BindingService,
+  DeduplicationService,
+  ExtractionService,
+  getArchiveService,
+  InjectionService,
+  resetArchiveService,
+} from './archive'
+export type {
+  ActionEntry,
+  ArchiveBase,
+  ArchiveConfig,
+  ArchiveFloorData,
+  ArchiveInjectionHistory,
+  ArchiveQueryFilter,
+  ArchiveRecord,
+  ArchiveStatus,
+  ArchiveType,
+  CharacterProfile,
+  CharacterRole,
+  CharacterUpdate,
+  ChatArchive,
+  EventImportance,
+  EventStatus,
+  EventSubType,
+  ExtractOptions,
+  ExtractResult,
+  FactConfidence,
+  FactEntry,
+  FloorReference,
+  InjectionLevel,
+  InjectionRequest,
+  InjectionResult,
+  Keyword,
+  UpdateRecord,
+  WorldEntry,
+  WorldEntryCategory,
+} from './archive'
+export type { ExtractAndPersistResult, PersistExtractResult } from './archive'
+

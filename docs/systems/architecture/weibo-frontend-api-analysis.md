@@ -44,9 +44,9 @@ src/apps/weibo/
 ### 2.1 数据库服务
 
 | 服务 | 导入路径 | 使用位置 | 功能 |
-|------|----------|----------|------|
-| `db`         | `@/services/database`              | feedStore, hotSearchStore, composeStore | IndexedDB 数据访问 |
-| `writeQueue` | `@/services/database/writeQueue`   | feedStore, hotSearchStore, composeStore | 串行化写入队列     |
+| ------ | ---------- | ---------- | ------ |
+| `db` | `@/services/database` | feedStore, hotSearchStore, composeStore | IndexedDB 数据访问 |
+| `writeQueue` | `@/services/database/writeQueue` | feedStore, hotSearchStore, composeStore | 串行化写入队列 |
 
 **使用的数据表**：
 
@@ -58,45 +58,45 @@ src/apps/weibo/
 ### 2.2 社交引擎服务
 
 | 服务 | 导入路径 | 使用位置 | 功能 |
-|------|----------|----------|------|
-| `TrendService`   | `@/services/social/trendService`   | feedStore, hotSearchStore | 热搜榜管理、话题内容生成 |
-| `ContentFactory` | `@/services/social/contentFactory` | feedStore | LLM 内容生成（评论等）|
+| ------ | ---------- | ---------- | ------ |
+| `TrendService` | `@/services/social/trendService` | feedStore, hotSearchStore | 热搜榜管理、话题内容生成 |
+| `ContentFactory` | `@/services/social/contentFactory` | feedStore | LLM 内容生成（评论等） |
 | `DirectorService` | `@/services/social/directorService` | feedStore | 导演服务，触发事件 |
 | `TrafficEngine` | `@/services/social/algorithm` | hotSearchStore | 热度计算算法 |
 
 ### 2.3 账号服务
 
 | 服务 | 导入路径 | 使用位置 | 功能 |
-|------|----------|----------|------|
-| `accountService` | `@/services/account/accountService` | feedStore, composeStore | 账号管理（实体、平台账号）|
+| ------ | ---------- | ---------- | ------ |
+| `accountService` | `@/services/account/accountService` | feedStore, composeStore | 账号管理（实体、平台账号） |
 | `UserPool` | `@/services/account/userPool` | feedStore | 随机用户档案生成 |
 | `useAccountStore` | `@/stores/accountStore` | sessionContext, composeStore | 玩家账号状态 |
 
 ### 2.4 LLM 任务服务
 
 | 服务 | 导入路径 | 使用位置 | 功能 |
-|------|----------|----------|------|
+| ------ | ---------- | ---------- | ------ |
 | `getLLMTaskService` | `@/services/llmTask` | llmTaskStore, llmTask/index | 任务管理、执行、调度 |
 | `PromptService` | `@/services/promptService` | feedStore, composeStore | 提示词获取 |
 
 ### 2.5 运行时服务
 
 | 服务 | 导入路径 | 使用位置 | 功能 |
-|------|----------|----------|------|
+| ------ | ---------- | ---------- | ------ |
 | `tryUseAppRuntime` | `@/services/appRuntime` | 多处 | 获取 App 运行时上下文 |
 | `ScopedStorage` | `@/services/appRuntime/types` | userActionStore, composeStore, settingsStore | 隔离存储 |
 
 ### 2.6 AI 服务
 
 | 服务 | 导入路径 | 使用位置 | 功能 |
-|------|----------|----------|------|
+| ------ | ---------- | ---------- | ------ |
 | `useAIStore` | `@/stores/aiStore` | feedStore, composeStore | AI 生成调用 |
 | `getGlobalConfigService` | `@/services/globalConfigService` | llmTaskStore | API 预设配置 |
 
 ### 2.7 统一类型系统
 
 | 类型 | 导入路径 | 使用位置 |
-|------|----------|----------|
+| ------ | ---------- | ---------- |
 | `UniversalPost` | `@/types/social` | feedStore, composeStore |
 | `DisplayPost` | `@/types/social` | feedStore |
 | `MediaAsset` | `@/types/social` | composeStore |
@@ -116,7 +116,7 @@ src/apps/weibo/
 **内部实现的功能**：
 
 | 功能 | 方法 | 描述 |
-|------|------|------|
+| ------ | ------ | ------ |
 | 点赞管理 | `toggleLike()`, `isLiked()` | 点赞/取消点赞 |
 | 收藏管理 | `toggleFavorite()`, `isFavorited()` | 收藏/取消收藏 |
 | 浏览历史 | `addViewHistory()`, `getViewHistoryPostIds()` | 记录浏览历史 |
@@ -149,7 +149,7 @@ interface InteractionService {
 **内部实现的功能**：
 
 | 功能 | 方法 | 描述 |
-|------|------|------|
+| ------ | ------ | ------ |
 | 会话同步 | `syncContextFromNarrative()` | 从 accountStore/叙事缓存同步 |
 | 来源追踪 | `getCurrentSourceTracking()` | 获取当前来源信息 |
 | 数据过滤 | `buildSourceFilter()` | 按会话/楼层/Swipe 过滤 |
@@ -169,7 +169,7 @@ interface InteractionService {
 **内部实现的功能**：
 
 | 功能 | 方法 | 描述 |
-|------|------|------|
+| ------ | ------ | ------ |
 | 信息流获取 | `refreshFeed()` | 获取个性化信息流 |
 | 帖子映射 | `mapSinglePostToDisplay()` | UniversalPost → DisplayPost |
 | 类型推断 | `getPrimaryTypeFromPost()` | 推断帖子类型 |
@@ -189,7 +189,7 @@ interface InteractionService {
 **内部实现的功能**：
 
 | 功能 | 方法 | 描述 |
-|------|------|------|
+| ------ | ------ | ------ |
 | 热搜刷新 | `refreshHotSearch()` | 获取热搜榜 |
 | LLM 热搜应用 | `applyGeneratedHotSearch()` | 应用 LLM 生成的热搜 |
 | 热度计算 | 使用 TrafficEngine | 计算热度和标签 |
@@ -209,10 +209,10 @@ interface InteractionService {
 **内部实现的功能**：
 
 | 功能 | 方法 | 描述 |
-|------|------|------|
+| ------ | ------ | ------ |
 | 草稿保存 | `saveDraft()` | 保存草稿到 ScopedStorage |
 | 草稿获取 | `getDraftById()`, `loadDrafts()` | 草稿 CRUD |
-|除 | `deleteDraft()`, `clearAllDrafts()` | 草稿清理 |
+| 除 | `deleteDraft()`, `clearAllDrafts()` | 草稿清理 |
 
 **解耦建议**：
 - 可选抽取为 `DraftService`
@@ -227,7 +227,7 @@ interface InteractionService {
 **内部实现的功能**：
 
 | 功能 | 方法 | 描述 |
-|------|------|------|
+| ------ | ------ | ------ |
 | 博文扩展 | `expandPostContent()` | AI 扩展博文内容 |
 | 图片描述扩展 | `expandImageDescription()` | AI 扩展图片描述 |
 | 视频描述扩展 | `expandVideoDescription()` | AI 扩展视频描述 |
@@ -245,7 +245,7 @@ interface InteractionService {
 **内部实现的功能**：
 
 | 功能 | 方法 | 描述 |
-|------|------|------|
+| ------ | ------ | ------ |
 | 互动生成 | `generatePostEngagement()` | 为博文生成评论、点赞等 |
 | 评论生成 | `generateCommentsForPost()` | 单独生成评论 |
 | 评论者账号 | `ensureCommenterAccount()` | 创建评论者 NPC 账号 |
@@ -328,14 +328,14 @@ interface InteractionService {
 ### 5.1 高优先级（平台化基础）
 
 | 服务 | 来源 | 工作量 | 价值 |
-|------|------|--------|------|
+| ------ | ------ | -------- | ------ |
 | **Interaction Service** | userActionStore | 3h | 点赞/收藏逻辑可复用到 B站、知乎 |
 | **Session Context Service** | sessionContext.ts | 4-5h | 数据隔离基础，多 App 必需 |
 
 ### 5.2 中优先级（体验增强）
 
 | 服务 | 来源 | 工作量 | 价值 |
-|------|------|--------|------|
+| ------ | ------ | -------- | ------ |
 | **Trending Service** | hotSearchStore | 4-5h | 热搜管理通用化，支持跨 App 共享 |
 | **Feed Algorithm Service** | feedStore | 6-8h | 信息流推荐通用化 |
 | **Engagement Service** | feedStore | 3-4h | 互动生成与涨粉引擎联动 |
@@ -343,7 +343,7 @@ interface InteractionService {
 ### 5.3 低优先级（锦上添花）
 
 | 服务 | 来源 | 工作量 | 价值 |
-|------|------|--------|------|
+| ------ | ------ | -------- | ------ |
 | Draft Service | composeStore | 2-3h | 草稿管理通用化 |
 | Content Expansion | composeStore | 2-3h | AI 扩展能力整合 |
 
@@ -443,5 +443,5 @@ export function registerWeiboLLMExtensions(): void {
 ## 9. 版本历史
 
 | 版本 | 日期 | 变更内容 |
-|------|------|----------|
+| ------ | ------ | ---------- |
 | 1.0 | 2026-01-16 | 初始版本，完成接口统计与分析 |

@@ -46,7 +46,7 @@ src/types/
 通知图标支持三种类型：
 
 | 类型 | 说明 | 示例 |
-|------|------|------|
+| ------ | ------ | ------ |
 | `fontawesome` | FontAwesome 图标类名 | `fas fa-bell`、`fab fa-weixin` |
 | `svg` | SVG 字符串或文件路径 | `<svg>...</svg>` 或 `/icons/app.svg` |
 | `image` | 图片 URL 或 base64 | `https://...` 或 `data:image/png;base64,...` |
@@ -82,9 +82,9 @@ notificationStore.createNotification({
 **Props：**
 
 | 属性 | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
+| ------ | ------ | -------- | ------ |
 | icon | `NotificationIcon` | - | 图标配置 |
-| size | `'xs' \| 'sm' \| 'md' \| 'lg' \| 'xl'` | `'md'` | 尺寸 |
+| size | `'xs' \ | 'sm' \ | 'md' \ | 'lg' \ | 'xl'` | `'md'` | 尺寸 |
 | rounded | `boolean` | `true` | 是否圆形 |
 | showBackground | `boolean` | `true` | 是否显示背景 |
 
@@ -121,7 +121,7 @@ Toast 通知横幅，自动从 `notificationStore.activeToast` 读取数据。
 控制中心包含一个三阶设备模式切换组件 (DeviceModeSwitch)，可快速在以下模式间切换：
 
 | 模式 | 图标 | 说明 |
-|------|------|------|
+| ------ | ------ | ------ |
 | phone | `fa-mobile-alt` | 手机模式 |
 | tablet | `fa-tablet-alt` | 平板模式 |
 | desktop | `fa-desktop` | 桌面模式 |
@@ -145,7 +145,7 @@ import DeviceModeSwitch from '@/components/common/DeviceModeSwitch.vue'
 **支持的开关：**
 
 | 开关 | 功能 | 互斥关系 |
-|------|------|----------|
+| ------ | ------ | ---------- |
 | wifi | Wi-Fi | 飞行模式下禁用 |
 | bluetooth | 蓝牙 | - |
 | cellular | 蜂窝数据 | 飞行模式下禁用 |
@@ -217,14 +217,14 @@ uiStore.endPulling()
 ### 下拉触发
 
 | 触发位置 | iOS 风格 | Android 风格 |
-|----------|----------|--------------|
+| ---------- | ---------- | -------------- |
 | 左半边 | 通知中心 | 通知中心 |
 | 右半边 | 控制中心 | 通知中心 |
 
 ### 面板内手势
 
 | 手势 | 效果 |
-|------|------|
+| ------ | ------ |
 | 向上滑动 | 关闭当前面板 |
 | 向左 切换到控制中心（仅通知中心） |
 | 向右滑动 | 切换到通知中心（仅控制中心） |

@@ -10,11 +10,11 @@
 
 ### 1.1 当前架构中存在三套会话概念
 
-| 模块               | 会话来源                           | 用途                   | 问题                   |
+| 模块 | 会话来源 | 用途 | 问题 |
 | ------------------ | ---------------------------------- | ---------------------- | ---------------------- |
-| **Bridge Adapter** | 酒馆 `_phone_bridge.sessionId`     | 区分不同聊天文件       | 正确获取真实会话ID     |
-| **Account Service**| 硬编码 `'default-session'`         | 实体/账号可见性作用域  | 未与真实会话关联       |
-| **Weibo SessionContext** | 叙事缓存 `narrativeCache.sessionId` | 内容过滤           | 与 Account Service 不同步 |
+| **Bridge Adapter** | 酒馆 `_phone_bridge.sessionId` | 区分不同聊天文件 | 正确获取真实会话ID |
+| **Account Service** | 硬编码 `'default-session'` | 实体/账号可见性作用域 | 未与真实会话关联 |
+| **Weibo SessionContext** | 叙事缓存 `narrativeCache.sessionId` | 内容过滤 | 与 Account Service 不同步 |
 
 ### 1.2 具体问题
 
@@ -240,14 +240,14 @@ if (sanitizedData.platformData) {
 
 **清理范围**:
 
-| 数据类型   | 表名             | 清理条件                           |
+| 数据类型 | 表名 | 清理条件 |
 | ---------- | ---------------- | ---------------------------------- |
-| 帖子       | socialPosts      | `platformId = 'weibo'`             |
-| 评论       | socialComments   | `platformId = 'weibo'`             |
-| 热搜       | socialTopics     | `platformId = 'weibo'`             |
-| App 数据   | appData          | `namespace` 以 `'builtin/weibo'` 开头 |
-| 微博账号   | platformAccounts | `platformId = 'weibo'`             |
-| 迁移标记   | appSettings      | 特定的 key                         |
+| 帖子 | socialPosts | `platformId = 'weibo'` |
+| 评论 | socialComments | `platformId = 'weibo'` |
+| 热搜 | socialTopics | `platformId = 'weibo'` |
+| App 数据 | appData | `namespace` 以 `'builtin/weibo'` 开头 |
+| 微博账号 | platformAccounts | `platformId = 'weibo'` |
+| 迁移标记 | appSettings | 特定的 key |
 
 **使用方式**:
 

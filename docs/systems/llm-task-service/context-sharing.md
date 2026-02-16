@@ -170,12 +170,12 @@ const crossAppNarrativeProvider: ContextProvider = {
 
 ## 实施计划
 
-| 阶段    | 内容                                        |
+| 阶段 | 内容 |
 | ------- | ------------------------------------------- |
 | Phase 1 | LLM 任务服务完成，内置 `system:time` 提供器 |
-| Phase 2 | 设计并实现 ContextSharingService            |
-| Phase 3 | 微博 App 发布 `weibo:narrative`             |
-| Phase 4 | 其他 App 订阅并使用                         |
+| Phase 2 | 设计并实现 ContextSharingService |
+| Phase 3 | 微博 App 发布 `weibo:narrative` |
+| Phase 4 | 其他 App 订阅并使用 |
 
 ---
 

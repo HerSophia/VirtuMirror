@@ -1,8 +1,8 @@
 # 档案服务 (Archive Service)
 
 > **版本**: 1.0  
-> **状态**: 设计阶段  
-> **最后更新**: 2026-01-16  
+> **状态**: MVP 已实现（服务层 + 最小集成层）  
+> **最后更新**: 2026-02-08  
 > **依赖**: AccountService, AIGenerateService, TimeService, IndexedDB (Dexie)
 
 ## 1. 概述
@@ -105,10 +105,9 @@ interface ArchiveService {
 | 类型 | 标识 | 说明 | 来源 |
 | ---- | ---- | ---- | ---- |
 | **事件档案** | `event` | 聊天中的关键事件 | 聊天提取 |
+| **事件子类型** | `event.subType` | `plot` / `dialogue` / `discovery` / `decision` | 聊天提取 |
 | **角色档案** | `character` | 动态维护的角色信息 | 角色卡/聊天提取 |
 | **世界设定** | `world` | 世界观相关设定 | 世界书/聊天提取 |
-| **对话记录** | `dialogue` | 重要对话片段 | 聊天提取 |
-| **发现** | `discovery` | 发现的新信息/秘密 | 聊天提取 |
 
 ---
 
@@ -194,13 +193,15 @@ const accountArchives = await archiveService.getAccountArchives('account_weibo_1
 
 | 功能模块 | 状态 | 说明 |
 | -------- | ---- | ---- |
-| 数据模型定义 | 📋 待实现 | 类型定义和数据库表 |
-| 基础 CRUD | 📋 待实现 | 档案的增删改查 |
-| 注入系统 | 📋 待实现 | 知识注入核心功能 |
-| 去重服务 | 📋 待实现 | 防止重复注入 |
-| LLM 提取 | 📋 待实现 | 从聊天中提取信息 |
-| 账号绑定 | 📋 待实现 | 与社交账号关联 |
-| 关键词系统 | 📋 待实现 | 关键词管理和匹配 |
+| 数据模型定义 | ✅ 已实现 | `src/types/archive.ts` 与统一导出已落地 |
+| 基础 CRUD | ✅ 已实现 | `get/save/delete/query` 与内容哈希自动维护 |
+| 注入系统 | ✅ 已实现 | always/account/contextual 收集、排序、截断与格式化 |
+| 去重服务 | ✅ 已实现 | ID/语义/时效 3 层去重 + 注入历史记录 |
+| LLM 提取（手动） | ✅ 已实现 | `extractFromChat` + JSON Schema 校验 + pending 结果 |
+| 账号绑定 | ✅ 已实现 | 双向绑定、事务一致性、删除级联清理 |
+| Prompt/ContextSharing 集成 | ✅ 已实现 | 发布 `archive:pinned/relevant/characters` 并由模板消费 |
+| 社交链路最小集成 | ✅ 已实现 | `ContentFactory` 发帖/评论注入，预算默认 800/400 |
+| 自动提取调度（v1.1） | 🟡 规划中 | 基于 Bridge 事件阈值提醒，待增强层落地 |
 
 ---
 

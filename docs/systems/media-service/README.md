@@ -23,7 +23,7 @@
 ### 1.2 核心职责
 
 | 职责 | 说明 |
-|------|------|
+| ------ | ------ |
 | **资产管理** | 统一存储和索引媒体文件元数据（路径、尺寸、创建时间、来源） |
 | **相册管理** | 支持逻辑上的分组（相册），支持智能相册（基于时间、位置、标签） |
 | **缩略图生成** | 自动为大图生成和缓存缩略图，优化列表加载性能 |
@@ -44,7 +44,7 @@
 ## 2. 文档索引
 
 | 文档 | 说明 |
-|------|------|
+| ------ | ------ |
 | [架构设计](./architecture.md) | 服务分层架构、组件关系图 |
 | [数据模型](./data-model.md) | MediaAsset、Album 等核心类型定义 |
 | [API 参考](./api-reference.md) | MediaService 完整接口文档 |
@@ -142,7 +142,7 @@ const displayUrl = await mediaService.resolveUri(asset.uri);
 ### 5.1 已实现（Gallery App 私有实现）
 
 | 功能 | 代码位置 | 说明 |
-|------|----------|------|
+| ------ | ---------- | ------ |
 | 图片数据模型 | `src/apps/gallery/types.ts` | GalleryImage 类型定义 |
 | 图片 CRUD | `src/apps/gallery/services/galleryService.ts` | 增删改查操作 |
 | 状态管理 | `src/apps/gallery/stores/galleryStore.ts` | Pinia Store |
@@ -152,7 +152,7 @@ const displayUrl = await mediaService.resolveUri(asset.uri);
 ### 5.2 待实现（系统服务化）
 
 | 功能 | 优先级 | 说明 |
-|------|--------|------|
+| ------ | -------- | ------ |
 | 独立 IndexedDB 表 | 🔴 高 | `media_assets`, `media_albums` |
 | 虚拟 URI 系统 | 🔴 高 | `internal://media/images/{id}` |
 | 缩略图自动生成 | 🟡 中 | Canvas 压缩或 Worker |
@@ -173,5 +173,5 @@ const displayUrl = await mediaService.resolveUri(asset.uri);
 ## 7. 版本历史
 
 | 版本 | 日期 | 变更内容 |
-|------|------|----------|
+| ------ | ------ | ---------- |
 | 1.0 | 2026-01-16 | 初始版本，基于现有 Gallery App 实现整理 |

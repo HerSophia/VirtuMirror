@@ -19,27 +19,27 @@
 
 ### 设计目标
 
-| 维度         | 说明                                       |
+| 维度 | 说明 |
 | ------------ | ------------------------------------------ |
-| 统一身份     | 聊天好友"小明"和微博用户"小明"是同一个人   |
-| 关系复用     | 聊天好友自动成为朋友圈可见者               |
-| 多重身份     | 玩家可以在不同世界有不同的"马甲"账号       |
-| 数据一致     | 修改头像一处生效，全平台同步               |
-| 职责清晰     | UserPool 只负责生成，不再负责存储          |
-| 灵活隔离     | 实体和账号各自有独立的作用域控制           |
+| 统一身份 | 聊天好友"小明"和微博用户"小明"是同一个人 |
+| 关系复用 | 聊天好友自动成为朋友圈可见者 |
+| 多重身份 | 玩家可以在不同世界有不同的"马甲"账号 |
+| 数据一致 | 修改头像一处生效，全平台同步 |
+| 职责清晰 | UserPool 只负责生成，不再负责存储 |
+| 灵活隔离 | 实体和账号各自有独立的作用域控制 |
 
 ---
 
 ## 文档导航
 
-| 文档                              | 说明                                        |
+| 文档 | 说明 |
 | --------------------------------- | ------------------------------------------- |
-| [架构设计](./architecture.md)     | 分层架构、核心组件、数据流                  |
-| [类型定义](./types.md)            | CharacterEntity、PlatformAccount、SocialRelation 等 |
-| [使用示例](./usage.md)            | 初始化、账号创建、关系管理、查询示例        |
-| [作用域机制](./scope.md)          | 双层作用域模型、可见性规则、自动推断        |
-| [系统集成](./integration.md)      | 与 SessionContext、Bridge、各 App 的交互   |
-| [设计决策](./design-decisions.md) | 为什么选择双层作用域、关系绑定在账号等决策  |
+| [架构设计](./architecture.md) | 分层架构、核心组件、数据流 |
+| [类型定义](./types.md) | CharacterEntity、PlatformAccount、SocialRelation 等 |
+| [使用示例](./usage.md) | 初始化、账号创建、关系管理、查询示例 |
+| [作用域机制](./scope.md) | 双层作用域模型、可见性规则、自动推断 |
+| [系统集成](./integration.md) | 与 SessionContext、Bridge、各 App 的交互 |
+| [设计决策](./design-decisions.md) | 为什么选择双层作用域、关系绑定在账号等决策 |
 
 ---
 
@@ -161,11 +161,11 @@ console.log(richProfile.profile?.personality); // 'enthusiast'
 
 ### 双层作用域
 
-| 作用域       | 标识        | 说明                         | 适用场景                     |
+| 作用域 | 标识 | 说明 | 适用场景 |
 | ------------ | ----------- | ---------------------------- | ---------------------------- |
-| **会话级**   | `session`   | 仅在创建它的会话中可见       | 普通 NPC、路人账号、临时角色 |
-| **角色卡级** | `character` | 相同角色卡的会话共享         | 玩家的世界专属身份、主角关联 NPC |
-| **全局级**   | `global`    | 所有会话共享                 | 玩家实体、系统角色、跨世界 NPC |
+| **会话级** | `session` | 仅在创建它的会话中可见 | 普通 NPC、路人账号、临时角色 |
+| **角色卡级** | `character` | 相同角色卡的会话共享 | 玩家的世界专属身份、主角关联 NPC |
+| **全局级** | `global` | 所有会话共享 | 玩家实体、系统角色、跨世界 NPC |
 
 **核心规则**：账号作用域不能比实体作用域"更全局"
 
@@ -183,59 +183,59 @@ session         │ session
 
 ### AccountService 主要方法
 
-| 方法                           | 说明                           |
+| 方法 | 说明 |
 | ------------------------------ | ------------------------------ |
-| `setSessionContext()`          | 设置当前会话上下文             |
-| `getSessionContext()`          | 获取当前会话上下文             |
-| `createEntity()`               | 创建角色实体                   |
-| `getEntity()`                  | 获取角色实体                   |
-| `updateEntity()`               | 更新角色实体                   |
-| `deleteEntity()`               | 删除实体（级联删除账号和关系） |
-| `getVisibleEntities()`         | 获取当前会话可见的实体         |
-| `getPlayerEntity()`            | 获取玩家实体                   |
-| `getOrCreatePlayerEntity()`    | 获取或创建玩家实体             |
-| `createPlatformAccount()`      | 为实体创建平台账号             |
-| `getPlatformAccount()`         | 获取平台账号                   |
-| `findAccountByHandle()`        | 通过 handle 查找账号           |
-| `getVisibleAccounts()`         | 获取当前会话可见的平台账号     |
-| `findPlayerAccountForContext()`| 查找玩家在当前上下文的账号     |
-| `checkMissingPlayerAccount()`  | 检查是否缺少玩家账号           |
-| `followAccount()`              | 关注账号                       |
-| `unfollowAccount()`            | 取消关注                       |
-| `addFriendAccounts()`          | 添加好友（双向）               |
-| `removeFriendAccounts()`       | 删除好友                       |
-| `getFollowingAccounts()`       | 获取关注列表                   |
-| `getFollowerAccounts()`        | 获取粉丝列表                   |
-| `getFriendAccounts()`          | 获取好友列表                   |
-| `getFullProfile()`             | 获取完整档案（合并实体和账号） |
-| `syncFromCharacterCard()`      | 从角色卡同步实体               |
-| `getStats()`                   | 获取统计信息                   |
+| `setSessionContext()` | 设置当前会话上下文 |
+| `getSessionContext()` | 获取当前会话上下文 |
+| `createEntity()` | 创建角色实体 |
+| `getEntity()` | 获取角色实体 |
+| `updateEntity()` | 更新角色实体 |
+| `deleteEntity()` | 删除实体（级联删除账号和关系） |
+| `getVisibleEntities()` | 获取当前会话可见的实体 |
+| `getPlayerEntity()` | 获取玩家实体 |
+| `getOrCreatePlayerEntity()` | 获取或创建玩家实体 |
+| `createPlatformAccount()` | 为实体创建平台账号 |
+| `getPlatformAccount()` | 获取平台账号 |
+| `findAccountByHandle()` | 通过 handle 查找账号 |
+| `getVisibleAccounts()` | 获取当前会话可见的平台账号 |
+| `findPlayerAccountForContext()` | 查找玩家在当前上下文的账号 |
+| `checkMissingPlayerAccount()` | 检查是否缺少玩家账号 |
+| `followAccount()` | 关注账号 |
+| `unfollowAccount()` | 取消关注 |
+| `addFriendAccounts()` | 添加好友（双向） |
+| `removeFriendAccounts()` | 删除好友 |
+| `getFollowingAccounts()` | 获取关注列表 |
+| `getFollowerAccounts()` | 获取粉丝列表 |
+| `getFriendAccounts()` | 获取好友列表 |
+| `getFullProfile()` | 获取完整档案（合并实体和账号） |
+| `syncFromCharacterCard()` | 从角色卡同步实体 |
+| `getStats()` | 获取统计信息 |
 
 ### AccountStore 主要功能
 
-| 功能                           | 说明                           |
+| 功能 | 说明 |
 | ------------------------------ | ------------------------------ |
-| `initialize()`                 | 初始化账号系统                 |
-| `switchSession()`              | 切换会话上下文                 |
-| `ensurePlayerAccount()`        | 确保玩家有平台账号             |
-| `getOrCreateRandomUser()`      | 获取或创建随机用户             |
-| `getContactsForPlatform()`     | 获取平台联系人（带完整档案）   |
-| 自动响应 Bridge 会话切换事件   | 无需手动监听                   |
+| `initialize()` | 初始化账号系统 |
+| `switchSession()` | 切换会话上下文 |
+| `ensurePlayerAccount()` | 确保玩家有平台账号 |
+| `getOrCreateRandomUser()` | 获取或创建随机用户 |
+| `getContactsForPlatform()` | 获取平台联系人（带完整档案） |
+| 自动响应 Bridge 会话切换事件 | 无需手动监听 |
 
 ### UserPool 主要方法
 
-| 方法                       | 说明                           |
+| 方法 | 说明 |
 | -------------------------- | ------------------------------ |
-| `generateRandomProfile()`  | 生成随机用户基础档案           |
-| `generateRichProfile()`    | 生成带完整画像的用户档案       |
-| `generateFullProfile()`    | 生成完整角色画像               |
-| `generateByRole()`         | 根据角色类型生成用户档案       |
-| `generateBatch()`          | 批量生成用户档案               |
-| `randomName()`             | 生成随机中文名                 |
-| `randomGender()`           | 生成随机性别                   |
-| `randomBio()`              | 生成随机简介                   |
-| `generateHandle()`         | 生成平台 handle                |
-| `getFollowersByLevel()`    | 根据影响力等级获取粉丝数       |
+| `generateRandomProfile()` | 生成随机用户基础档案 |
+| `generateRichProfile()` | 生成带完整画像的用户档案 |
+| `generateFullProfile()` | 生成完整角色画像 |
+| `generateByRole()` | 根据角色类型生成用户档案 |
+| `generateBatch()` | 批量生成用户档案 |
+| `randomName()` | 生成随机中文名 |
+| `randomGender()` | 生成随机性别 |
+| `randomBio()` | 生成随机简介 |
+| `generateHandle()` | 生成平台 handle |
+| `getFollowersByLevel()` | 根据影响力等级获取粉丝数 |
 
 ---
 
@@ -268,13 +268,13 @@ session         │ session
 
 ## 实施状态
 
-| Phase   | 内容                  | 状态       |
+| Phase | 内容 | 状态 |
 | ------- | --------------------- | ---------- |
-| Phase 1 | 基础架构搭建          | ✅ 已完成  |
-| Phase 2 | 双层作用域支持        | ✅ 已完成  |
-| Phase 3 | 玩家多重身份 UI       | ✅ 已完成  |
-| Phase 4 | 账号管理 App          | ✅ 已完成  |
-| Phase 5 | 完整集成（聊天等）    | ⏳ 进行中  |
+| Phase 1 | 基础架构搭建 | ✅ 已完成 |
+| Phase 2 | 双层作用域支持 | ✅ 已完成 |
+| Phase 3 | 玩家多重身份 UI | ✅ 已完成 |
+| Phase 4 | 账号管理 App | ✅ 已完成 |
+| Phase 5 | 完整集成（聊天等） | ⏳ 进行中 |
 
 ---
 

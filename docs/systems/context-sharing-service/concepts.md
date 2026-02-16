@@ -53,7 +53,7 @@ interface SharedContext<T = any> extends SharedContextMeta {
 上下文可以通过两种方式提供数据：
 
 | 方式 | 说明 | 适用场景 |
-|------|------|----------|
+| ------ | ------ | ---------- |
 | **value** | 直接提供值 | 静态数据、已知数据 |
 | **getter** | 惰性求值函数 | 动态数据、需要计算的数据 |
 
@@ -130,7 +130,7 @@ type ContextType = WellKnownContextType | `custom:${string}`;
 #### 系统级
 
 | 类型 | 说明 | 典型值 |
-|------|------|--------|
+| ------ | ------ | -------- |
 | `system:time` | 当前时间状态 | `{ now: number, period: string, formatted: string }` |
 | `system:session` | 会话信息 | `{ sessionId, characterName, playerName }` |
 | `system:player` | 玩家信息 | `{ name, avatar, settings }` |
@@ -138,16 +138,16 @@ type ContextType = WellKnownContextType | `custom:${string}`;
 #### 叙事相关
 
 | 类型 | 说明 | 典型值 |
-|------|------|--------|
+| ------ | ------ | -------- |
 | `narrative:content` | 叙事内容 | 纯文本故事内容 |
 | `narrative:characters` | 场景角色 | `[{ name, role, status }]` |
 | `narrative:location` | 场景地点 | `{ name, description }` |
-| `narrative:mood` | 氛围/情绪 | `'tense' \| 'relaxed' \| 'romantic'` |
+| `narrative:mood` | 氛围/情绪 | `'tense' \ | 'relaxed' \ | 'romantic'` |
 
 #### 社交内容
 
 | 类型 | 说明 | 典型值 |
-|------|------|--------|
+| ------ | ------ | -------- |
 | `social:trending` | 热搜榜 | `[{ id, title, heat, category }]` |
 | `social:recentPosts` | 最近帖子 | `[{ id, content, author, timestamp }]` |
 | `social:hotTopics` | 热门话题 | `[{ tag, postCount, trending }]` |
@@ -155,7 +155,7 @@ type ContextType = WellKnownContextType | `custom:${string}`;
 #### 聊天相关
 
 | 类型 | 说明 | 典型值 |
-|------|------|--------|
+| ------ | ------ | -------- |
 | `chat:lastMessage` | 最新消息 | `{ role, content, timestamp }` |
 | `chat:recentHistory` | 聊天历史 | `[{ role, content, timestamp }]` |
 | `chat:participants` | 参与者 | `[{ id, name, avatar }]` |
@@ -163,7 +163,7 @@ type ContextType = WellKnownContextType | `custom:${string}`;
 #### 用户状态
 
 | 类型 | 说明 | 典型值 |
-|------|------|--------|
+| ------ | ------ | -------- |
 | `user:currentAccount` | 当前账号 | `{ id, name, avatar, platformId }` |
 | `user:recentActions` | 最近操作 | `[{ action, target, timestamp }]` |
 | `user:preferences` | 用户偏好 | `{ theme, language, notifications }` |
@@ -171,7 +171,7 @@ type ContextType = WellKnownContextType | `custom:${string}`;
 #### 知识库
 
 | 类型 | 说明 | 典型值 |
-|------|------|--------|
+| ------ | ------ | -------- |
 | `archive:pinned` | 置顶档案 | `[{ id, title, content, type }]` |
 | `archive:relevant` | 相关档案 | `[{ id, title, relevance }]` |
 | `archive:characters` | 角色档案 | `[{ id, name, description, traits }]` |
@@ -215,7 +215,7 @@ interface ContextVisibility {
 ### 3.2 可见性级别
 
 | 级别 | 说明 | 典型场景 |
-|------|------|----------|
+| ------ | ------ | ---------- |
 | `public` | 所有 App 可访问 | 热搜、叙事内容 |
 | `restricted` | 仅指定 App 可访问 | 敏感数据、内部数据 |
 | `private` | 仅发布者可访问 | 临时数据、调试数据 |
@@ -288,8 +288,8 @@ interface CacheConfig {
 ### 4.2 缓存行为
 
 | 配置 | 行为 |
-|------|------|
-| 无缓存配置 | 每次获取都执行 getter（如有）|
+| ------ | ------ |
+| 无缓存配置 | 每次获取都执行 getter（如有） |
 | 仅 `ttl` | TTL 内返回缓存，过期后重新获取 |
 | `staleWhileRevalidate: true` | 过期时返回旧值，后台异步更新 |
 
@@ -427,7 +427,7 @@ interface AggregatedContext {
 服务通过 Event Bus 发布以下事件：
 
 | 事件 | 触发时机 | 载荷 |
-|------|----------|------|
+| ------ | ---------- | ------ |
 | `contextSharing:published` | 发布新上下文 | `{ id, type }` |
 | `contextSharing:updated` | 更新上下文 | `{ id }` |
 | `contextSharing:unpublished` | 取消发布 | `{ id, type }` |

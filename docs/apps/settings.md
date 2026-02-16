@@ -203,7 +203,7 @@ import { SettingsGroup, SettingsItem, ToggleSwitch } from '@/apps/settings/compo
 设置应用的主题切换功能涉及到图标系统的渲染。不同主题使用不同的图标字体：
 
 | 主题 | 图标字体 | 示例 |
-|------|----------|------|
+| ------ | ---------- | ------ |
 | iOS | FontAwesome | `fas fa-envelope` |
 | Material You (Android) | Material Symbols | `mail` |
 | 深色模式 | FontAwesome | `fas fa-envelope` |
@@ -241,7 +241,7 @@ import { SettingsGroup, SettingsItem, ToggleSwitch } from '@/apps/settings/compo
 设置应用遵循全局 CSS 变量规范，确保深色模式和主题切换的兼容性。
 
 | CSS 变量 | 说明 |
-|----------|------|
+| ---------- | ------ |
 | `--color-background` | 页面背景 |
 | `--color-surface` | 卡片/分组背景 |
 | `--color-surface-variant` | 变体表面（Hover 态） |

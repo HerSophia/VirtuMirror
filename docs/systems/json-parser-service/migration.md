@@ -11,7 +11,7 @@
 ### 2.1 需要迁移的位置
 
 | 文件 | 函数/方法 | 重复次数 | 优先级 |
-|------|-----------|----------|--------|
+| ------ | ----------- | ---------- | -------- |
 | `src/services/llmTask/utils.ts` | `cleanJsonOutput`, `safeParseJson` | 1 | 🔴 高 |
 | `src/services/prompt/chainExecutor/utils.ts` | `parseJSON` | 1 | 🔴 高 |
 | `src/services/social/contentFactory.ts` | `parseAndRepairJSON` | 1 | 🟡 中 |
@@ -373,14 +373,14 @@ const USE_NEW_JSON_PARSER = import.meta.env.VITE_USE_NEW_JSON_PARSER !== 'false'
 ## 7. 时间线
 
 | 阶段 | 内容 | 预计时间 | 风险 |
-|------|------|----------|------|
+| ------ | ------ | ---------- | ------ |
 | Phase 1 | 创建服务，修改 llmTask | 2h | 低 |
 | Phase 2 | 迁移 prompt/chainExecutor | 1h | 低 |
 | Phase 3 | 迁移 contentFactory | 1h | 中 |
 | Phase 4 | 迁移 directorService | 30min | 低 |
 | Phase 5 | 迁移微博 Stores | 2h | 中 |
 | 测试 | 单元测试 + 集成测试 | 2h | - |
-| **总计** | | **8.5h** | |
+| **总计** |  | **8.5h** |  |
 
 ---
 

@@ -1,8 +1,8 @@
 # 社交内容平台系统服务架构
 
-> **版本**: 1.0
-> **状态**: 规划中
-> **最后更新**: 2026-01-08
+> **版本**: 1.8
+> **状态**: 迭代中（核心基础服务、Trending、Social Graph、Feed、Scheduler、Archive MVP 已落地）
+> **最后更新**: 2026-02-08
 > **目标**: 让小手机模拟器实现平台化和通用化
 
 ## 1. 概述
@@ -16,11 +16,19 @@
 3. **可插拔扩展**：通过注册机制支持平台特定功能
 4. **按需加载**：服务懒加载，避免不必要的资源占用
 
+### 1.2 API 聚合入口
+
+为减少提示词 Token 和跨文档跳转成本，服务调用入口统一聚合在：
+
+- [API-INDEX.md](../api/API-INDEX.md)：人读总览（8 字段摘要 + 可调用服务清单）
+- [API-RECIPES.md](../api/API-RECIPES.md)：跨服务编排流程（固定结构 Recipe）
+- [api-manifest.json](../api/api-manifest.json)：机器可读清单（RAG/代码生成）
+
 ---
 
 ## 2. 当前架构概览
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────────────┐
 │                           应用层 (App Skins)                              │
 │  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐        │
@@ -57,7 +65,7 @@
 ### 3.1 已实现服务
 
 | 服务 | 文档位置 | 状态 | 说明 |
-|------|----------|------|------|
+| ------ | ---------- | ------ | ------ |
 | **Social Media Engine** | `social-media-engine/` | ✅ Phase 1-3 | TrendService、ContentFactory、TrafficEngine |
 | **Account Service** | `account-service/` | ✅ Phase 1-4 | 双层作用域、玩家多重身份 |
 | **LLM Task Service** | `llm-task-service/` | ✅ v1.0 | 任务定义、执行、扩展点 |
@@ -70,23 +78,25 @@
 | **Interaction Service** | `interaction-service/` | ✅ v1.0 | 点赞/收藏/评论、事件广播、平台扩展 |
 | **Logger Service** | `logger-service/` | ✅ v1.0 | 命名空间、多 Transport、性能计时 |
 | **Context Sharing Service** | `context-sharing-service/` | ✅ v1.0 | 发布/订阅、聚合、LLM 集成 |
+| **Trending Service** | `trending-service/` | ✅ v1.0 | 热搜生成、热度排序、共享策略、兼容层迁移 |
+| **Social Graph Service** | `social-graph-service/` | ✅ v1.0 | 关注/拉黑/静音、互关、统计、推荐、事件广播 |
+| **Feed Service** | `feed-service/` | ✅ v1.0 | 信息流聚合、排序、缓存、默认系统数据源接入 |
+| **Scheduler Service** | `scheduler-service/` | ✅ v1.0 | 定时任务、Cron、事件触发、统计 |
+| **Archive Service** | `archive-service/` | 🟡 MVP | CRUD、绑定、去重、注入、手动提取、ContentFactory 集成 |
 
-### 3.2 已设计未实现服务
+### 3.2 已设计/进行中服务
 
 | 服务 | 文档位置 | 状态 | 说明 |
-|------|----------|------|------|
+| ------ | ---------- | ------ | ------ |
 | **Media Service** | `media-service/` | 📋 设计完成，部分实现 | 统一媒体库、跨应用共享 |
 | **Fans Service** | `fans-service/` | 📋 设计完成 | 粉丝管理、增长算法、画像生成 |
-| **Archive Service** | `archive-service/` | 📋 设计完成 | 知识库、注入系统、账号绑定 |
-| **Search Service** | `search-service/` | 📋 设计完成 | 全文搜索、模糊匹配、语义搜索 |
-| **Scheduler Service** | `scheduler-service/` | 📋 设计完成 | 定时任务、Cron、事件触发 |
+| **Search Service** | `search-service/` | 🟡 MVP 骨架已实现（待业务接入） | L1/L2 内存全文检索、建议补全（语义检索待补） |
 | **IM Service** | `im-service.md` | 📋 设计完成 | 私信引擎、Private Director |
 
 ### 3.3 建议开发的服务
 
 | 服务 | 优先级 | 说明 |
-|------|--------|------|
-| **Social Graph Service** | 🟡 中 | 社交图谱管理（关注、粉丝） |
+| ------ | -------- | ------ |
 | **Feed Algorithm Service** | 🟡 中 | 信息流推荐算法 |
 | **Rate Limiter Service** | 🟡 中 | 频率控制与限流 |
 | **Vector Store** | 🟡 中 | 向量存储与相似度查询 |
@@ -129,6 +139,7 @@ interface UniversalPost {
 ```
 
 **已完成能力**：
+
 - Phase 1: 统一 payload 结构 ✅
 - Phase 2: 社交引擎迁移到新账号系统 ✅
 - Phase 3: 消除 UI 类型，使用 DisplayPost ✅
@@ -137,50 +148,20 @@ interface UniversalPost {
 
 ---
 
-#### 互动系统服务 🆕 建议开发
+#### 互动系统服务 ✅ 已实现
 
-**目的**：统一管理点赞、收藏、评论等互动行为
+> 详见 [interaction-service/README.md](../interaction-service/README.md)
 
-**问题背景**：当前微博的 `userActionStore` 实现了点赞/收藏/历史，但与其他 App 无法复用。
+**已实现能力**：
 
-```typescript
-// src/services/interaction/InteractionService.ts
+- 通用互动行为：点赞、收藏、评论、转发、浏览记录
+- 互动统计查询：用户历史、内容统计、分页查询
+- 事件广播：统一 `InteractionEvent`，供粉丝/通知等服务订阅
+- 平台扩展：微博、B站、知乎扩展行为已接入
 
-class InteractionService {
-  // 通用互动接口
-  async like(contentId: string, userId: string): Promise<void>;
-  async unlike(contentId: string, userId: string): Promise<void>;
-  async favorite(contentId: string, userId: string): Promise<void>;
-  async unfavorite(contentId: string, userId: string): Promise<void>;
-  async addComment(contentId: string, userId: string, text: string): Promise<Comment>;
-  
-  // 互动统计
-  async getEngagementStats(contentId: string): Promise<EngagementStats>;
-  
-  // 用户互动历史
-  async getUserLikes(userId: string, platformId?: string): Promise<string[]>;
-  async getUserFavorites(userId: string, platformId?: string): Promise<string[]>;
-  async getViewHistory(userId: string, limit?: number): Promise<ViewRecord[]>;
-  
-  // 事件广播（供粉丝服务等订阅）
-  onInteraction(callback: (event: InteractionEvent) => void): () => void;
-}
+**精简说明**：
 
-interface InteractionEvent {
-  type: 'like' | 'unlike' | 'favorite' | 'comment' | 'view';
-  contentId: string;
-  userId: string;
-  platformId: string;
-  timestamp: number;
-}
-```
-
-**价值**：
-- 微博的点赞/收藏逻辑可复用到 B站、知乎
-- 粉丝服务可以统一监听互动事件
-- 通知系统可以统一处理互动通知
-
-**实现优先级**：🔴 高（平台化基础）
+- 本文档仅保留能力概览，接口细节统一维护在 `docs/systems/interaction-service/` 和 `src/services/interaction/`
 
 ---
 
@@ -191,22 +172,25 @@ interface InteractionEvent {
 > 详见 [account-service.md](../account-service.md)
 
 **已实现能力**：
+
 - 双层作用域模型（实体级 + 账号级）
 - 玩家多重身份
 - 平台账号管理
 - 社交关系基础管理
 
 **需要扩展**：
+
 - 与 Session Context Service 深度集成
 - 账号与会话绑定（见 `session-binding-design.md`）
 
 ---
 
-#### Social Graph Service 🆕 建议开发
+#### Social Graph Service ✅ 已实现（v1.0）
 
 **目的**：专注于社交关系的管理和图算法
 
 **与 Account Service 的区别**：
+
 - Account Service：管理账号实体和基础数据
 - Social Graph Service：专注关系的增删查改和图算法
 
@@ -242,7 +226,7 @@ class SocialGraphService {
 }
 ```
 
-**实现优先级**：🟡 中
+**实现状态**：✅ 已落地，后续按业务迭代推荐策略
 
 ---
 
@@ -315,6 +299,7 @@ interface FeedOptions {
 ```
 
 **价值**：
+
 - 微博的 TrafficEngine 可以抽象为通用服务
 - 不同平台可以配置不同的算法参数
 - 支持用户自定义推荐偏好
@@ -330,8 +315,9 @@ interface FeedOptions {
 粉丝服务是社交媒体模拟系统的核心服务之一，负责管理账号的粉丝关系、模拟粉丝增长、生成粉丝画像，并追踪粉丝互动行为。
 
 **核心能力**：
+
 | 能力模块 | 说明 |
-|----------|------|
+| -------- | ---- |
 | **粉丝管理** | 关注/取关、粉丝列表、互粉检测 |
 | **增长引擎** | 六大涨粉渠道、数值算法 |
 | **画像系统** | 粉丝特征、兴趣标签、活跃度 |
@@ -339,6 +325,7 @@ interface FeedOptions {
 | **数据统计** | 涨粉趋势、来源分析、里程碑 |
 
 **设计原则**：
+
 - 真实感优先：粉丝增长曲线符合真实社交媒体规律
 - 可解释性：每次涨粉都能追溯到具体原因
 - LLM 增强：关键节点使用 LLM 生成内容
@@ -354,14 +341,16 @@ interface FeedOptions {
 > 详见 [media-service.md](../media-service.md)
 
 **设计要点**：
+
 - 统一媒体库（IndexedDB `media_assets` 表）
 - 缩略图自动生成
 - 跨应用共享
 - 虚拟 URI 系统（`internal://media/images/{id}`）
 
 **实现计划**：
+
 | Phase | 内容 | 状态 |
-|-------|------|------|
+| ------- | ------ | ------ |
 | Phase 1 | Service 和数据库表 | 📋 待实现 |
 | Phase 2 | Gallery 数据迁移 | 📋 待实现 |
 | Phase 3 | Store 接入 | 📋 待实现 |
@@ -421,14 +410,16 @@ type ImageGenProvider = 'dalle' | 'stable-diffusion' | 'midjourney' | 'placehold
 > 详见 [im-service.md](../im-service.md)
 
 **设计要点**：
+
 - 统一会话管理
 - 拟人化行为模拟（正在输入、延迟回复）
 - Private Director（主动社交）
 - 多应用隔离
 
 **实现计划**：
+
 | Phase | 内容 | 状态 |
-|-------|------|------|
+| ----- | ---- | ---- |
 | Phase 1 | 核心服务 | 📋 待实现 |
 | Phase 2 | 拟人化增强 | 📋 待实现 |
 | Phase 3 | 私域导演 | 📋 待实现 |
@@ -442,69 +433,43 @@ type ImageGenProvider = 'dalle' | 'stable-diffusion' | 'midjourney' | 'placehold
 
 ### 4.6 上下文/状态层服务
 
-#### Session Context Service 📋 已设计
+#### Session Context Service ✅ 已实现
 
-> 详见 [session-context-service.md](../session-context-service.md)
+> 详见 [session-context/README.md](../session-context/README.md)
 
-**设计要点**：
+**已实现能力**：
+
 - 统一会话上下文管理（sessionId / messageId / swipeId）
 - 来源追踪（`ContentSourceTracking`）
 - 多级过滤器（session / message / swipe）
-- Bridge 事件自动响应
+- Bridge 事件自动响应与监听器管理
 
-**与微博现有实现的关系**：
+**当前策略**：
+
 - 微博保持现有实现不变（避免迁移风险）
 - 新 App 直接使用系统服务
 - 微博可在未来逐步迁移（可选）
 
-**实现计划**：
-| Phase | 内容 | 工作量 | 状态 |
-|-------|------|--------|------|
-| Phase 1 | 基础服务 | 3-4h | 📋 待实现 |
-| Phase 2 | Bridge 集成 | 1h | 📋 待实现 |
-| Phase 3 | 文档与测试 | 1h | 📋 待实现 |
+**精简说明**：
 
-**实现优先级**：🔴 高（平台化基础）
+- 设计阶段内容已完成，保留架构要点；实现细节以 `docs/systems/session-context/` 为准
 
 ---
 
-#### Context Sharing Service 🆕 建议开发
+#### Context Sharing Service ✅ 已实现
 
-**目的**：跨 App 共享 LLM 上下文
+> 详见 [context-sharing-service/README.md](../context-sharing-service/README.md)
 
-```typescript
-// src/services/contextSharing/ContextSharingService.ts
+**已实现能力**：
 
-class ContextSharingService {
-  // 注册上下文提供器
-  registerProvider(provider: ContextProvider): void;
-  
-  // 获取聚合上下文
-  async getAggregatedContext(
-    requestingId: string,
-    scopes: ContextScope[]
-  ): Promise<AggregatedContext>;
-  
-  // 上下文缓存
-  getCachedContext(key: string): string | undefined;
-  setCachedContext(key: string, value: string, ttl?: number): void;
-}
+- 跨 App 上下文发布/订阅
+- 上下文聚合与格式化能力
+- 可见性控制与缓存机制
+- 与 LLM Task Service 集成
 
-type ContextScope = 
-  | 'narrative'           // 酒馆叙事
-  | 'recentChatMessages'  // 最近聊天
-  | 'userProfile'         // 用户画像
-  | 'recentPosts'         // 最近博文
-  | 'currentHotTopics';   // 当前热搜
+**精简说明**：
 
-// 使用示例
-const context = await contextSharing.getAggregatedContext('weibo', [
-  'narrative',
-  'userProfile',
-]);
-```
-
-**实现优先级**：🟢 低
+- 本文档仅保留定位说明，接口定义与集成示例统一维护在专项文档
 
 ---
 
@@ -515,6 +480,7 @@ const context = await contextSharing.getAggregatedContext('weibo', [
 > 详见 [llm-task-service/](../llm-task-service/README.md)
 
 **已实现能力**：
+
 - 任务定义与注册
 - 任务执行
 - 自动执行调度
@@ -545,7 +511,7 @@ graph TD
     
     subgraph "用户服务"
         Account[账号服务 ✅]
-        SocialGraph[社交图谱 🆕]
+        SocialGraph[社交图谱 ✅]
         Profile[用户画像 📋]
         Fans[粉丝服务 📋]
     end
@@ -611,29 +577,29 @@ graph TD
 以下服务已经实现，是平台化架构的基础：
 
 | 服务 | 状态 | 说明 |
-|------|------|------|
+| ---- | ---- | ---- |
 | **Session Context Service** | ✅ 已完成 | 会话隔离、来源追踪、Bridge 集成 |
 | **Interaction Service** | ✅ 已完成 | 点赞/收藏/评论、事件广播、平台扩展 |
 | **Event Bus Service** | ✅ 已完成 | 发布/订阅、通道隔离、类型安全 |
 | **Context Sharing Service** | ✅ 已完成 | 跨 App 上下文共享、LLM 集成 |
 | **Logger Service** | ✅ 已完成 | 命名空间、多 Transport、性能计时 |
 
-### 6.2 待实现的中优先级服务
+### 6.2 中优先级服务（进行中 / 待增强）
 
-| 服务 | 原因 | 预估工作量 |
-|------|------|------------|
-| **Fans Service（粉丝服务）** | 粉丝管理、增长模拟 | 22-29h |
-| **Media Service** | 图片/视频管理 | 4-6h |
-| **Social Graph Service** | 关系管理优化 | 4-5h |
-| **Feed Algorithm Service** | 高级推荐 | 6-8h |
-| **Search Service** | 全文/语义搜索 | 6-8h |
-| **Scheduler Service** | 定时任务调度 | 4-6h |
-| **Archive Service** | 知识库、注入系统 | 8-12h |
+| 服务 | 当前状态 | 下一步 | 预估工作量 |
+| ---- | ---- | ---- | ---------- |
+| **Fans Service（粉丝服务）** | 📋 设计完成，待实现 | 粉丝管理、增长模拟、画像落地 | 22-29h |
+| **Media Service** | 📋 设计完成，部分实现 | 统一媒体库与 Gallery 迁移 | 4-6h |
+| **Feed Algorithm Service** | 🆕 建议开发 | 个性化推荐与多样性策略 | 6-8h |
+| **Search Service** | 🟡 MVP 骨架已实现 | 业务索引接入（Weibo/Archive）+ L3/L4 能力补齐 | 4-6h |
+| **Archive Service** | 🟡 MVP 已实现 | 自动提取调度、注入策略增强 | 4-8h |
+| **Social Graph Service** | ✅ v1.0 已实现 | 推荐策略与关系运营规则迭代 | 2-4h |
+| **Scheduler Service** | ✅ v1.0 已实现 | 扩展任务模板、监控与业务接入 | 2-3h |
 
 ### 6.3 低优先级（锦上添花）
 
 | 服务 | 原因 | 预估工作量 |
-|------|------|------------|
+| ---- | ---- | ---------- |
 | **IM Service** | 私信功能完善 | 10-15h |
 | **Image Generation Service** | AI 配图 | 4-6h |
 | **Deep Link Service** | 跨应用导航 | 3-4h |
@@ -660,25 +626,25 @@ graph TD
 
 ### 7.2 中期（1 个月）
 
-3. **实现 Archive Service**
-   - 知识库与注入系统
-   - 与 LLM Task Service 集成
+1. **增强 Archive Service**
+   - 自动提取调度（事件触发 + 阈值策略）
+   - 注入策略优化与可观测性补齐
 
-4. **实现 Media Service**
+2. **实现 Media Service**
    - 统一媒体管理
    - 迁移 Gallery 数据
 
-5. **实现 Search Service**
-   - 全文搜索能力
-   - 与社交引擎集成
+3. **推进 Search Service 集成**
+   - 接入 Weibo/Archive 索引链路（post/topic/archive）
+   - 补齐 L3/L4（模糊与语义）能力
 
 ### 7.3 长期
 
-5. **开发第二个社交平台 App（如 B站）**
+1. **开发第二个社交平台 App（如 B站）**
    - 验证平台化架构
    - 收集反馈，迭代服务设计
 
-6. **完善 IM Service**
+2. **完善 IM Service**
    - 支持微信、QQ 等私信应用
 
 ---
@@ -763,7 +729,7 @@ graph TD
 **核心问题**：内容的生命周期管理——创作、存储、展示、归档
 
 | 服务 | 职责 | 通用概念 | 状态 |
-|------|------|----------|------|
+| ---- | ---- | -------- | ---- |
 | **Content Model Service** | 统一内容结构定义 | 帖子、文章、视频、问答 | ✅ 已实现 |
 | **Content Factory Service** | 内容生成（LLM） | 博文生成、评论生成 | ✅ 已实现 |
 | **Content Parser Service** | 平台特定格式解析 | 微博格式、B站格式 | ✅ 已实现 |
@@ -811,7 +777,7 @@ type ArchiveType = 'event' | 'character' | 'world' | 'dialogue' | 'discovery';
 **核心问题**：身份的多重性——一个实体可以有多个平台身份
 
 | 服务 | 职责 | 通用概念 | 状态 |
-|------|------|----------|------|
+| ---- | ---- | -------- | ---- |
 | **Account Service** | 账号实体管理 | 玩家、NPC、账号 | ✅ 已实现 |
 | **Identity Service** | 身份与人设 | 角色人设、账号人设 | 📋 部分实现 |
 | **Profile Service** | 用户画像 | 兴趣标签、行为特征 | 📋 已设计 |
@@ -825,38 +791,19 @@ type ArchiveType = 'event' | 'character' | 'world' | 'dialogue' | 'discovery';
 **核心问题**：关系的建立与维护——单向关注、双向好友、群组
 
 | 服务 | 职责 | 通用概念 | 状态 |
-|------|------|----------|------|
-| **Social Graph Service** | 关系图谱 | 关注、粉丝、好友、拉黑 | 🆕 建议开发 |
-| **Interaction Service** | 互动行为 | 点赞、收藏、评论、转发 | 🆕 建议开发 |
+| ---- | ---- | -------- | ---- |
+| **Social Graph Service** | 关系图谱 | 关注、粉丝、好友、拉黑 | ✅ v1.0 已实现 |
+| **Interaction Service** | 互动行为 | 点赞、收藏、评论、转发 | ✅ 已实现 |
 | **IM Service** | 即时通讯 | 私信、群聊、@提及 | 📋 已设计 |
 | **Group Service** | 群组管理 | 粉丝群、兴趣圈 | 💡 可选 |
 | **Mention Service** | @提及系统 | @用户、#话题# | 💡 可选 |
 
-**Interaction Service 通用接口**：
+**Interaction Service（精简）**：
 
-```typescript
-interface InteractionService {
-  // === 互动行为 ===
-  like(contentId: string, userId: string): Promise<void>;
-  unlike(contentId: string, userId: string): Promise<void>;
-  favorite(contentId: string, userId: string, collection?: string): Promise<void>;
-  unfavorite(contentId: string, userId: string): Promise<void>;
-  repost(contentId: string, userId: string, comment?: string): Promise<string>;
-  comment(contentId: string, userId: string, text: string, replyTo?: string): Promise<Comment>;
-  
-  // === 查询 ===
-  getUserLikes(userId: string, platformId?: string): Promise<string[]>;
-  getUserFavorites(userId: string, platformId?: string): Promise<string[]>;
-  getContentInteractions(contentId: string): Promise<InteractionStats>;
-  
-  // === 浏览历史 ===
-  recordView(contentId: string, userId: string, duration?: number): Promise<void>;
-  getViewHistory(userId: string, limit?: number): Promise<ViewRecord[]>;
-  
-  // === 事件订阅 ===
-  onInteraction(callback: (event: InteractionEvent) => void): () => void;
-}
-```
+- 已覆盖点赞、收藏、评论、转发、浏览记录等核心行为
+- 已提供统计查询、用户历史与事件订阅
+- 已支持平台行为扩展机制（微博/B站/知乎）
+- 详细接口见 `docs/systems/interaction-service/README.md`
 
 ---
 
@@ -865,14 +812,16 @@ interface InteractionService {
 **核心问题**：内容如何触达用户——推荐、搜索、热点
 
 | 服务 | 职责 | 通用概念 | 状态 |
-|------|------|----------|------|
-| **Feed Service** | 信息流聚合 | 首页流、关注流、推荐流 | 🆕 建议开发 |
-| **Trending Service** | 热点管理 | 热搜榜、热门话题 | 🆕 建议抽取 |
-| **Search Service** | 搜索能力 | 内容搜索、用户搜索 | 💡 可选 |
+| ------ | ------ | ---------- | ------ |
+| **Feed Service** | 信息流聚合 | 首页流、关注流、推荐流 | ✅ v1.0 已实现 |
+| **[Trending Service](../trending-service/README.md)** | 热点管理 | 热搜榜、热门话题 | ✅ v1.0 已实现（兼容层迁移中） |
+| **Search Service** | 搜索能力 | 内容搜索、用户搜索 | 🟡 MVP 骨架已实现 |
 | **Traffic Engine** | 流量分配 | 曝光量、热度计算 | ✅ 已实现 |
 | **Fans Service** | 粉丝服务 | 粉丝管理、增长算法、画像生成 | 📋 已设计 |
 
 **Trending Service 设计要点**：
+
+> 详见 [Trending Service 文档](../trending-service/README.md)
 
 ```typescript
 interface TrendingService {
@@ -913,7 +862,7 @@ interface SharePolicy {
 **核心问题**：虚拟经济与激励——虚拟货币、打赏、会员
 
 | 服务 | 职责 | 通用概念 | 状态 |
-|------|------|----------|------|
+| ------ | ------ | ---------- | ------ |
 | **Wallet Service** | 虚拟钱包 | 余额、收支记录 | 💡 可选 |
 | **Reward Service** | 打赏系统 | 赞赏、礼物 | 💡 可选 |
 | **Membership Service** | 会员体系 | VIP、等级特权 | 💡 可选 |
@@ -926,48 +875,25 @@ interface SharePolicy {
 #### 8.4.1 存储与状态
 
 | 服务 | 职责 | 状态 |
-|------|------|------|
-| **Session Context Service** | 会话隔离、来源追踪 | 📋 已设计 |
-| **Context Sharing Service** | 跨 App 上下文共享 | 📋 待实现 |
+| ------ | ------ | ------ |
+| **Session Context Service** | 会话隔离、来源追踪 | ✅ 已实现 |
+| **Context Sharing Service** | 跨 App 上下文共享 | ✅ 已实现 |
 | **Cache Service** | 热数据缓存 | 💡 可选 |
 | **Persistence Service** | 数据持久化 | ✅ 已实现 (IndexedDB) |
 
-**Context Sharing Service 设计要点**（优先级提升）：
+**Session/Context Sharing（精简）**：
 
-```typescript
-interface ContextSharingService {
-  // === 发布上下文 ===
-  publish(context: SharedContext): void;
-  updateContext(id: string, value: Record<string, any>): void;
-  unpublish(id: string): void;
-  
-  // === 订阅上下文 ===
-  subscribe(contextId: string, callback: (value: any) => void): () => void;
-  getContext(id: string): any | undefined;
-  
-  // === 查询 ===
-  getPublicContexts(): SharedContext[];
-  getContextsByPublisher(appId: string): SharedContext[];
-}
-
-// 预定义的共享上下文类型
-type WellKnownContext =
-  | 'system:time'           // 当前时间
-  | 'system:session'        // 会话信息
-  | 'narrative:content'     // 酒馆叙事
-  | 'narrative:characters'  // 当前角色
-  | 'trending:hot'          // 热搜数据
-  | 'archive:core'          // 核心档案
-  | 'chat:lastMessage';     // 最新聊天
-```
+- Session Context 已落地：会话隔离、来源追踪、多级过滤、Bridge 事件联动
+- Context Sharing 已落地：发布/订阅、聚合、可见性策略、缓存
+- 详细接口与示例统一维护在 `docs/systems/session-context/` 和 `docs/systems/context-sharing-service/`
 
 ---
 
 #### 8.4.2 搜索与发现
 
 | 服务 | 职责 | 状态 |
-|------|------|------|
-| **Search Service** | 全文搜索与语义搜索 | 🟡 建议开发 |
+| ------ | ------ | ------ |
+| **Search Service** | 全文搜索与语义搜索 | 🟡 MVP 骨架已实现 |
 | **Discovery Service** | 发现推荐 | 💡 可选 |
 | **Tag Service** | 标签管理 | 💡 可选 |
 
@@ -977,60 +903,62 @@ type WellKnownContext =
 interface SearchService {
   // === 搜索接口 ===
   search(query: SearchQuery): Promise<SearchResult>;
+  suggest(prefix: string, options?: SuggestOptions): Promise<SuggestItem[]>;
   
   // === 索引管理 ===
-  index(item: Indexable): Promise<void>;
-  indexBatch(items: Indexable[]): Promise<void>;
+  index(document: IndexableDocument): Promise<void>;
+  indexBatch(documents: IndexableDocument[]): Promise<void>;
   remove(id: string, type: IndexableType): Promise<void>;
   reindex(type?: IndexableType): Promise<void>;
-  
-  // === 建议与补全 ===
-  suggest(prefix: string, options?: SuggestOptions): Promise<string[]>;
-  
-  // === 高级搜索（语义） ===
-  semanticSearch(query: string, options?: SemanticSearchOptions): Promise<SearchResult>;
+
+  // === 观测 ===
+  getStats(): Promise<SearchStats>;
+
+  // 规划中：semanticSearch(query, options)
 }
 
 interface SearchQuery {
-  text: string;                       // 搜索文本
-  type?: IndexableType | IndexableType[];  // 搜索范围
-  filters?: SearchFilter[];           // 过滤条件
-  sort?: SearchSort;                  // 排序方式
+  text: string;
+  type?: IndexableType | IndexableType[];
+  filters?: SearchFilter[];
+  sort?: SearchSort;
   pagination?: { offset: number; limit: number };
-  
-  // 高级选项
-  fuzzy?: boolean;                    // 模糊匹配
-  highlight?: boolean;                // 高亮匹配
+  fuzzy?: boolean;
+  highlight?: boolean;
 }
 
-type IndexableType = 
-  | 'post'           // 帖子/博文
-  | 'comment'        // 评论
-  | 'account'        // 用户/账号
-  | 'topic'          // 话题/热搜
-  | 'archive'        // 档案
-  | 'message';       // 私信
+type IndexableType = 'post' | 'comment' | 'account' | 'topic' | 'archive' | 'message';
+
+interface IndexableDocument {
+  id: string;
+  type: IndexableType;
+  content: string;
+  metadata?: Record<string, unknown>;
+  updatedAt?: number;
+}
 
 interface SearchResult {
   items: SearchResultItem[];
   total: number;
-  took: number;                       // 耗时 ms
-  suggestions?: string[];             // 搜索建议
+  took: number;
+  hasMore: boolean;
+  suggestions?: string[];
 }
 
 interface SearchResultItem {
   id: string;
   type: IndexableType;
-  score: number;                      // 相关性分数
-  highlights?: Record<string, string[]>;  // 高亮片段
-  data: any;                          // 原始数据
+  score: number;
+  data: Record<string, unknown>;
+  highlights?: Record<string, string[]>;
+  matchedTerms?: string[];
 }
 ```
 
 **搜索能力分层**：
 
 | 层级 | 能力 | 实现方式 | 适用场景 |
-|------|------|----------|----------|
+| ------ | ------ | ---------- | ---------- |
 | L1 | 精确匹配 | IndexedDB 索引 | ID/用户名查找 |
 | L2 | 全文搜索 | 分词 + 倒排索引 | 内容搜索 |
 | L3 | 模糊搜索 | 编辑距离算法 | 纠错、近似匹配 |
@@ -1041,7 +969,7 @@ interface SearchResultItem {
 #### 8.4.3 通知与触达
 
 | 服务 | 职责 | 状态 |
-|------|------|------|
+| ------ | ------ | ------ |
 | **Notification Service** | 消息通知 | ✅ 已实现 |
 | **Push Service** | 主动推送 | 💡 可选 |
 | **Badge Service** | 角标管理 | 💡 可选 |
@@ -1051,7 +979,7 @@ interface SearchResultItem {
 #### 8.4.4 媒体处理
 
 | 服务 | 职责 | 状态 |
-|------|------|------|
+| ------ | ------ | ------ |
 | **Media Service** | 媒体存储与管理 | 📋 已设计 |
 | **Image Gen Service** | AI 图片生成 | 🆕 建议开发 |
 | **Thumbnail Service** | 缩略图生成 | 💡 可选 |
@@ -1062,7 +990,7 @@ interface SearchResultItem {
 #### 8.4.5 AI 生成
 
 | 服务 | 职责 | 状态 |
-|------|------|------|
+| ------ | ------ | ------ |
 | **LLM Task Service** | 任务调度与执行 | ✅ 已实现 |
 | **AI Generate Service** | 底层生成接口 | ✅ 已实现 |
 | **Prompt Service** | 提示词管理 | ✅ 已实现 |
@@ -1073,9 +1001,9 @@ interface SearchResultItem {
 #### 8.4.6 时间与调度
 
 | 服务 | 职责 | 状态 |
-|------|------|------|
+| ---- | ---- | ---- |
 | **Time Service** | 多时间源管理 | ✅ 已实现 |
-| **Scheduler Service** | 定时任务调度 | 🟡 建议开发 |
+| **Scheduler Service** | 定时任务调度 | ✅ v1.0 已实现（持续增强） |
 | **Rate Limiter Service** | 频率控制与限流 | 🟡 建议开发 |
 
 **Scheduler Service 设计要点**：
@@ -1128,7 +1056,7 @@ interface ScheduledTask {
 **典型使用场景**：
 
 | 场景 | 调度类型 | 示例 |
-|------|----------|------|
+| ------ | ---------- | ------ |
 | LLM Task 自动执行 | interval | 每 5 分钟检查待执行任务 |
 | 热搜刷新 | interval | 每 10 分钟更新热搜榜 |
 | 档案自动归档 | event | 新楼层事件触发检查 |
@@ -1172,7 +1100,7 @@ interface RateLimitResult {
 **典型使用场景**：
 
 | 场景 | Key 格式 | 配额示例 |
-|------|----------|----------|
+| ------ | ---------- | ---------- |
 | LLM API 调用 | `llm:${provider}` | 60次/分钟 |
 | 内容生成 | `generate:${appId}` | 100次/小时 |
 | 用户操作 | `action:${userId}:${type}` | 10次/分钟 |
@@ -1187,83 +1115,32 @@ interface RateLimitResult {
 #### 8.5.1 服务总览
 
 | 服务 | 职责 | 状态 |
-|------|------|------|
-| **Event Bus** | 跨服务事件通信 | 🟡 建议开发 |
+| ---- | ---- | ---- |
+| **Event Bus** | 跨服务事件通信 | ✅ 已实现 |
 | **Vector Store** | 向量存储与相似度查询 | 🟡 建议开发 |
-| **JSON Parser** | 鲁棒的 JSON 解析与修复 | ✅ 已实现 (待抽取) |
-| **Lazy Loader** | 惰性加载框架 | 📋 设计完成 |
-| **Expression Engine** | 表达式求值引擎 | ✅ 已实现 (待抽取) |
+| **JSON Parser** | 鲁棒的 JSON 解析与修复 | ✅ 已实现（独立服务已落地） |
+| **Lazy Loader** | 惰性加载框架 | ✅ 核心实现完成（渐进迁移中） |
+| **Expression Engine** | 表达式求值引擎 | 📋 待抽取（能力在 PromptChainExecutor） |
 | **Database Service** | IndexedDB 封装 | ✅ 已实现 |
-| **Logger Service** | 统一日志 | 💡 可选 |
+| **Logger Service** | 统一日志 | ✅ 已实现 |
 | **Config Service** | 配置中心 | 💡 可选 |
 
 ---
 
 #### 8.5.2 Event Bus（事件总线）
 
-**为什么需要**：当前服务间通信主要通过直接调用，缺乏解耦的事件机制。
+**实现状态**：已实现，详见 [eventBus-service/README.md](../eventBus-service/README.md)。
 
-```typescript
-interface EventBus {
-  // === 发布/订阅 ===
-  emit<T>(event: string, payload: T): void;
-  on<T>(event: string, handler: (payload: T) => void): () => void;
-  once<T>(event: string, handler: (payload: T) => void): () => void;
-  off(event: string, handler?: Function): void;
-  
-  // === 通道隔离 ===
-  channel(name: string): EventChannel;  // 创建/获取命名通道
-  
-  // === 调试 ===
-  getListenerCount(event: string): number;
-  getAllEvents(): string[];
-}
+**已实现能力**：
 
-// 预定义事件类型
-type SystemEvent =
-  // 会话相关
-  | 'session:changed'           // 会话切换
-  | 'session:message:new'       // 新消息
-  | 'session:swipe:changed'     // Swipe 切换
-  
-  // 内容相关
-  | 'content:post:created'      // 新帖子
-  | 'content:comment:created'   // 新评论
-  | 'content:trending:updated'  // 热搜更新
-  
-  // 互动相关
-  | 'interaction:like'          // 点赞
-  | 'interaction:favorite'      // 收藏
-  | 'interaction:follow'        // 关注
-  
-  // 用户相关
-  | 'account:created'           // 新账号
-  | 'account:updated'           // 账号更新
-  
-  // 系统相关
-  | 'time:tick'                 // 时间流逝
-  | 'llm:task:completed'        // LLM 任务完成
-  | 'archive:extracted';        // 档案提取完成
-```
+- 发布/订阅、一次性订阅与取消订阅
+- 命名通道隔离，支持跨模块事件组织
+- 监听器统计与调试辅助能力
+- 系统级事件约定（会话、内容、互动、时间、任务等）
 
-**典型使用场景**：
+**精简说明**：
 
-```typescript
-// 粉丝服务监听互动事件
-eventBus.on('interaction:like', ({ contentId, userId }) => {
-  growthEngine.processInteraction('like', contentId, userId);
-});
-
-// 通知系统监听新评论
-eventBus.on('content:comment:created', ({ postId, authorId }) => {
-  notificationService.notifyPostAuthor(postId, 'new_comment');
-});
-
-// 热搜更新时刷新多个 App
-eventBus.on('content:trending:updated', ({ platformId }) => {
-  // 所有订阅者自动收到通知
-});
-```
+- 本文档仅保留架构定位；接口定义、事件类型与示例用法以专项文档为准
 
 ---
 
@@ -1312,7 +1189,7 @@ interface VectorQueryResult {
 **实现方案对比**：
 
 | 方案 | 优点 | 缺点 | 适用场景 |
-|------|------|------|----------|
+| ------ | ------ | ------ | ---------- |
 | **IndexedDB + 暴力搜索** | 零依赖 | 性能差 | <1000 条 |
 | **HNSW.js** | 纯 JS，高性能 | 需要额外库 | 本地优先 |
 | **外部 Embedding API** | 高质量向量 | 需要网络 | 语义搜索 |
@@ -1340,9 +1217,9 @@ const vectorStore = new VectorStore({
 **典型使用场景**：
 
 | 场景 | 数据类型 | 查询方式 |
-|------|----------|----------|
-| 相似帖子推荐 | 帖子内容向量 | 「看过这个的还看了」|
-| 档案语义搜索 | 档案摘要向量 | 「和主角的冲突」|
+| ------ | ---------- | ---------- |
+| 相似帖子推荐 | 帖子内容向量 | 「看过这个的还看了」 |
+| 档案语义搜索 | 档案摘要向量 | 「和主角的冲突」 |
 | 用户兴趣匹配 | 用户画像向量 | 推荐关注 |
 | 话题聚类 | 热搜描述向量 | 合并相似话题 |
 
@@ -1387,7 +1264,7 @@ interface ParseResult<T> {
 **修复能力**：
 
 | 问题 | 示例 | 修复方式 |
-|------|------|----------|
+| ------ | ------ | ---------- |
 | Markdown 包裹 | \`\`\`json {...} \`\`\` | 提取内部 JSON |
 | 尾逗号 | `{"a": 1,}` | 移除多余逗号 |
 | 单引号 | `{'a': 1}` | 转换为双引号 |
@@ -1508,13 +1385,13 @@ const builtinFilters = {
 **典型场景**：
 
 | 场景 | 来源 | 目标 | 示例 |
-|------|------|------|------|
-| 博文配图管理 | 微博详情页 | 图库 App | 「在图库中查看」|
-| 热搜话题讨论 | 热搜列表 | 论坛/知乎 | 「查看更多讨论」|
-| 用户主页跳转 | 评论区 @提及 | 该用户在其他平台的主页 | 「@xxx 的B站主页」|
-| 相关内容推荐 | 帖子底部 | 其他平台同话题内容 | 「B站相关视频」|
-| 档案关联 | 角色档案 | 该角色的社交账号 | 「查看微博动态」|
-| 私信入口 | 用户卡片 | IM App | 「发送私信」|
+| ------ | ------ | ------ | ------ |
+| 博文配图管理 | 微博详情页 | 图库 App | 「在图库中查看」 |
+| 热搜话题讨论 | 热搜列表 | 论坛/知乎 | 「查看更多讨论」 |
+| 用户主页跳转 | 评论区 @提及 | 该用户在其他平台的主页 | 「@xxx 的B站主页」 |
+| 相关内容推荐 | 帖子底部 | 其他平台同话题内容 | 「B站相关视频」 |
+| 档案关联 | 角色档案 | 该角色的社交账号 | 「查看微博动态」 |
+| 私信入口 | 用户卡片 | IM App | 「发送私信」 |
 
 ```typescript
 interface DeepLinkService {
@@ -1633,101 +1510,22 @@ const renderedContent = computed(() => {
 
 #### 8.5.8 Logger Service（日志服务）
 
-**为什么需要**：统一的日志系统对开发调试至关重要，当前各模块 `console.log` 散落各处，难以追踪和过滤。
+**实现状态**：已实现，详见 [logger-service/README.md](../logger-service/README.md)。
 
-```typescript
-interface LoggerService {
-  // === 日志输出 ===
-  debug(message: string, ...args: any[]): void;
-  info(message: string, ...args: any[]): void;
-  warn(message: string, ...args: any[]): void;
-  error(message: string, ...args: any[]): void;
-  
-  // === 分组日志 ===
-  group(label: string): void;
-  groupEnd(): void;
-  
-  // === 性能计时 ===
-  time(label: string): void;
-  timeEnd(label: string): number;  // 返回耗时 ms
-  
-  // === 子日志器（带命名空间）===
-  child(namespace: string): Logger;
-  
-  // === 配置 ===
-  setLevel(level: LogLevel): void;
-  setFilter(filter: LogFilter): void;
-  addTransport(transport: LogTransport): void;
-}
+**已实现能力**：
 
-type LogLevel = 'debug' | 'info' | 'warn' | 'error' | 'silent';
+- 分级日志与命名空间子日志器
+- 性能计时（`time`/`timeEnd`）与结构化参数输出
+- 可插拔 Transport（`Console`/`Memory`/`IndexedDB`/`Remote`）
+- 过滤规则（命名空间、级别）与运行期配置
 
-interface LogFilter {
-  namespaces?: string[];        // 只显示特定命名空间
-  excludeNamespaces?: string[]; // 排除特定命名空间
-  minLevel?: LogLevel;          // 最低显示级别
-}
+**规划能力**：
 
-interface LogTransport {
-  name: string;
-  write(entry: LogEntry): void;
-}
+- 设置 App 的日志查看器（实时流、历史查询、导出、清理）
 
-interface LogEntry {
-  timestamp: number;
-  level: LogLevel;
-  namespace: string;
-  message: string;
-  args: any[];
-  stack?: string;               // 错误堆栈
-}
-```
+**精简说明**：
 
-**使用方式**：
-
-```typescript
-// 创建模块专属日志器
-const logger = loggerService.child('weibo:store');
-
-logger.debug('Loading posts for topic', { topicId });
-logger.info('Posts loaded', { count: posts.length });
-logger.warn('Cache miss, generating content');
-logger.error('Failed to generate', error);
-
-// 性能追踪
-logger.time('generatePosts');
-await contentFactory.generatePosts(topic, 5);
-const elapsed = logger.timeEnd('generatePosts');
-// [weibo:store] generatePosts: 1234ms
-```
-
-**Transport 扩展**：
-
-| Transport | 说明 | 使用场景 |
-|-----------|------|----------|
-| `ConsoleTransport` | 输出到浏览器控制台 | 开发调试 |
-| `MemoryTransport` | 存储到内存环形缓冲区 | 运行时日志查看 |
-| `IndexedDBTransport` | 持久化到 IndexedDB | 错误日志留存 |
-| `RemoteTransport` | 发送到远程服务 | 生产环境监控 |
-
-**开发者工具集成**（规划中）：
-
-```typescript
-// 在设置 App 中提供日志查看器
-interface LogViewer {
-  // 实时日志流
-  subscribe(filter?: LogFilter): Observable<LogEntry>;
-  
-  // 历史查询
-  query(options: LogQueryOptions): Promise<LogEntry[]>;
-  
-  // 导出
-  export(format: 'json' | 'csv'): Promise<Blob>;
-  
-  // 清理
-  clear(): Promise<void>;
-}
-```
+- 具体接口与扩展示例统一维护在专项文档，本文仅保留架构定位
 
 ---
 
@@ -1736,40 +1534,41 @@ interface LogViewer {
 下表汇总所有理想服务及其状态：
 
 | 分层 | 服务 | 优先级 | 状态 | 备注 |
-|------|------|--------|------|------|
+| ---- | ---- | ------ | ---- | ---- |
 | **内容域** | Content Model | - | ✅ | 统一内容结构 |
-| | Content Factory | - | ✅ | LLM 内容生成 |
-| | Content Parser | - | ✅ | 平台格式解析 |
-| | **Archive Service** | 🟡 | 📋 | 从 archives.md 抽取 |
+|| Content Factory | - | ✅ | LLM 内容生成 |
+|| Content Parser | - | ✅ | 平台格式解析 |
+|| **Archive Service** | 🟡 | 🟡 MVP | 已抽取并落地，持续增强 |
 | **用户域** | Account Service | - | ✅ | 账号管理 |
-| | Profile Service | 🟢 | 📋 | 用户画像 |
-| **社交域** | **Social Graph** | 🟡 | 🆕 | 关系图谱 |
-| | **Interaction** | 🔴 | ✅ | 互动行为（高优先级）|
-| | IM Service | 🟢 | 📋 | 即时通讯 |
-| **传播域** | Feed Service | 🟡 | 🆕 | 信息流 |
-| | **Trending Service** | 🟡 | ✅ | 热搜服务（从微博抽取）|
-| | Traffic Engine | - | ✅ | 流量引擎 |
-| | Fans Service | 🟡 | 📋 | 粉丝管理、增长算法 |
-| **能力层** | **Session Context** | 🔴 | ✅ | 会话上下文（高优先级）|
-| | **Context Sharing** | 🟡 | ✅ | 上下文共享（优先级提升）|
-| | **Search Service** | 🟡 | 📋 | 全文/语义搜索 |
-| | **Scheduler Service** | 🟡 | 📋 | 定时任务调度 |
-| | **Rate Limiter** | 🟡 | 🆕 | 频率控制限流 |
-| | Media Service | 🟡 | 📋 | 媒体管理 |
-| | Notification | - | ✅ | 通知系统 |
-| | Time Service | - | ✅ | 时间服务 |
-| | LLM Task | - | ✅ | LLM 任务 |
-| | Narrative | - | ✅ | 叙事服务 |
+|| Profile Service | 🟢 | 📋 | 用户画像 |
+| **社交域** | **Social Graph** | 🟡 | ✅ | 关系图谱 |
+|| **Interaction** | 🔴 | ✅ | 互动行为（高优先级） |
+|| IM Service | 🟢 | 📋 | 即时通讯 |
+| **传播域** | Feed Service | 🟡 | ✅ | 信息流 |
+|| **[Trending Service](../trending-service/README.md)** | 🟡 | ✅ | 热搜服务（从微博抽取） |
+|| Traffic Engine | - | ✅ | 流量引擎 |
+|| Fans Service | 🟡 | 📋 | 粉丝管理、增长算法 |
+| **能力层** | **Session Context** | 🔴 | ✅ | 会话上下文（高优先级） |
+|| **Context Sharing** | 🟡 | ✅ | 上下文共享（优先级提升） |
+|| **Search Service** | 🟡 | 🟡 MVP | L1/L2 已落地，待业务接入与语义增强 |
+|| **Scheduler Service** | 🟡 | ✅ | 定时任务调度 |
+|| **Rate Limiter** | 🟡 | 🆕 | 频率控制限流 |
+|| Media Service | 🟡 | 📋 | 媒体管理 |
+|| Notification | - | ✅ | 通知系统 |
+|| Time Service | - | ✅ | 时间服务 |
+|| LLM Task | - | ✅ | LLM 任务 |
+|| Narrative | - | ✅ | 叙事服务 |
 | **基础设施** | **Event Bus** | 🟡 | ✅ | 事件总线 |
-| | **Vector Store** | 🟡 | 🆕 | 向量存储与相似度查询 |
-| | **Logger Service** | 🟡 | ✅ | 统一日志与调试 |
-| | **Deep Link Service** | 🟢 | 🆕 | 跨应用深度链接导航 |
-| | JSON Parser | - | ✅ | 鲁棒 JSON 解析 |
-| | Lazy Loader | - | ✅ | 惰性加载框架 |
-| | Expression Engine | - | ✅ | 表达式求值（待抽取）|
-| | Database (IndexedDB) | - | ✅ | 数据持久化 |
+|| **Vector Store** | 🟡 | 🆕 | 向量存储与相似度查询 |
+|| **Logger Service** | 🟡 | ✅ | 统一日志与调试 |
+|| **Deep Link Service** | 🟢 | 🆕 | 跨应用深度链接导航 |
+|| JSON Parser | - | ✅ | 鲁棒 JSON 解析 |
+|| Lazy Loader | - | ✅ | 惰性加载框架 |
+|| Expression Engine | - | 📋 | 表达式求值（待抽取） |
+|| Database (IndexedDB) | - | ✅ | 数据持久化 |
 
 **图例**：
+
 - ✅ 已实现
 - 📋 已设计/待实现
 - 🆕 建议新增
@@ -1779,11 +1578,11 @@ interface LogViewer {
 **抽取说明**：部分能力已在现有代码中实现，但需要抽取为独立服务：
 
 | 现有位置 | 抽取为 | 说明 |
-|----------|--------|------|
-| `ContentFactory.parseAndRepairJSON` | JSON Parser Service | LLM 输出修复 |
-| `TrendService` 惰性填充 | Lazy Loader Service | 按需内容生成（📋 设计完成）|
-| `PromptChainExecutor` 变量映射 | Expression Engine | 模板变量求值 |
-| 微博 `TrendService` | Trending Service | 热搜管理 |
+| -------- | ------ | ---- |
+| `ContentFactory.parseAndRepairJSON` | JSON Parser Service | ✅ 已抽取，统一解析入口已落地 |
+| `TrendService` 惰性填充 | Lazy Loader Service | ✅ 已抽取，按需加载能力可复用 |
+| `PromptChainExecutor` 变量映射 | Expression Engine | 📋 待抽取为独立服务 |
+| 微博 `TrendService` | [Trending Service](../trending-service/README.md) | 热搜管理 |
 | archives.md App 设计 | Archive Service | 知识库注入 |
 
 ---
@@ -1874,7 +1673,7 @@ uiRegistry.registerPostCard('zhihu', ZhihuAnswerCard);
 #### 策略汇总
 
 | 策略 | 适用场景 | 示例 |
-|------|----------|------|
+| ------ | ---------- | ------ |
 | **配置驱动** | 数值参数、开关 | 热搜数量、刷新间隔 |
 | **扩展点** | 平台特有逻辑 | 一键三连、超话 |
 | **platformData** | 特有数据字段 | 分P、问题ID |
@@ -1887,47 +1686,49 @@ uiRegistry.registerPostCard('zhihu', ZhihuAnswerCard);
 基于当前状态和优先级，建议的实施顺序：
 
 ```text
-Phase 1: 平台化基础 (1-2周)
-├── Session Context Service (🔴 高优先级)
-├── Interaction Service (🔴 高优先级)
-├── Context Sharing Service (🟡 优先级提升)
-└── Event Bus (解耦服务通信)
+Phase 1: 平台化基础 (已完成)
+├── Session Context Service ✅
+├── Interaction Service ✅
+├── Context Sharing Service ✅
+├── Event Bus ✅
+├── Social Graph Service ✅
+├── Feed Service ✅
+├── Scheduler Service ✅
+└── Archive Service（MVP）✅
 
 Phase 2: 核心能力完善 (2-4周)
-├── Trending Service (从微博 TrendService 抽取)
-├── Archive Service (从 archives.md App 抽取)
-├── Search Service (全文搜索)
-├── Scheduler Service (定时任务)
-├── Social Graph Service
-└── Feed Service
+├── Search Service（L1/L2 已落地，推进业务接入 + L3/L4）
+├── Media Service（统一媒体库 + Gallery 迁移）
+├── Fans Service（粉丝管理 + 增长模拟）
+├── Feed Algorithm Service（推荐与多样性策略）
+└── Archive Service 增强（自动提取调度、注入策略）
 
 Phase 3: 基础设施抽取 (1-2周)
-├── JSON Parser Service (从 ContentFactory 抽取)
-├── Lazy Loader Framework (从 TrendService 抽取)
-├── Expression Engine (从 PromptChainExecutor 抽取)
-└── Rate Limiter Service
+├── Expression Engine（从 PromptChainExecutor 抽取）
+├── Rate Limiter Service
+├── Vector Store（语义检索基础）
+└── Deep Link Service（可选）
 
 Phase 4: 体验增强 (1-2月)
-├── Fans Service 实现
-├── Media Service 实现
+├── IM Service 实现
 ├── Profile Service 实现
-└── Vector Store (语义搜索)
+└── 多平台 App 验证（B站/知乎）
 
 Phase 5: 验证与迭代
-├── 开发第二个社交平台 App (B站/知乎)
 ├── 收集反馈，优化服务接口
-└── 完善 IM Service
+├── 校准服务边界与扩展点
+└── 持续修订架构文档与 API 清单
 ```
 
 **优先级说明**：
 
 | Phase | 目标 | 关键交付 |
-|-------|------|----------|
-| Phase 1 | 平台化基础 | 新 App 可以开始开发 |
-| Phase 2 | 核心能力 | 内容生成、搜索、调度完备 |
-| Phase 3 | 代码重构 | 将散落的能力收敛为服务 |
-| Phase 4 | 体验提升 | 粉丝服务、媒体、智能推荐 |
-| Phase 5 | 验证迭代 | 通过新 App 验证架构 |
+| ----- | ---- | -------- |
+| Phase 1 | 平台化基础（已完成） | 会话/互动/上下文/事件能力可复用 |
+| Phase 2 | 核心能力完善 | 搜索、媒体、粉丝、推荐能力落地 |
+| Phase 3 | 基础设施增强 | 表达式引擎、限流、向量与深链能力补齐 |
+| Phase 4 | 体验提升 | IM、画像、多平台适配验证 |
+| Phase 5 | 持续迭代 | 反馈驱动优化服务接口与文档 |
 
 ---
 
@@ -1936,10 +1737,10 @@ Phase 5: 验证与迭代
 以下文档包含可抽取为系统服务的设计：
 
 | 文档 | 可抽取服务 | 核心能力 |
-|------|-----------|----------|
+| ------ | ----------- | ---------- |
 | `apps/archives.md` | Archive Service | 知识库、注入系统、账号绑定、去重 |
 | `llm-task-service/context-sharing.md` | Context Sharing Service | 发布/订阅、上下文聚合 |
-| 微博 `TrendService` | Trending Service | 热搜生成、平台配置、共享策略 |
+| 微博 `TrendService` + `src/services/trending/` + [trending-service/README.md](../trending-service/README.md) | Trending Service | 热搜生成、平台配置、共享策略、兼容迁移 |
 
 ---
 
@@ -1961,16 +1762,25 @@ Phase 5: 验证与迭代
 - [叙事服务](../narrative-service.md)
 - [用户画像扩展](../user-profile-extension.md)
 - [惰性加载服务](../lazy-loader-service/README.md)
+- [热搜服务](../trending-service/README.md)
+- [事件总线服务](../eventBus-service/README.md)
+- [日志服务](../logger-service/README.md)
 
 ### 9.3 待集成的设计文档
 
 - [档案 App](../../apps/archives.md) - 待抽取为 Archive Service
-- [上下文共享服务](../llm-task-service/context-sharing.md) - 待实现
+- [上下文共享服务](../llm-task-service/context-sharing.md) - 历史设计参考（功能已在系统服务落地）
 
 ### 9.4 版本历史
 
 | 版本 | 日期 | 变更内容 |
-|------|------|----------|
+| ------ | ------ | ---------- |
 | 1.0 | 2026-01-08 | 初始版本，服务状态总览 |
 | 1.1 | 2026-01-08 | 新增「理想服务总览」章节，补充 Archive/Trending/Context Sharing 服务设计 |
-| 1.2 | 2025-01-08 | 新增 Lazy Loader 服务设计文档 |
+| 1.2 | 2026-01-08 | 新增 Lazy Loader 服务设计文档 |
+| 1.3 | 2026-02-07 | 对齐已完成服务状态，精简 Interaction/Session/Context Sharing 等已落地内容 |
+| 1.4 | 2026-02-07 | 新增 Trending Service 专项文档链接，补充抽取与路线图引用 |
+| 1.5 | 2026-02-07 | Trending Service v1.0 落地，新增系统服务入口与旧接口兼容迁移状态 |
+| 1.6 | 2026-02-07 | Social Graph Service 与 Feed Service 状态更新为已实现，补充与系统集成的一致性说明 |
+| 1.7 | 2026-02-08 | 精简 Event Bus 与 Logger 章节正文，改为能力摘要并链接专项文档 |
+| 1.8 | 2026-02-08 | 按 docs/systems README + src/services 代码目录校准状态：Scheduler/Archive/JSON Parser/Lazy Loader 对齐，更新实施路线图 |

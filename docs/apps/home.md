@@ -129,10 +129,10 @@ src/services/
 
 | 事件 | 参数 | 说明 |
 | ---- | ---- | ---- |
-| `open` | `item: AppItem, event: MouseEvent \| TouchEvent` | 点击打开 App |
-| `iconRef` | `appId: string, el: HTMLElement \| null` | 图标元素引用（用于 zoom 动画） |
-| `longPress` | `item: DesktopItem, event: MouseEvent \| TouchEvent` | 长按触发 |
-| `longPressDrag` | `item: DesktopItem, event: MouseEvent \| TouchEvent` | 长按后拖拽（进入编辑模式） |
+| `open` | `item: AppItem, event: MouseEvent \ | TouchEvent` | 点击打开 App |
+| `iconRef` | `appId: string, el: HTMLElement \ | null` | 图标元素引用（用于 zoom 动画） |
+| `longPress` | `item: DesktopItem, event: MouseEvent \ | TouchEvent` | 长按触发 |
+| `longPressDrag` | `item: DesktopItem, event: MouseEvent \ | TouchEvent` | 长按后拖拽（进入编辑模式） |
 | `deleteApp` | `item: AppItem` | 删除按钮点击 |
 
 ### AppBlock.vue
@@ -149,7 +149,7 @@ src/services/
 | ---- | ---- | ------ | ---- |
 | `app` | `AppItem` | - | App 信息 |
 | `showName` | `boolean` | `true` | 是否显示名称 |
-| `size` | `'xs' \| 'sm' \| 'md' \| 'lg' \| 'xl'` | `'md'` | 图标尺寸 |
+| `size` | `'xs' \ | 'sm' \ | 'md' \ | 'lg' \ | 'xl'` | `'md'` | 图标尺寸 |
 | `isEditMode` | `boolean` | `false` | 是否处于编辑模式 |
 | `wobbleDelay` | `number` | `0` | 抖动动画延迟（ms） |
 
@@ -157,9 +157,9 @@ src/services/
 
 | 事件 | 参数 | 说明 |
 | ---- | ---- | ---- |
-| `click` | `event: MouseEvent \| TouchEvent` | 点击事件 |
-| `longPress` | `event: MouseEvent \| TouchEvent` | 长按事件（显示快捷菜单） |
-| `longPressDrag` | `event: MouseEvent \| TouchEvent` | 长按后拖拽事件（进入编辑模式） |
+| `click` | `event: MouseEvent \ | TouchEvent` | 点击事件 |
+| `longPress` | `event: MouseEvent \ | TouchEvent` | 长按事件（显示快捷菜单） |
+| `longPressDrag` | `event: MouseEvent \ | TouchEvent` | 长按后拖拽事件（进入编辑模式） |
 | `delete` | `app: AppItem` | 删除按钮点击 |
 
 ### PageIndicator.vue

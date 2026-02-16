@@ -384,7 +384,7 @@ ${postContent}
 ### 6.1 选择合适的上下文类型
 
 | 任务类型 | 推荐上下文 |
-|----------|------------|
+| ---------- | ------------ |
 | 博文生成 | `narrative:content`, `social:trending`, `user:currentAccount` |
 | 评论生成 | `chat:recentHistory`, `user:currentAccount` |
 | 私信生成 | `narrative:content`, `chat:participants`, `user:currentAccount` |

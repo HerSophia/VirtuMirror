@@ -72,7 +72,7 @@ src/apps/tutorial/
 **Props:**
 
 | 属性 | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
+| ------ | ------ | -------- | ------ |
 | `title` | `string` | `'教程'` | 标题文字 |
 | `showBack` | `boolean` | `false` | 是否显示返回按钮 |
 | `showSearch` | `boolean` | `false` | 是否显示搜索按钮 |
@@ -80,7 +80,7 @@ src/apps/tutorial/
 **Events:**
 
 | 事件 | 参数 | 说明 |
-|------|------|------|
+| ------ | ------ | ------ |
 | `search` | - | 点击搜索按钮时触发 |
 
 ### TutorialCard.vue
@@ -90,13 +90,13 @@ src/apps/tutorial/
 **Props:**
 
 | 属性 | 类型 | 说明 |
-|------|------|------|
-| `tutorial` | `Tutorial \| TutorialListItem` | 教程数据 |
+| ------ | ------ | ------ |
+| `tutorial` | `Tutorial \ | TutorialListItem` | 教程数据 |
 
 **Events:**
 
 | 事件 | 参数 | 说明 |
-|------|------|------|
+| ------ | ------ | ------ |
 | `click` | - | 点击卡片时触发 |
 
 ### CategoryCard.vue
@@ -106,14 +106,14 @@ src/apps/tutorial/
 **Props:**
 
 | 属性 | 类型 | 说明 |
-|------|------|------|
+| ------ | ------ | ------ |
 | `category` | `TutorialCategory` | 分类数据 |
 | `count` | `number` | 该分类下的教程数量（可选） |
 
 **Events:**
 
 | 事件 | 参数 | 说明 |
-|------|------|------|
+| ------ | ------ | ------ |
 | `click` | - | 点击卡片时触发 |
 
 ---
@@ -202,7 +202,7 @@ searchTutorials(keyword: string): Tutorial[]
 ### 路由说明
 
 | 路由名 | 路径 | 说明 |
-|--------|------|------|
+| -------- | ------ | ------ |
 | `TutorialApp` | `/tutorial` | 教程首页 |
 | `TutorialCategory` | `/tutorial/category/:categoryId` | 分类详情 |
 | `TutorialDetail` | `/tutorial/:tutorialId` | 教程详情 |
@@ -251,7 +251,7 @@ import { MarkdownRenderer } from '@/components/common'
 **MarkdownRenderer Props:**
 
 | 属性 | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
+| ------ | ------ | -------- | ------ |
 | `content` | `string` | - | Markdown 内容 |
 | `breaks` | `boolean` | `true` | 是否将换行符转换为 `<br>` |
 | `gfm` | `boolean` | `true` | 是否启用 GitHub 风格 Markdown |

@@ -227,9 +227,9 @@ export const useLLMTaskStore = defineStore('llmTask', () => {
 
 ### 为什么需要 Store？
 
-| 角色     | Service            | Store           |
+| 角色 | Service | Store |
 | -------- | ------------------ | --------------- |
-| 职责     | 业务逻辑、状态管理 | Vue 响应式绑定  |
-| 适用场景 | 任何 JS 代码       | Vue 组件        |
-| 响应式   | ❌                  | ✅               |
-| 可测试性 | ✅ 高（纯 JS）      | ⚠️ 需要 Vue 环境 |
+| 职责 | 业务逻辑、状态管理 | Vue 响应式绑定 |
+| 适用场景 | 任何 JS 代码 | Vue 组件 |
+| 响应式 | ❌ | ✅ |
+| 可测试性 | ✅ 高（纯 JS） | ⚠️ 需要 Vue 环境 |

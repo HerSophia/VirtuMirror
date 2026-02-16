@@ -447,12 +447,12 @@ export const useContactStore = defineStore('contact', () => {
 
 ### 迁移计划
 
-| 阶段 | 内容                             | 状态       |
+| 阶段 | 内容 | 状态 |
 | ---- | -------------------------------- | ---------- |
-| 1    | 聊天联系人读取从 AccountService  | ⏳ 待实现  |
-| 2    | 聊天中新建联系人写入 AccountService | ⏳ 待实现  |
-| 3    | 历史数据迁移                     | ⏳ 待实现  |
-| 4    | 移除旧的 contactStore 数据       | ⏳ 待实现  |
+| 1 | 聊天联系人读取从 AccountService | ⏳ 待实现 |
+| 2 | 聊天中新建联系人写入 AccountService | ⏳ 待实现 |
+| 3 | 历史数据迁移 | ⏳ 待实现 |
+| 4 | 移除旧的 contactStore 数据 | ⏳ 待实现 |
 
 ---
 
@@ -518,9 +518,9 @@ async function notifyNewFollower(followerAccountId: string) {
 
 ### 平台 ID 约定
 
-| 平台       | platformId  | 说明           |
+| 平台 | platformId | 说明 |
 | ---------- | ----------- | -------------- |
-| 微博       | `weibo`     | 已集成         |
-| B站        | `bilibili`  | 规划中         |
-| 聊天       | `chat`      | 规划中         |
-| 朋友圈     | `moments`   | 规划中         |
+| 微博 | `weibo` | 已集成 |
+| B站 | `bilibili` | 规划中 |
+| 聊天 | `chat` | 规划中 |
+| 朋友圈 | `moments` | 规划中 |

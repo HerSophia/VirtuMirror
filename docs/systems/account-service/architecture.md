@@ -68,13 +68,13 @@
 
 ## 核心组件
 
-| 组件                    | 职责                                       | 类型     | 文件位置                           |
+| 组件 | 职责 | 类型 | 文件位置 |
 | ----------------------- | ------------------------------------------ | -------- | ---------------------------------- |
-| `AccountService`        | 服务入口，实体/账号/关系的 CRUD            | 单例     | `src/services/account/accountService.ts` |
-| `AccountStore`          | 响应式状态管理，自动监听会话切换           | Store    | `src/stores/accountStore.ts`       |
-| `UserPool`              | 随机用户生成器，支持完整画像生成           | 单例     | `src/services/account/userPool.ts` |
-| `CreateAccountDialog`   | 通用账号创建弹窗组件                       | 组件     | `src/components/common/`           |
-| `AccountCard`           | 账号卡片展示组件                           | 组件     | `src/apps/account-manager/components/` |
+| `AccountService` | 服务入口，实体/账号/关系的 CRUD | 单例 | `src/services/account/accountService.ts` |
+| `AccountStore` | 响应式状态管理，自动监听会话切换 | Store | `src/stores/accountStore.ts` |
+| `UserPool` | 随机用户生成器，支持完整画像生成 | 单例 | `src/services/account/userPool.ts` |
+| `CreateAccountDialog` | 通用账号创建弹窗组件 | 组件 | `src/components/common/` |
+| `AccountCard` | 账号卡片展示组件 | 组件 | `src/apps/account-manager/components/` |
 
 ---
 
@@ -485,19 +485,19 @@ class PhoneDatabase extends Dexie {
 
 ### 索引说明
 
-| 表                 | 索引                            | 用途                     |
+| 表 | 索引 | 用途 |
 | ------------------ | ------------------------------- | ------------------------ |
-| characterEntities  | `type`                          | 按类型筛选 NPC/玩家      |
-| characterEntities  | `scope`                         | 按作用域筛选             |
-| characterEntities  | `linkedCharacterCardId`         | 按关联角色卡查找         |
-| characterEntities  | `[scope+scopeSessionId]`        | 查询会话级实体           |
-| characterEntities  | `[scope+scopeCharacterCardId]`  | 查询角色卡级实体         |
-| platformAccounts   | `entityId`                      | 获取实体的所有账号       |
-| platformAccounts   | `platformId`                    | 获取平台的所有账号       |
-| platformAccounts   | `[platformId+handle]`           | 唯一性检查（handle 唯一） |
-| platformAccounts   | `[entityId+platformId]`         | 获取实体在某平台的账号   |
-| socialRelations    | `[fromAccountId+type]`          | 获取关注/好友列表        |
-| socialRelations    | `[toAccountId+type]`            | 获取粉丝列表             |
+| characterEntities | `type` | 按类型筛选 NPC/玩家 |
+| characterEntities | `scope` | 按作用域筛选 |
+| characterEntities | `linkedCharacterCardId` | 按关联角色卡查找 |
+| characterEntities | `[scope+scopeSessionId]` | 查询会话级实体 |
+| characterEntities | `[scope+scopeCharacterCardId]` | 查询角色卡级实体 |
+| platformAccounts | `entityId` | 获取实体的所有账号 |
+| platformAccounts | `platformId` | 获取平台的所有账号 |
+| platformAccounts | `[platformId+handle]` | 唯一性检查（handle 唯一） |
+| platformAccounts | `[entityId+platformId]` | 获取实体在某平台的账号 |
+| socialRelations | `[fromAccountId+type]` | 获取关注/好友列表 |
+| socialRelations | `[toAccountId+type]` | 获取粉丝列表 |
 
 ---
 

@@ -88,9 +88,9 @@ Service 层负责将这些 URI 解析为实际可被 `<img>` 标签加载的 URL
 ### Table: `media_assets`
 
 | 字段 | 类型 | 索引 | 说明 |
-|------|------|------|------|
+| ------ | ------ | ------ | ------ |
 | id | string | PK | UUID |
-| type | string | | image/video |
+| type | string |  | image/video |
 | createdAt | number | Index | 用于按时间排序 |
 | albumIds | string[] | MultiEntry | 用于查询相册内容 |
 | tags | string[] | MultiEntry | 用于搜索 |
@@ -98,12 +98,12 @@ Service 层负责将这些 URI 解析为实际可被 `<img>` 标签加载的 URL
 ### Table: `media_albums`
 
 | 字段 | 类型 | 索引 | 说明 |
-|------|------|------|------|
+| ------ | ------ | ------ | ------ |
 | id | string | PK | UUID |
-| name | string | | 相册名称 |
-| coverAssetId | string | | 封面图 ID |
-| type | string | | 'user' (用户创建) / 'smart' (智能) / 'system' (系统) |
-| rule | object | | 智能相册规则 (JSON) |
+| name | string |  | 相册名称 |
+| coverAssetId | string |  | 封面图 ID |
+| type | string |  | 'user' (用户创建) / 'smart' (智能) / 'system' (系统) |
+| rule | object |  | 智能相册规则 (JSON) |
 
 ## 5. 交互流程
 

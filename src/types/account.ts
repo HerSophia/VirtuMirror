@@ -446,6 +446,7 @@ export type RelationType =
   | 'follow'           // A 关注 B（单向）
   | 'friend'           // A 和 B 是好友（双向，会自动创建两条记录）
   | 'block'            // A 屏蔽 B
+  | 'mute'             // A 静音 B
   | 'family'           // 家人关系
   | 'colleague';       // 同事关系
 

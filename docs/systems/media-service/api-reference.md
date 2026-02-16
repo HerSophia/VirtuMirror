@@ -29,7 +29,7 @@ async queryAssets(options?: QueryAssetsOptions): Promise<MediaAsset[]>
 **参数**:
 
 | 参数 | 类型 | 必填 | 说明 |
-|------|------|------|------|
+| ------ | ------ | ------ | ------ |
 | options | `QueryAssetsOptions` | 否 | 查询选项 |
 
 **QueryAssetsOptions**:
@@ -89,7 +89,7 @@ async getAssetById(id: string): Promise<MediaAsset | null>
 **参数**:
 
 | 参数 | 类型 | 必填 | 说明 |
-|------|------|------|------|
+| ------ | ------ | ------ | ------ |
 | id | `string` | 是 | 资源 ID |
 
 **示例**:
@@ -114,7 +114,7 @@ async getAssetsByIds(ids: string[]): Promise<MediaAsset[]>
 **参数**:
 
 | 参数 | 类型 | 必填 | 说明 |
-|------|------|------|------|
+| ------ | ------ | ------ | ------ |
 | ids | `string[]` | 是 | 资源 ID 数组 |
 
 **示例**:
@@ -137,7 +137,7 @@ async saveAsset(blob: Blob, options: SaveAssetOptions): Promise<MediaAsset>
 **参数**:
 
 | 参数 | 类型 | 必填 | 说明 |
-|------|------|------|------|
+| ------ | ------ | ------ | ------ |
 | blob | `Blob` | 是 | 媒体文件二进制数据 |
 | options | `SaveAssetOptions` | 是 | 保存选项 |
 
@@ -210,7 +210,7 @@ async updateAsset(id: string, updates: UpdateAssetOptions): Promise<void>
 **参数**:
 
 | 参数 | 类型 | 必填 | 说明 |
-|------|------|------|------|
+| ------ | ------ | ------ | ------ |
 | id | `string` | 是 | 资源 ID |
 | updates | `UpdateAssetOptions` | 是 | 要更新的字段 |
 
@@ -258,7 +258,7 @@ async deleteAsset(id: string): Promise<void>
 **参数**:
 
 | 参数 | 类型 | 必填 | 说明 |
-|------|------|------|------|
+| ------ | ------ | ------ | ------ |
 | id | `string` | 是 | 资源 ID |
 
 **示例**:
@@ -280,7 +280,7 @@ async deleteAssets(ids: string[]): Promise<void>
 **参数**:
 
 | 参数 | 类型 | 必填 | 说明 |
-|------|------|------|------|
+| ------ | ------ | ------ | ------ |
 | ids | `string[]` | 是 | 资源 ID 数组 |
 
 **示例**:
@@ -304,7 +304,7 @@ async createAlbum(name: string, options?: CreateAlbumOptions): Promise<Album>
 **参数**:
 
 | 参数 | 类型 | 必填 | 说明 |
-|------|------|------|------|
+| ------ | ------ | ------ | ------ |
 | name | `string` | 是 | 相册名称 |
 | options | `CreateAlbumOptions` | 否 | 创建选项 |
 
@@ -354,7 +354,7 @@ async updateAlbum(id: string, updates: UpdateAlbumOptions): Promise<void>
 **参数**:
 
 | 参数 | 类型 | 必填 | 说明 |
-|------|------|------|------|
+| ------ | ------ | ------ | ------ |
 | id | `string` | 是 | 相册 ID |
 | updates | `UpdateAlbumOptions` | 是 | 要更新的字段 |
 
@@ -381,7 +381,7 @@ async deleteAlbum(id: string): Promise<void>
 **参数**:
 
 | 参数 | 类型 | 必填 | 说明 |
-|------|------|------|------|
+| ------ | ------ | ------ | ------ |
 | id | `string` | 是 | 相册 ID |
 
 **示例**:
@@ -439,7 +439,7 @@ async addToAlbum(assetId: string, albumId: string): Promise<void>
 **参数**:
 
 | 参数 | 类型 | 必填 | 说明 |
-|------|------|------|------|
+| ------ | ------ | ------ | ------ |
 | assetId | `string` | 是 | 资源 ID |
 | albumId | `string` | 是 | 相册 ID |
 
@@ -497,7 +497,7 @@ async resolveUri(uri: string): Promise<string>
 **参数**:
 
 | 参数 | 类型 | 必填 | 说明 |
-|------|------|------|------|
+| ------ | ------ | ------ | ------ |
 | uri | `string` | 是 | 内部 URI |
 
 **返回值**: Blob URL（`blob:http://...`）或 Data URL
@@ -546,7 +546,7 @@ async resolveUris(uris: string[]): Promise<Map<string, string>>
 **参数**:
 
 | 参数 | 类型 | 必填 | 说明 |
-|------|------|------|------|
+| ------ | ------ | ------ | ------ |
 | uris | `string[]` | 是 | 内部 URI 数组 |
 
 **返回值**: Map，key 为原始 URI，value 为解析后的 URL
@@ -595,7 +595,7 @@ async getThumbnail(assetId: string): Promise<string | null>
 **参数**:
 
 | 参数 | 类型 | 必填 | 说明 |
-|------|------|------|------|
+| ------ | ------ | ------ | ------ |
 | assetId | `string` | 是 | 资源 ID |
 
 **返回值**: 缩略图 URL，如果不存在则返回 null
@@ -628,7 +628,7 @@ async generateThumbnail(
 **参数**:
 
 | 参数 | 类型 | 必填 | 说明 |
-|------|------|------|------|
+| ------ | ------ | ------ | ------ |
 | assetId | `string` | 是 | 资源 ID |
 | options | `ThumbnailOptions` | 否 | 生成选项 |
 
@@ -673,7 +673,7 @@ on(event: MediaEventType, handler: (payload: any) => void): () => void
 **参数**:
 
 | 参数 | 类型 | 必填 | 说明 |
-|------|------|------|------|
+| ------ | ------ | ------ | ------ |
 | event | `MediaEventType` | 是 | 事件类型 |
 | handler | `Function` | 是 | 事件处理函数 |
 

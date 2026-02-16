@@ -15,7 +15,7 @@
 当前微博 App 已在内部实现了这套机制，涉及以下文件：
 
 | 文件 | 职责 |
-|------|------|
+| ------ | ------ |
 | `src/apps/weibo/services/sessionContext.ts` | 会话上下文管理、过滤器构建 |
 | `src/apps/weibo/stores/llm/sourceTracking.ts` | 来源追踪工具函数 |
 | `src/apps/weibo/stores/llm/narrativeIntegration.ts` | 叙事内容订阅、缓存管理 |
@@ -159,7 +159,7 @@ interface ContentSourceTracking {
 ### 2.3 过滤模式 (Filter Mode)
 
 | 模式 | 说明 | 适用场景 |
-|------|------|----------|
+| ------ | ------ | ---------- |
 | `all` | 显示所有数据 | 跨会话查看 |
 | `session` | 按会话过滤 | **默认推荐** |
 | `message` | 按楼层过滤 | 精确到楼层 |
@@ -482,7 +482,7 @@ record
 ### 5.2 Bridge 事件映射
 
 | Bridge 事件 | 服务动作 | 数据来源 |
-|------------|----------|----------|
+| ------------ | ---------- | ---------- |
 | `sync` | `updateContext()` | `data.sessionId`, `data.lastMessageId`, `data.lastSwipeId` |
 | `swipe_changed` | `updateContext()` | `data.messageId`, `data.newSwipeId` |
 | `disconnect` | `clearContext()` | - |
@@ -514,7 +514,7 @@ function syncSessionIdFromAccountStore(): void {
 **系统服务的设计选择**：
 
 | 方案 | 优点 | 缺点 |
-|------|------|------|
+| ------ | ------ | ------ |
 | A: 依赖 accountStore | 与微博一致 | 引入额外依赖 |
 | B: 只依赖 Bridge 事件 | 更独立 | 需要 Bridge 提供完整数据 |
 | C: 同时支持两者 | 灵活 | 复杂度高 |
@@ -649,7 +649,7 @@ console.log(sessionContextService.getContext());
 微博代码中存在两个版本：
 
 | 文件 | 特点 |
-|------|------|
+| ------ | ------ |
 | `sessionContext.ts` | 多重回退策略，更完善 |
 | `sourceTracking.ts` | 只依赖 narrativeCache，较简单 |
 

@@ -41,6 +41,7 @@ export { ScoreCalculator, scoreCalculator } from './ScoreCalculator';
 export { DiversityController, diversityController, DEFAULT_DIVERSITY_RULES } from './DiversityController';
 export { FilterChain, filterChain } from './FilterChain';
 export { FeedCache, feedCache, DEFAULT_CACHE_CONFIG } from './FeedCache';
+export { SystemContentProvider } from './SystemContentProvider';
 
 // 导出类型（从 types/feed.ts 重新导出）
 export type {

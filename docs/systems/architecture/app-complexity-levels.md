@@ -63,7 +63,7 @@ graph TB
 ### 典型 App 示例
 
 | App | 说明 | 核心服务 |
-|-----|------|----------|
+| ----- | ------ | ---------- |
 | 热搜榜单 | 只展示热搜列表 | Content Model + Time |
 | 公告板 | 系统公告展示 | Content Model + Session |
 | 图片浏览器 | 查看图库 | Media Service (基础) |
@@ -100,7 +100,7 @@ flowchart LR
 ### 服务清单
 
 | 服务 | 必要性 | 说明 |
-|------|--------|------|
+| ------ | -------- | ------ |
 | Content Model | ✅ 必需 | 统一内容结构 |
 | Time Service | ✅ 必需 | 时间戳展示 |
 | Session Context | ✅ 必需 | 会话隔离 |
@@ -131,7 +131,7 @@ flowchart LR
 ### 典型 App 示例
 
 | App | 说明 | 关键特性 |
-|-----|------|----------|
+| ----- | ------ | ---------- |
 | 基础微博 | 博文 + 评论 | LLM 生成 + 互动 |
 | 简单论坛 | 帖子讨论 | 评论生成 + 回复 |
 | 问答社区 | 问题回答 | 回答生成 + 采纳 |
@@ -193,20 +193,20 @@ flowchart TB
 ### 服务清单
 
 | 服务层 | 服务 | 必要性 | 说明 |
-|--------|------|--------|------|
+| -------- | ------ | -------- | ------ |
 | **AI 层** | LLM Task Service | ✅ 必需 | 任务调度执行 |
-| | Narrative Service | ✅ 必需 | 获取酒馆叙事上下文 |
+|  | Narrative Service | ✅ 必需 | 获取酒馆叙事上下文 |
 | **社交层** | Interaction Service | ✅ 必需 | 点赞/收藏/评论 |
-| | Social Graph | ⚪ 推荐 | 关注/粉丝关系 |
+|  | Social Graph | ⚪ 推荐 | 关注/粉丝关系 |
 | **内容层** | Content Factory | ✅ 必需 | LLM 内容生成 |
-| | Content Model | ✅ 必需 | 统一内容结构 |
-| | Content Parser | ✅ 必需 | 平台格式解析 |
+|  | Content Model | ✅ 必需 | 统一内容结构 |
+|  | Content Parser | ✅ 必需 | 平台格式解析 |
 | **基础层** | Account Service | ✅ 必需 | 账号管理 |
-| | Notification | ✅ 必需 | 消息通知 |
-| | Event Bus | ✅ 必需 | 服务间通信 |
-| | Profile Service | ⚪ 推荐 | 用户画像 |
-| | Logger | ⚪ 推荐 | 调试追踪 |
-| | (Level 1 全部) | ✅ 必需 | 基础服务 |
+|  | Notification | ✅ 必需 | 消息通知 |
+|  | Event Bus | ✅ 必需 | 服务间通信 |
+|  | Profile Service | ⚪ 推荐 | 用户画像 |
+|  | Logger | ⚪ 推荐 | 调试追踪 |
+|  | (Level 1 全部) | ✅ 必需 | 基础服务 |
 
 ### 开发指标
 
@@ -232,7 +232,7 @@ flowchart TB
 ### 典型 App 示例
 
 | App | 说明 | 关键特性 |
-|-----|------|----------|
+| ----- | ------ | ---------- |
 | 完整微博 | 全功能社交 | 粉丝增长 + 热搜 + 推荐 |
 | B站模拟 | 视频社区 | 一键三连 + 弹幕 |
 | 知乎模拟 | 知识问答 | 问答 + 专栏 + 想法 |
@@ -311,23 +311,23 @@ flowchart TB
 ### 服务清单
 
 | 服务层 | 服务 | 必要性 | 说明 |
-|--------|------|--------|------|
+| -------- | ------ | -------- | ------ |
 | **高级特性** | Fans Service | ✅ 必需 | 粉丝增长模拟 |
-| | IM Service | ⚪ 推荐 | 私信功能 |
-| | Feed Algorithm | ✅ 必需 | 个性化推荐 |
-| | Archive Service | ✅ 必需 | 长期记忆/知识库 |
-| | Search Service | ⚪ 推荐 | 全文/语义搜索 |
-| | Deep Link | ⚪ 推荐 | 跨 App 跳转 |
+|  | IM Service | ⚪ 推荐 | 私信功能 |
+|  | Feed Algorithm | ✅ 必需 | 个性化推荐 |
+|  | Archive Service | ✅ 必需 | 长期记忆/知识库 |
+|  | Search Service | ⚪ 推荐 | 全文/语义搜索 |
+|  | Deep Link | ⚪ 推荐 | 跨 App 跳转 |
 | **调度控制** | Scheduler | ✅ 必需 | 定时任务 |
-| | Rate Limiter | ✅ 必需 | 频率控制 |
-| | Context Sharing | ✅ 必需 | 跨 App 上下文 |
+|  | Rate Limiter | ✅ 必需 | 频率控制 |
+|  | Context Sharing | ✅ 必需 | 跨 App 上下文 |
 | **传播层** | Trending Service | ✅ 必需 | 热搜管理 |
-| | Traffic Engine | ✅ 必需 | 热度计算 |
+|  | Traffic Engine | ✅ 必需 | 热度计算 |
 | **媒体层** | Media Service | ✅ 必需 | 媒体管理 |
-| | Image Gen | ⚪ 可选 | AI 配图 |
-| | Vector Store | ⚪ 可选 | 语义搜索 |
-| | (Level 2 全部) | ✅ 必需 | 标准平台服务 |
-| | (Level 1 全部) | ✅ 必需 | 基础服务 |
+|  | Image Gen | ⚪ 可选 | AI 配图 |
+|  | Vector Store | ⚪ 可选 | 语义搜索 |
+|  | (Level 2 全部) | ✅ 必需 | 标准平台服务 |
+|  | (Level 1 全部) | ✅ 必需 | 基础服务 |
 
 ### 开发指标
 
@@ -378,7 +378,7 @@ pie title 服务实现状态
 ```
 
 | 状态 | 服务列表 |
-|------|----------|
+| ------ | ---------- |
 | ✅ 已实现 | Content Model, Content Factory, Account Service, Time Service, Notification, LLM Task, Narrative, Traffic Engine, Content Parser, Database, AI Service, Audio Service |
 | 📋 已设计 | Session Context, Media Service, Fans Service, IM Service, Profile Service, Context Sharing, Archive Service, Trending Service |
 | 🆕 建议新增 | Interaction Service, Social Graph, Feed Algorithm, Search Service, Scheduler, Rate Limiter, Event Bus, Vector Store, Deep Link, Logger |
@@ -465,5 +465,5 @@ const MyApp = () => {
 ## 版本历史
 
 | 版本 | 日期 | 变更内容 |
-|------|------|----------|
+| ------ | ------ | ---------- |
 | 1.0 | 2026-01-16 | 初始版本 |

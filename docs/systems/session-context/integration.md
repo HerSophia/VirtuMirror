@@ -96,13 +96,13 @@ export function destroySessionContextListeners(): void {
 
 ### 事件映射表
 
-| Bridge 事件           | 触发时机             | 更新字段                                        |
+| Bridge 事件 | 触发时机 | 更新字段 |
 | --------------------- | -------------------- | ----------------------------------------------- |
-| `sync`                | 初始连接、刷新同步   | sessionId, messageId, swipeId, names            |
-| `swipe_changed`       | 用户切换 Swipe       | messageId, swipeId                              |
-| `platform_connected`  | 平台连接成功         | characterName, playerName                       |
-| `disconnect`          | 连接断开             | 清空所有字段                                    |
-| `message_received`    | 新消息（可选监听）   | messageId（递增）                               |
+| `sync` | 初始连接、刷新同步 | sessionId, messageId, swipeId, names |
+| `swipe_changed` | 用户切换 Swipe | messageId, swipeId |
+| `platform_connected` | 平台连接成功 | characterName, playerName |
+| `disconnect` | 连接断开 | 清空所有字段 |
+| `message_received` | 新消息（可选监听） | messageId（递增） |
 
 ---
 
@@ -327,10 +327,10 @@ export function attachSourceTrackingBatch<T extends Partial<Sourceable>>(
 
 ### 职责划分
 
-| 服务                    | 职责                           |
+| 服务 | 职责 |
 | ----------------------- | ------------------------------ |
-| SessionContextService   | 会话状态管理、数据过滤         |
-| NarrativeService        | 叙事内容获取、订阅、缓存       |
+| SessionContextService | 会话状态管理、数据过滤 |
+| NarrativeService | 叙事内容获取、订阅、缓存 |
 
 ### 协作模式
 

@@ -108,12 +108,12 @@ interface WeiboPost extends TrackedContent {
 type FilterMode = 'all' | 'session' | 'message' | 'swipe'
 ```
 
-| 模式      | 说明               | 适用场景           |
+| 模式 | 说明 | 适用场景 |
 | --------- | ------------------ | ------------------ |
-| `all`     | 显示所有数据       | 跨会话查看         |
-| `session` | 按会话过滤         | **默认推荐**       |
-| `message` | 按楼层过滤         | 精确到楼层         |
-| `swipe`   | 按消息页过滤       | 最后楼层的分支数据 |
+| `all` | 显示所有数据 | 跨会话查看 |
+| `session` | 按会话过滤 | **默认推荐** |
+| `message` | 按楼层过滤 | 精确到楼层 |
+| `swipe` | 按消息页过滤 | 最后楼层的分支数据 |
 
 ### FilterConfig
 

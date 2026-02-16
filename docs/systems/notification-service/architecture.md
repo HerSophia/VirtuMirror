@@ -188,7 +188,7 @@ showToast(notification: Notification) {
 **优先级权重**：
 
 | 优先级 | 权重 | 说明 |
-|--------|------|------|
+| -------- | ------ | ------ |
 | `urgent` | 4 | 紧急通知，如来电、报警 |
 | `high` | 3 | 重要通知，如即时消息 |
 | `normal` | 2 | 普通通知，如应用推送 |
@@ -221,9 +221,9 @@ dismissToast() {
 ### 3.1 核心状态
 
 | 状态 | 类型 | 说明 |
-|------|------|------|
+| ------ | ------ | ------ |
 | `notifications` | `Notification[]` | 所有通知列表 |
-| `activeToast` | `Notification \| null` | 当前显示的 Toast |
+| `activeToast` | `Notification \ | null` | 当前显示的 Toast |
 | `toastQueue` | `Notification[]` | 等待显示的 Toast 队列 |
 | `doNotDisturb` | `boolean` | 勿扰模式开关 |
 | `mutedApps` | `string[]` | 被静音的应用 ID 列表 |
@@ -232,7 +232,7 @@ dismissToast() {
 ### 3.2 计算属性
 
 | 计算属性 | 说明 |
-|----------|------|
+| ---------- | ------ |
 | `unreadCount` | 未读通知数量 |
 | `hasUnread` | 是否有未读通知 |
 | `sortedNotifications` | 按时间排序的通知列表 |
@@ -292,7 +292,7 @@ push(params: CreateNotificationParams): Notification {
 **规则说明**：
 
 | 条件 | Toast | 声音 | 添加到列表 |
-|------|-------|------|------------|
+| ------ | ------- | ------ | ------------ |
 | 正常模式 | ✅ | ✅ | ✅ |
 | 勿扰模式 | ❌ | ❌ | ✅ |
 | 应用静音 | ❌ | ❌ | ✅ |
@@ -328,7 +328,7 @@ if (!this._doNotDisturb.value && !this._mutedApps.value.includes(params.appId)) 
 ### 5.2 声音配置选项
 
 | 配置值 | 行为 |
-|--------|------|
+| -------- | ------ |
 | `true` | 播放系统默认提示音 |
 | `false` / `undefined` | 静音 |
 | `string` (路径) | 播放指定音频文件 |

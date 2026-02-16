@@ -89,7 +89,7 @@ export type TimeMode =
 ### 3.2 各模式计算公式
 
 | 模式 | 计算公式 | 说明 |
-|------|----------|------|
+| ------ | ---------- | ------ |
 | `system` | `Date.now()` | 直接使用系统时间 |
 | `offset` | `Date.now() + offset` | 系统时间加固定偏移量 |
 | `virtual` | `virtualBase + (realElapsed × multiplier)` | 可加速的虚拟时间 |
@@ -306,7 +306,7 @@ watch(() => chatStore.history, () => {
 ## 8. 内部状态一览
 
 | 状态 | 类型 | 说明 |
-|------|------|------|
+| ------ | ------ | ------ |
 | `_currentTime` | `Ref<Date>` | 当前计算后的时间 |
 | `_mode` | `Ref<TimeMode>` | 当前时间模式 |
 | `_offset` | `Ref<number>` | 偏移量（毫秒） |

@@ -1,0 +1,1445 @@
+{
+  "version": "0.3.3-step1-3-lite-b4",
+  "updatedAt": "2026-02-08",
+  "scope": {
+    "mode": "full",
+    "coveredServices": [
+      "account",
+      "sessionContext",
+      "eventBus",
+      "interaction",
+      "contextSharing",
+      "logger",
+      "trending",
+      "socialGraph",
+      "feed",
+      "scheduler",
+      "llmTask",
+      "notification",
+      "time",
+      "narrative",
+      "archive",
+      "socialMediaEngine",
+      "contentModel",
+      "ai"
+    ],
+    "coveredCount": 18,
+    "callableServicesOnly": true,
+    "totalImplementedCandidates": 18,
+    "notImplementedServices": [
+      "media",
+      "fans",
+      "search",
+      "im"
+    ],
+    "notImplementedCount": 4,
+    "note": "Step 1-3 only. Full implemented-service coverage reached: 18/18. Designed-only services are listed under notImplementedServices and excluded from services[]."
+  },
+  "services": [
+    {
+      "serviceId": "account",
+      "status": "stable",
+      "entry": {
+        "file": "src/services/account/accountService.ts",
+        "symbol": "AccountService",
+        "singleton": "accountService"
+      },
+      "methods": [
+        {
+          "name": "setSessionContext",
+          "params": [
+            "context: SessionContext"
+          ],
+          "returns": "void"
+        },
+        {
+          "name": "createEntity",
+          "params": [
+            "data: CreateEntityInput"
+          ],
+          "returns": "Promise<CharacterEntity>"
+        },
+        {
+          "name": "createPlatformAccount",
+          "params": [
+            "entityId: string",
+            "platformId: string",
+            "data: CreatePlatformAccountInput"
+          ],
+          "returns": "Promise<PlatformAccount>"
+        },
+        {
+          "name": "getVisibleAccounts",
+          "params": [
+            "platformId: string",
+            "context?: SessionContext"
+          ],
+          "returns": "Promise<PlatformAccount[]>"
+        },
+        {
+          "name": "followAccount",
+          "params": [
+            "fromAccountId: string",
+            "toAccountId: string"
+          ],
+          "returns": "Promise<SocialRelation>"
+        },
+        {
+          "name": "getStats",
+          "params": [],
+          "returns": "Promise<{ totalEntities; totalAccounts; totalRelations; entitiesByType; entitiesByScope; accountsByPlatform; }>"
+        }
+      ],
+      "events": {
+        "emit": [],
+        "on": []
+      },
+      "dependsOn": [
+        "db.characterEntities",
+        "db.platformAccounts",
+        "db.socialRelations",
+        "db.archives",
+        "loggerService",
+        "uuid"
+      ],
+      "sourceDocs": [
+        "docs/systems/architecture/Service-for-social-media-platform.md",
+        "docs/systems/account-service/README.md"
+      ],
+      "updatedAt": "2026-02-08"
+    },
+    {
+      "serviceId": "sessionContext",
+      "status": "stable",
+      "entry": {
+        "file": "src/services/sessionContext/SessionContextService.ts",
+        "symbol": "SessionContextService",
+        "singleton": "sessionContextService"
+      },
+      "methods": [
+        {
+          "name": "updateSession",
+          "params": [
+            "sessionId: string",
+            "characterName: string",
+            "playerName: string",
+            "platform: string"
+          ],
+          "returns": "void"
+        },
+        {
+          "name": "updateMessage",
+          "params": [
+            "messageId: number"
+          ],
+          "returns": "void"
+        },
+        {
+          "name": "updateSwipe",
+          "params": [
+            "swipeId: number"
+          ],
+          "returns": "void"
+        },
+        {
+          "name": "getCurrentSourceTracking",
+          "params": [],
+          "returns": "ContentSourceTracking | null"
+        },
+        {
+          "name": "buildSourceFilter",
+          "params": [
+            "mode?: FilterMode",
+            "config?: Partial<FilterConfig>"
+          ],
+          "returns": "SourceFilter<T>"
+        }
+      ],
+      "events": {
+        "emit": [
+          "session-context:changed",
+          "session:changed"
+        ],
+        "on": [
+          "session-context:changed",
+          "session:changed"
+        ]
+      },
+      "dependsOn": [
+        "eventBus",
+        "loggerService",
+        "vue:reactive",
+        "vue:computed"
+      ],
+      "sourceDocs": [
+        "docs/systems/architecture/Service-for-social-media-platform.md",
+        "docs/systems/session-context/README.md"
+      ],
+      "updatedAt": "2026-02-08"
+    },
+    {
+      "serviceId": "eventBus",
+      "status": "stable",
+      "entry": {
+        "file": "src/services/eventBus/EventBus.ts",
+        "symbol": "EventBus",
+        "singleton": "eventBus"
+      },
+      "methods": [
+        {
+          "name": "emit",
+          "params": [
+            "event: string",
+            "payload: T"
+          ],
+          "returns": "void"
+        },
+        {
+          "name": "on",
+          "params": [
+            "event: string",
+            "handler: EventHandler<T>"
+          ],
+          "returns": "Unsubscribe"
+        },
+        {
+          "name": "once",
+          "params": [
+            "event: string",
+            "handler: EventHandler<T>"
+          ],
+          "returns": "Unsubscribe"
+        },
+        {
+          "name": "off",
+          "params": [
+            "event: string",
+            "handler?: EventHandler"
+          ],
+          "returns": "void"
+        },
+        {
+          "name": "channel",
+          "params": [
+            "name: string"
+          ],
+          "returns": "IEventChannel"
+        }
+      ],
+      "events": {
+        "emit": [
+          "generic (EventMap)"
+        ],
+        "on": [
+          "generic (EventMap)"
+        ]
+      },
+      "dependsOn": [
+        "EventChannel",
+        "loggerService"
+      ],
+      "sourceDocs": [
+        "docs/systems/architecture/Service-for-social-media-platform.md",
+        "docs/systems/eventBus-service/README.md"
+      ],
+      "updatedAt": "2026-02-08"
+    },
+    {
+      "serviceId": "interaction",
+      "status": "stable",
+      "entry": {
+        "file": "src/services/interaction/InteractionService.ts",
+        "symbol": "InteractionServiceImpl",
+        "singleton": "interactionService"
+      },
+      "methods": [
+        {
+          "name": "like",
+          "params": [
+            "contentId: string",
+            "userId: string",
+            "options?: LikeOptions"
+          ],
+          "returns": "Promise<void>"
+        },
+        {
+          "name": "favorite",
+          "params": [
+            "contentId: string",
+            "userId: string",
+            "collectionId?: string",
+            "options?: FavoriteOptions"
+          ],
+          "returns": "Promise<void>"
+        },
+        {
+          "name": "comment",
+          "params": [
+            "params: CreateCommentParams"
+          ],
+          "returns": "Promise<Comment>"
+        },
+        {
+          "name": "repost",
+          "params": [
+            "contentId: string",
+            "userId: string",
+            "comment?: string",
+            "options?: RepostOptions"
+          ],
+          "returns": "Promise<string>"
+        },
+        {
+          "name": "recordView",
+          "params": [
+            "contentId: string",
+            "userId: string",
+            "options?: ViewRecordOptions & BaseInteractionOptions"
+          ],
+          "returns": "Promise<void>"
+        },
+        {
+          "name": "getStats",
+          "params": [
+            "contentId: string",
+            "platformId: PlatformId"
+          ],
+          "returns": "Promise<InteractionStats>"
+        }
+      ],
+      "events": {
+        "emit": [
+          "interaction:like",
+          "interaction:unlike",
+          "interaction:favorite",
+          "interaction:unfavorite",
+          "interaction:comment",
+          "interaction:repost",
+          "interaction:view",
+          "interaction:share"
+        ],
+        "on": [
+          "onInteraction(handler)",
+          "on(type, handler)"
+        ]
+      },
+      "dependsOn": [
+        "eventBus",
+        "loggerService",
+        "uuid"
+      ],
+      "sourceDocs": [
+        "docs/systems/architecture/Service-for-social-media-platform.md",
+        "docs/systems/interaction-service/README.md"
+      ],
+      "updatedAt": "2026-02-08"
+    },
+    {
+      "serviceId": "contextSharing",
+      "status": "stable",
+      "entry": {
+        "file": "src/services/contextSharing/ContextSharingService.ts",
+        "symbol": "ContextSharingService",
+        "singleton": "contextSharingService"
+      },
+      "methods": [
+        {
+          "name": "publish",
+          "params": [
+            "options: PublishContextOptions<T>"
+          ],
+          "returns": "string"
+        },
+        {
+          "name": "unpublish",
+          "params": [
+            "id: string"
+          ],
+          "returns": "boolean"
+        },
+        {
+          "name": "replace",
+          "params": [
+            "id: string",
+            "value: T"
+          ],
+          "returns": "boolean"
+        },
+        {
+          "name": "getAsync",
+          "params": [
+            "id: string"
+          ],
+          "returns": "Promise<T | undefined>"
+        },
+        {
+          "name": "aggregate",
+          "params": [
+            "request: AggregationRequest"
+          ],
+          "returns": "Promise<AggregatedContext>"
+        },
+        {
+          "name": "subscribeByType",
+          "params": [
+            "type: ContextType",
+            "callback: TypeSubscribeCallback<T>"
+          ],
+          "returns": "() => void"
+        }
+      ],
+      "events": {
+        "emit": [
+          "contextSharing:published",
+          "contextSharing:unpublished",
+          "contextSharing:updated"
+        ],
+        "on": [
+          "subscribe(id, callback)",
+          "subscribeByType(type, callback)",
+          "eventBus.on('contextSharing:*', handler)"
+        ]
+      },
+      "dependsOn": [
+        "eventBus",
+        "loggerService",
+        "formatContexts"
+      ],
+      "sourceDocs": [
+        "docs/systems/architecture/Service-for-social-media-platform.md",
+        "docs/systems/context-sharing-service/README.md"
+      ],
+      "updatedAt": "2026-02-08"
+    },
+    {
+      "serviceId": "logger",
+      "status": "stable",
+      "entry": {
+        "file": "src/services/logger/loggerService.ts",
+        "symbol": "LoggerServiceImpl",
+        "singleton": "loggerService"
+      },
+      "methods": [
+        {
+          "name": "debug",
+          "params": [
+            "message: string",
+            "...args: unknown[]"
+          ],
+          "returns": "void"
+        },
+        {
+          "name": "setLevel",
+          "params": [
+            "level: LogLevel"
+          ],
+          "returns": "void"
+        },
+        {
+          "name": "setFilter",
+          "params": [
+            "filter: LogFilter"
+          ],
+          "returns": "void"
+        },
+        {
+          "name": "addTransport",
+          "params": [
+            "transport: LogTransport"
+          ],
+          "returns": "void"
+        },
+        {
+          "name": "child",
+          "params": [
+            "namespace: string"
+          ],
+          "returns": "Logger"
+        },
+        {
+          "name": "timeEnd",
+          "params": [
+            "label: string"
+          ],
+          "returns": "number"
+        }
+      ],
+      "events": {
+        "emit": [],
+        "on": []
+      },
+      "dependsOn": [
+        "Logger",
+        "ConsoleTransport",
+        "LOG_LEVEL_VALUES"
+      ],
+      "sourceDocs": [
+        "docs/systems/architecture/Service-for-social-media-platform.md",
+        "docs/systems/logger-service/README.md"
+      ],
+      "updatedAt": "2026-02-08"
+    },
+    {
+      "serviceId": "trending",
+      "status": "stable",
+      "entry": {
+        "file": "src/services/trending/trendingService.ts",
+        "symbol": "TrendingService",
+        "singleton": "trendingService"
+      },
+      "methods": [
+        {
+          "name": "createFromEvent",
+          "params": [
+            "event: WorldEvent",
+            "options?: CreateOptions"
+          ],
+          "returns": "Promise<TrendingTopic[]>"
+        },
+        {
+          "name": "getTrending",
+          "params": [
+            "platformId: string",
+            "options?: TrendingQueryOptions"
+          ],
+          "returns": "Promise<TrendingTopic[]>"
+        },
+        {
+          "name": "getTopic",
+          "params": [
+            "topicId: string"
+          ],
+          "returns": "Promise<TrendingTopic | undefined>"
+        },
+        {
+          "name": "getSharedTrending",
+          "params": [
+            "requesterAppId: string",
+            "options?: SharedTrendingOptions"
+          ],
+          "returns": "Promise<TrendingTopic[]>"
+        },
+        {
+          "name": "setSharePolicy",
+          "params": [
+            "platformId: string",
+            "policy: SharePolicy"
+          ],
+          "returns": "void"
+        },
+        {
+          "name": "onTrendingUpdate",
+          "params": [
+            "callback: (event: TrendingUpdateEvent) => void"
+          ],
+          "returns": "() => void"
+        }
+      ],
+      "events": {
+        "emit": [
+          "trending:topic:created",
+          "content:trending:updated",
+          "trending:policy:changed"
+        ],
+        "on": [
+          "onTrendingUpdate(callback)"
+        ]
+      },
+      "dependsOn": [
+        "db.socialTopics",
+        "PlatformRegistry",
+        "TrafficEngine",
+        "topicContentLoader",
+        "PlatformConfigRegistry",
+        "SharePolicyManager",
+        "eventBus"
+      ],
+      "sourceDocs": [
+        "docs/systems/architecture/Service-for-social-media-platform.md",
+        "docs/systems/trending-service/README.md"
+      ],
+      "updatedAt": "2026-02-08"
+    },
+    {
+      "serviceId": "socialGraph",
+      "status": "stable",
+      "entry": {
+        "file": "src/services/socialGraph/socialGraphService.ts",
+        "symbol": "SocialGraphService",
+        "singleton": "socialGraphService"
+      },
+      "methods": [
+        {
+          "name": "follow",
+          "params": [
+            "fromId: string",
+            "toId: string",
+            "options: FollowOptions"
+          ],
+          "returns": "Promise<void>"
+        },
+        {
+          "name": "block",
+          "params": [
+            "fromId: string",
+            "toId: string",
+            "options?: BlockOptions"
+          ],
+          "returns": "Promise<void>"
+        },
+        {
+          "name": "getFollowers",
+          "params": [
+            "accountId: string",
+            "options?: SocialGraphQueryOptions"
+          ],
+          "returns": "Promise<SocialGraphPageResult>"
+        },
+        {
+          "name": "getRelationshipStats",
+          "params": [
+            "accountId: string",
+            "platformId: string"
+          ],
+          "returns": "Promise<RelationshipStats>"
+        },
+        {
+          "name": "getRecommendedFollows",
+          "params": [
+            "accountId: string",
+            "options: RecommendationOptions"
+          ],
+          "returns": "Promise<FollowRecommendation[]>"
+        },
+        {
+          "name": "onRelationChange",
+          "params": [
+            "callback: (event: SocialGraphEvent) => void"
+          ],
+          "returns": "() => void"
+        }
+      ],
+      "events": {
+        "emit": [
+          "social:relation:followed",
+          "social:relation:unfollowed",
+          "social:relation:blocked",
+          "social:relation:unblocked",
+          "social:relation:muted",
+          "social:relation:unmuted",
+          "social:stats:updated"
+        ],
+        "on": [
+          "onRelationChange(callback)",
+          "eventBus.on('social:*', handler)"
+        ]
+      },
+      "dependsOn": [
+        "accountService",
+        "db.socialRelations",
+        "eventBus",
+        "loggerService",
+        "uuid"
+      ],
+      "sourceDocs": [
+        "docs/systems/architecture/Service-for-social-media-platform.md",
+        "docs/systems/social-graph-service/README.md"
+      ],
+      "updatedAt": "2026-02-08"
+    },
+    {
+      "serviceId": "feed",
+      "status": "stable",
+      "entry": {
+        "file": "src/services/feed/FeedService.ts",
+        "symbol": "FeedService",
+        "singleton": "feedService"
+      },
+      "methods": [
+        {
+          "name": "getPersonalizedFeed",
+          "params": [
+            "userId: string",
+            "platformId: string",
+            "options?: FeedOptions"
+          ],
+          "returns": "Promise<FeedResult>"
+        },
+        {
+          "name": "getFollowingFeed",
+          "params": [
+            "userId: string",
+            "platformId: string",
+            "options?: FeedOptions"
+          ],
+          "returns": "Promise<FeedResult>"
+        },
+        {
+          "name": "getTrendingContent",
+          "params": [
+            "platformId: string",
+            "options?: TrendingOptions"
+          ],
+          "returns": "Promise<FeedResult>"
+        },
+        {
+          "name": "refreshFeed",
+          "params": [
+            "userId: string",
+            "platformId: string",
+            "feedType?: FeedType"
+          ],
+          "returns": "Promise<FeedResult>"
+        },
+        {
+          "name": "loadMore",
+          "params": [
+            "userId: string",
+            "platformId: string",
+            "cursor: string"
+          ],
+          "returns": "Promise<FeedResult>"
+        },
+        {
+          "name": "onFeedEvent",
+          "params": [
+            "callback: (event: FeedEvent) => void"
+          ],
+          "returns": "() => void"
+        }
+      ],
+      "events": {
+        "emit": [
+          "feed:loaded",
+          "feed:cacheHit",
+          "feed:cacheMiss"
+        ],
+        "on": [
+          "onFeedEvent(callback)"
+        ]
+      },
+      "dependsOn": [
+        "AlgorithmRegistry",
+        "ScoreCalculator",
+        "DiversityController",
+        "FilterChain",
+        "FeedCache",
+        "SystemContentProvider",
+        "loggerService"
+      ],
+      "sourceDocs": [
+        "docs/systems/architecture/Service-for-social-media-platform.md",
+        "docs/systems/feed-service/README.md"
+      ],
+      "updatedAt": "2026-02-08"
+    },
+    {
+      "serviceId": "scheduler",
+      "status": "stable",
+      "entry": {
+        "file": "src/services/scheduler/schedulerService.ts",
+        "symbol": "SchedulerService",
+        "singleton": "schedulerService"
+      },
+      "methods": [
+        {
+          "name": "register",
+          "params": [
+            "taskInput: ScheduledTaskInput"
+          ],
+          "returns": "string"
+        },
+        {
+          "name": "unregister",
+          "params": [
+            "taskId: string"
+          ],
+          "returns": "boolean"
+        },
+        {
+          "name": "trigger",
+          "params": [
+            "taskId: string"
+          ],
+          "returns": "Promise<ExecutionResult | undefined>"
+        },
+        {
+          "name": "getTasksByApp",
+          "params": [
+            "appId: string"
+          ],
+          "returns": "ScheduledTask[]"
+        },
+        {
+          "name": "getStatistics",
+          "params": [],
+          "returns": "SchedulerStatistics"
+        },
+        {
+          "name": "start",
+          "params": [],
+          "returns": "void"
+        }
+      ],
+      "events": {
+        "emit": [
+          "scheduler:task:registered",
+          "scheduler:task:unregistered",
+          "scheduler:task:paused",
+          "scheduler:task:resumed",
+          "scheduler:task:started",
+          "scheduler:task:completed",
+          "scheduler:task:failed",
+          "scheduler:task:timeout",
+          "scheduler:task:skipped"
+        ],
+        "on": [
+          "eventBus.on('scheduler:task:*', handler)"
+        ]
+      },
+      "dependsOn": [
+        "TaskRegistry",
+        "SchedulerEngine",
+        "Executor",
+        "eventBus",
+        "timeService",
+        "loggerService"
+      ],
+      "sourceDocs": [
+        "docs/systems/architecture/Service-for-social-media-platform.md",
+        "docs/systems/scheduler-service/README.md"
+      ],
+      "updatedAt": "2026-02-08"
+    },
+    {
+      "serviceId": "llmTask",
+      "status": "stable",
+      "entry": {
+        "file": "src/services/llmTask/LLMTaskService.ts",
+        "symbol": "LLMTaskService",
+        "singleton": "getLLMTaskService"
+      },
+      "methods": [
+        {
+          "name": "registerTaskDefinition",
+          "params": [
+            "definition: LLMTaskDefinition"
+          ],
+          "returns": "void"
+        },
+        {
+          "name": "createTask",
+          "params": [
+            "definitionId: string",
+            "overrides?: Partial<CreateTaskInput>"
+          ],
+          "returns": "LLMTask"
+        },
+        {
+          "name": "executeTask",
+          "params": [
+            "taskId: string"
+          ],
+          "returns": "Promise<ExecutionResult>"
+        },
+        {
+          "name": "startAutoExecution",
+          "params": [
+            "taskId: string"
+          ],
+          "returns": "boolean"
+        },
+        {
+          "name": "getStats",
+          "params": [],
+          "returns": "TaskStats"
+        },
+        {
+          "name": "on",
+          "params": [
+            "event: TaskEvent",
+            "handler: TaskEventHandler"
+          ],
+          "returns": "void"
+        }
+      ],
+      "events": {
+        "emit": [
+          "task-created",
+          "task-started",
+          "task-completed",
+          "task-failed",
+          "task-cancelled",
+          "task-paused",
+          "task-resumed",
+          "auto-execution-started",
+          "auto-execution-stopped",
+          "definition-registered",
+          "definition-unregistered"
+        ],
+        "on": [
+          "on(event, handler)",
+          "off(event, handler)"
+        ]
+      },
+      "dependsOn": [
+        "TaskRegistry",
+        "ContextProviderRegistry",
+        "OutputHandlerRegistry",
+        "TaskExecutor",
+        "TaskScheduler",
+        "useAIStore",
+        "loggerService"
+      ],
+      "sourceDocs": [
+        "docs/systems/architecture/Service-for-social-media-platform.md",
+        "docs/systems/llm-task-service/README.md"
+      ],
+      "updatedAt": "2026-02-08"
+    },
+    {
+      "serviceId": "notification",
+      "status": "stable",
+      "entry": {
+        "file": "src/services/notification/notificationService.ts",
+        "symbol": "NotificationService",
+        "singleton": "notificationService"
+      },
+      "methods": [
+        {
+          "name": "init",
+          "params": [
+            "refs: { notifications; activeToast; toastQueue; doNotDisturb; mutedApps; statusBarIcons }"
+          ],
+          "returns": "void"
+        },
+        {
+          "name": "push",
+          "params": [
+            "params: CreateNotificationParams"
+          ],
+          "returns": "Notification"
+        },
+        {
+          "name": "dismissToast",
+          "params": [],
+          "returns": "void"
+        },
+        {
+          "name": "markAsRead",
+          "params": [
+            "notificationId: string"
+          ],
+          "returns": "void"
+        },
+        {
+          "name": "muteApp",
+          "params": [
+            "appId: string"
+          ],
+          "returns": "void"
+        },
+        {
+          "name": "updateStatusBarIcon",
+          "params": [
+            "appId: string",
+            "icon: NotificationIcon"
+          ],
+          "returns": "void"
+        }
+      ],
+      "events": {
+        "emit": [],
+        "on": []
+      },
+      "dependsOn": [
+        "audioService",
+        "vue:ref",
+        "Notification store refs"
+      ],
+      "sourceDocs": [
+        "docs/systems/architecture/Service-for-social-media-platform.md",
+        "docs/systems/notification-service/README.md"
+      ],
+      "updatedAt": "2026-02-08"
+    },
+    {
+      "serviceId": "time",
+      "status": "stable",
+      "entry": {
+        "file": "src/services/time/timeService.ts",
+        "symbol": "TimeService",
+        "singleton": "timeService"
+      },
+      "methods": [
+        {
+          "name": "setMode",
+          "params": [
+            "mode: TimeMode"
+          ],
+          "returns": "void"
+        },
+        {
+          "name": "getCurrentTime",
+          "params": [],
+          "returns": "Date"
+        },
+        {
+          "name": "formatTime",
+          "params": [
+            "date: Date",
+            "options?: { includeSeconds?: boolean }"
+          ],
+          "returns": "string"
+        },
+        {
+          "name": "addTickListener",
+          "params": [
+            "callback: (date: Date) => void"
+          ],
+          "returns": "() => void"
+        },
+        {
+          "name": "syncFromContent",
+          "params": [
+            "content: string"
+          ],
+          "returns": "void"
+        },
+        {
+          "name": "set24Hour",
+          "params": [
+            "value: boolean"
+          ],
+          "returns": "void"
+        }
+      ],
+      "events": {
+        "emit": [],
+        "on": [
+          "addTickListener(callback)"
+        ]
+      },
+      "dependsOn": [
+        "useChatStore",
+        "vue:ref/watch",
+        "loggerService",
+        "setInterval"
+      ],
+      "sourceDocs": [
+        "docs/systems/architecture/Service-for-social-media-platform.md",
+        "docs/systems/time-service/README.md"
+      ],
+      "updatedAt": "2026-02-08"
+    },
+    {
+      "serviceId": "narrative",
+      "status": "stable",
+      "entry": {
+        "file": "src/services/narrative/narrativeService.ts",
+        "symbol": "NarrativeService",
+        "singleton": "narrativeService"
+      },
+      "methods": [
+        {
+          "name": "setupBridgeListener",
+          "params": [],
+          "returns": "void"
+        },
+        {
+          "name": "subscribe",
+          "params": [
+            "callback: NarrativeCallback"
+          ],
+          "returns": "() => void"
+        },
+        {
+          "name": "publish",
+          "params": [
+            "event: NarrativeEvent"
+          ],
+          "returns": "void"
+        },
+        {
+          "name": "cleanup",
+          "params": [],
+          "returns": "void"
+        },
+        {
+          "name": "createNarrativeVariables",
+          "params": [
+            "event: NarrativeEvent"
+          ],
+          "returns": "NarrativeVariables"
+        },
+        {
+          "name": "injectNarrativeSafely",
+          "params": [
+            "template: string",
+            "narrativeContent: string",
+            "options?: { appendIfMissing?: boolean; otherTexts?: string[]; appendFormat?: 'xml' | 'markdown' | 'plain' }"
+          ],
+          "returns": "NarrativeInjectionResult"
+        }
+      ],
+      "events": {
+        "emit": [],
+        "on": [
+          "adapter.on('bridge:full_sync', handler)",
+          "adapter.on('message_received', handler)",
+          "adapter.on('swipe_changed', handler)",
+          "subscribe(callback)"
+        ]
+      },
+      "dependsOn": [
+        "getBridgeAdapter",
+        "loggerService"
+      ],
+      "sourceDocs": [
+        "docs/systems/architecture/Service-for-social-media-platform.md",
+        "docs/systems/narrative-service/README.md"
+      ],
+      "updatedAt": "2026-02-08"
+    },
+    {
+      "serviceId": "archive",
+      "status": "beta",
+      "entry": {
+        "file": "src/services/archive/archiveService.ts",
+        "symbol": "ArchiveService",
+        "singleton": "archiveService"
+      },
+      "methods": [
+        {
+          "name": "getArchive",
+          "params": [
+            "id: string"
+          ],
+          "returns": "Promise<ArchiveRecord | null>"
+        },
+        {
+          "name": "saveArchive",
+          "params": [
+            "archive: ArchiveRecord"
+          ],
+          "returns": "Promise<ArchiveRecord>"
+        },
+        {
+          "name": "queryArchives",
+          "params": [
+            "filter?: ArchiveQueryFilter"
+          ],
+          "returns": "Promise<ArchiveRecord[]>"
+        },
+        {
+          "name": "getInjection",
+          "params": [
+            "request: InjectionRequest"
+          ],
+          "returns": "Promise<InjectionResult>"
+        },
+        {
+          "name": "bindToAccount",
+          "params": [
+            "archiveId: string",
+            "accountId: string"
+          ],
+          "returns": "Promise<void>"
+        },
+        {
+          "name": "extractFromChat",
+          "params": [
+            "floors: ArchiveFloorData[]",
+            "options?: ExtractOptions"
+          ],
+          "returns": "Promise<ExtractResult>"
+        }
+      ],
+      "events": {
+        "emit": [],
+        "on": []
+      },
+      "dependsOn": [
+        "ArchiveRepository",
+        "InjectionService",
+        "BindingService",
+        "ExtractionService",
+        "DeduplicationService"
+      ],
+      "sourceDocs": [
+        "docs/systems/architecture/Service-for-social-media-platform.md",
+        "docs/systems/archive-service/README.md"
+      ],
+      "updatedAt": "2026-02-08"
+    },
+    {
+      "serviceId": "socialMediaEngine",
+      "status": "stable",
+      "entry": {
+        "file": "src/services/social/directorService.ts",
+        "symbol": "DirectorService",
+        "singleton": "DirectorService.getInstance()"
+      },
+      "methods": [
+        {
+          "name": "setConfig",
+          "params": [
+            "config: Partial<{ worldSetting; frequency; isEnabled; costLimit }>"
+          ],
+          "returns": "void"
+        },
+        {
+          "name": "triggerManualEvent",
+          "params": [],
+          "returns": "Promise<void>"
+        },
+        {
+          "name": "createTopicFromEvent",
+          "params": [
+            "event: WorldEvent"
+          ],
+          "returns": "Promise<TrendingTopic[]>"
+        },
+        {
+          "name": "getTrendingList",
+          "params": [
+            "platformId: string",
+            "limit?: number"
+          ],
+          "returns": "Promise<TrendingTopic[]>"
+        },
+        {
+          "name": "ensureTopicContent",
+          "params": [
+            "topicId: string"
+          ],
+          "returns": "Promise<UniversalPost[]>"
+        },
+        {
+          "name": "generatePost",
+          "params": [
+            "platformId: string",
+            "topic: TrendingTopic",
+            "account?: PlatformAccount"
+          ],
+          "returns": "Promise<any>"
+        },
+        {
+          "name": "generateComments",
+          "params": [
+            "platformId: string",
+            "postContent: string",
+            "count?: number"
+          ],
+          "returns": "Promise<any[]>"
+        },
+        {
+          "name": "registerPlatform",
+          "params": [
+            "config: PlatformConfig"
+          ],
+          "returns": "void"
+        },
+        {
+          "name": "calculateTopicHeat",
+          "params": [
+            "topic: TrendingTopic",
+            "currentTime: number"
+          ],
+          "returns": "number"
+        }
+      ],
+      "events": {
+        "emit": [],
+        "on": [
+          "timeService.addTickListener(callback)"
+        ]
+      },
+      "dependsOn": [
+        "timeService",
+        "AIGenerateService",
+        "PromptService",
+        "getTrendingService",
+        "accountService",
+        "archiveService",
+        "sessionService",
+        "PlatformRegistry",
+        "TrafficEngine",
+        "loggerService"
+      ],
+      "sourceDocs": [
+        "docs/systems/architecture/Service-for-social-media-platform.md",
+        "docs/systems/social-media-engine/README.md"
+      ],
+      "updatedAt": "2026-02-08"
+    },
+    {
+      "serviceId": "contentModel",
+      "status": "stable",
+      "entry": {
+        "file": "src/types/social.ts",
+        "symbol": "UniversalPost",
+        "singleton": "module exports"
+      },
+      "methods": [
+        {
+          "name": "createDefaultContentFlags",
+          "params": [],
+          "returns": "ContentFlags"
+        },
+        {
+          "name": "createDefaultStats",
+          "params": [],
+          "returns": "UniversalStats"
+        },
+        {
+          "name": "buildContentFlags",
+          "params": [
+            "payload: PostPayload",
+            "media?: MediaAsset[]"
+          ],
+          "returns": "ContentFlags"
+        },
+        {
+          "name": "getWeiboPrimaryType",
+          "params": [
+            "flags: ContentFlags",
+            "media: MediaAsset[]"
+          ],
+          "returns": "PrimaryContentType"
+        },
+        {
+          "name": "convertImagesToMediaAssets",
+          "params": [
+            "images: (string | { description: string; expandedDescription?: string })[] | undefined"
+          ],
+          "returns": "MediaAsset[]"
+        },
+        {
+          "name": "getPrimaryTypeFromPost",
+          "params": [
+            "post: UniversalPost"
+          ],
+          "returns": "PrimaryContentType"
+        },
+        {
+          "name": "getImagesFromPost",
+          "params": [
+            "post: UniversalPost"
+          ],
+          "returns": "string[]"
+        }
+      ],
+      "events": {
+        "emit": [],
+        "on": []
+      },
+      "dependsOn": [
+        "zod",
+        "TypeScript type module",
+        "Date",
+        "encodeURIComponent"
+      ],
+      "sourceDocs": [
+        "docs/systems/architecture/Service-for-social-media-platform.md",
+        "docs/systems/已完成的（过时的）/social-content-types.md"
+      ],
+      "updatedAt": "2026-02-08"
+    },
+    {
+      "serviceId": "ai",
+      "status": "stable",
+      "entry": {
+        "file": "src/services/ai/aiService.ts",
+        "symbol": "AIService",
+        "singleton": "getAIService"
+      },
+      "methods": [
+        {
+          "name": "initialize",
+          "params": [],
+          "returns": "Promise<void>"
+        },
+        {
+          "name": "generateText",
+          "params": [
+            "options: GenerateOptions",
+            "priority?: RequestPriority"
+          ],
+          "returns": "Promise<GenerateResult>"
+        },
+        {
+          "name": "streamText",
+          "params": [
+            "options: StreamOptions",
+            "priority?: RequestPriority"
+          ],
+          "returns": "StreamHandle"
+        },
+        {
+          "name": "abort",
+          "params": [
+            "requestId?: string"
+          ],
+          "returns": "void"
+        },
+        {
+          "name": "abortAll",
+          "params": [],
+          "returns": "void"
+        },
+        {
+          "name": "switchProvider",
+          "params": [
+            "presetId: string | null"
+          ],
+          "returns": "void"
+        },
+        {
+          "name": "getQueueStatus",
+          "params": [],
+          "returns": "QueueStatus"
+        },
+        {
+          "name": "on",
+          "params": [
+            "event: 'start' | 'chunk' | 'finish' | 'error' | 'abort'",
+            "handler: EventHandler"
+          ],
+          "returns": "() => void"
+        }
+      ],
+      "events": {
+        "emit": [
+          "start",
+          "chunk",
+          "finish",
+          "error",
+          "abort"
+        ],
+        "on": [
+          "start",
+          "chunk",
+          "finish",
+          "error",
+          "abort"
+        ]
+      },
+      "dependsOn": [
+        "ai:generateText/streamText",
+        "ProviderManager",
+        "RequestManager",
+        "RequestQueue",
+        "TavernAdapter",
+        "rateLimiter",
+        "loggerService"
+      ],
+      "sourceDocs": [
+        "docs/systems/architecture/Service-for-social-media-platform.md",
+        "docs/systems/ai-service/README.md",
+        "docs/systems/ai-service/api-reference.md"
+      ],
+      "updatedAt": "2026-02-08"
+    }
+  ]
+}

@@ -139,7 +139,7 @@ function createNotification(params: CreateNotificationParams): Notification
 **参数**：
 
 | 参数 | 类型 | 必填 | 默认值 | 说明 |
-|------|------|------|--------|------|
+| ------ | ------ | ------ | -------- | ------ |
 | `appId` | `string` | ✅ | - | 应用唯一标识 |
 | `appName` | `string` | ✅ | - | 应用显示名称 |
 | `appIcon` | `NotificationIcon` | ✅ | - | 应用图标 |
@@ -155,7 +155,7 @@ function createNotification(params: CreateNotificationParams): Notification
 | `data` | `Record<string, unknown>` | - | - | 附加数据 |
 | `autoDismiss` | `number` | - | `5000` | 自动消失时间(ms) |
 | `dismissible` | `boolean` | - | `true` | 是否可关闭 |
-| `sound` | `string \| boolean` | - | - | 声音配置 |
+| `sound` | `string \ | boolean` | - | - | 声音配置 |
 | `vibrate` | `boolean` | - | - | 是否振动 |
 | `bigImage` | `string` | - | - | 大图 URL |
 | `progress` | `number` | - | - | 进度值 0-100 |

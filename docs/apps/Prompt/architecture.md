@@ -49,7 +49,7 @@ src/apps/prompts/
 采用嵌套路由结构，首页支持 `keepAlive` 缓存。
 
 | 路径 | 组件 | 说明 |
-|:-----|:-----|:-----|
+| :----- | :----- | :----- |
 | `/prompts` | `PromptsApp` | 根容器 |
 | `/prompts/` | `PromptsHome` | 首页（Level 1） |
 | `/prompts/list/:scope` | `PromptsList` | 列表页（Level 2） |
@@ -64,7 +64,7 @@ src/apps/prompts/
 `/prompts/list/:scope` 中的 `scope` 支持以下值：
 
 | 值 | 说明 |
-|:---|:-----|
+| :--- | :----- |
 | `all` | 显示所有提示词 |
 | `user` | 仅用户创建的提示词 |
 | `builtin` | 仅系统内置提示词 |
@@ -74,7 +74,7 @@ src/apps/prompts/
 ### URL 查询参数
 
 | 参数 | 说明 |
-|:-----|:-----|
+| :----- | :----- |
 | `?action=add` | 在 `user` scope 下自动打开新建对话框 |
 | `?q=keyword` | 在 `search` scope 下指定搜索关键词 |
 

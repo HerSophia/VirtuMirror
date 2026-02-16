@@ -23,7 +23,7 @@
 ### 2.1 跨平台内容类型对照
 
 | 类型 | 微博 | B站 | 知乎 | 贴吧 | 说明 |
-|------|------|-----|------|------|------|
+| ------ | ------ | ----- | ------ | ------ | ------ |
 | **图文** | 博文 | 动态 | 想法 | 帖子 | 最基础的类型，文字+可选图片 |
 | **视频** | 视频博文 | 视频/动态视频 | 视频回答 | 视频帖 | 以视频为主，配文为辅 |
 | **长文** | 头条文章 | 专栏 | 文章/回答 | 精品帖 | 有标题、封面、富文本正文 |
@@ -38,7 +38,7 @@
 ### 2.2 互动数据对照
 
 | 互动类型 | 微博 | B站 | 知乎 | 贴吧 |
-|----------|------|-----|------|------|
+| ---------- | ------ | ----- | ------ | ------ |
 | 点赞 | ✅ | ✅ | ✅ 赞同 | ✅ |
 | 踩/反对 | ❌ | ✅ | ✅ | ❌ |
 | 评论 | ✅ | ✅ | ✅ | ✅ 回复 |
@@ -46,7 +46,7 @@
 | 收藏 | ✅ | ✅ | ✅ | ❌（不显示） |
 | 投币 | ❌ | ✅ | ❌ | ❌ |
 | 弹幕 | ❌ | ✅ | ❌ | ❌ |
-| 播放量 | ✅ | ✅| ✅ | ❌ |
+| 播放量 | ✅ | ✅ | ✅ | ❌ |
 | 阅读量 | ✅ 文章 | ✅ 专栏 | ✅ | ❌ |
 
 ---
@@ -484,7 +484,7 @@ interface LocationInfo {
 当前微博的 `WeiboPostType` 与新类型的对应关系：
 
 | 旧类型 | 新 primaryType | 说明 |
-|--------|----------------|------|
+| -------- | ---------------- | ------ |
 | `'text'` | `'text'` 或 `'gallery'` | 根据图片数量判定 |
 | `'poll'` | `'poll'` | 直接对应 |
 | `'video'` | `'video'` | 直接对应 |
@@ -492,7 +492,7 @@ interface LocationInfo {
 ### 8.2 字段映射
 
 | 旧字段 | 新字段 | 说明 |
-|--------|--------|------|
+| -------- | -------- | ------ |
 | `payload.postType` | `primaryType` | 提升到顶层 |
 | `payload.images` | `media[]` | 转为 MediaAsset 数组 |
 | `payload.poll` | `payload.poll` | 结构基本不变 |
@@ -511,7 +511,7 @@ interface LocationInfo {
 #### 问题 1：双重类型定义
 
 | 位置 | 类型 | 用途 | 问题 |
-|------|------|------|------|
+| ------ | ------ | ------ | ------ |
 | `src/types/social.ts` | `UniversalPost` | 数据库存储 | payload 结构松散 |
 | `src/apps/weibo/types.ts` | `WeiboPostUI` | UI 展示 | 需要手动转换 |
 | `src/types/social.ts` | `UniversalComment` | 数据库存储 | 缺少媒体支持 |
@@ -571,7 +571,7 @@ function normalizeImages(images: any[]): string[] {
 > **注意**：账号系统架构已完成（见 [account-service.md](account-service.md) Phase 1-4），但社交引擎组件尚未完全迁移。
 
 | 组件 | 当前状态 | 需要迁移到 |
-|------|----------|------------|
+| ------ | ---------- | ------------ |
 | `ContentFactory` | 使用 `social.ts` 的 `PlatformAccount` | `account.ts` 的 `PlatformAccount` |
 | `UserPool` | 写入 `db.socialAccounts` | 写入 `db.platformAccounts` |
 | `feedStore` | 需要 fallback 兼容两个系统 | 仅使用新系统 |
@@ -594,8 +594,8 @@ async function getUserInfo(authorId: string): Promise<WeiboUser> {
 #### 问题 5：微博特有类型分散
 
 | 类型 | 位置 | 说明 |
-|------|------|------|
-| `WeiboPostType` | `weibo/types.ts` | `'text' \| 'poll' \| 'video'` |
+| ------ | ------ | ------ |
+| `WeiboPostType` | `weibo/types.ts` | `'text' \ | 'poll' \ | 'video'` |
 | `WeiboPollConfig` | `weibo/types.ts` | 投票配置 |
 | `WeiboVideoConfig` | `weibo/types.ts` | 视频配置 |
 | `WeiboImageConfig` | `weibo/types.ts` | 图片配置 |
@@ -757,7 +757,7 @@ interface UniversalPost {
    - 支持生成随机用户档案、完整画像、批量生成
 
 | 组件 | 变更内容 |
-|------|----------|
+| ------ | ---------- |
 | `ContentFactory` | 导入 `account.ts` 的类型，调用 `accountService` |
 | `UserPool` | 重构为 `accountService` 的辅助函数，写入 `platformAccounts` |
 | `feedStore.getUserInfo()` | 移除 fallback 逻辑，仅使用 `accountService` |
@@ -848,7 +848,7 @@ async function migrateSocialAccounts() {
 **类型映射关系**：
 
 | 旧 (WeiboPostUI) | 新 (DisplayPost) |
-|------------------|------------------|
+| ------------------ | ------------------ |
 | `post.user.id` | `post.author.id` |
 | `post.user.name` | `post.author.name` |
 | `post.likes` | `post.stats.likes` |
@@ -919,7 +919,7 @@ async function mapSinglePostToDisplay(p: UniversalPost): Promise<DisplayPost> {
 ### 9.4 文件变更清单
 
 | 文件 | 变更类型 | 说明 |
-|------|----------|------|
+| ------ | ---------- | ------ |
 | `src/types/social.ts` | **重写** | 实现本文档定义的类型 |
 | `src/apps/weibo/types.ts` | **精简** | 只保留 UI 配置类型，移除数据类型 |
 | `src/apps/weibo/stores/feedStore.ts` | **重构** | 移除 mapPostsToUI，直接返回 UniversalPost |
@@ -966,7 +966,7 @@ export interface ComposeFormState { ... };
 #### 问题 1：类型字段命名不统一
 
 | 方面 | 提示词当前输出 | 新架构要求 | 差距 |
-|------|---------------|-----------|------|
+| ------ | --------------- | ----------- | ------ |
 | 类型字段 | `type: 'text'/'poll'/'video'` | `primaryType: PrimaryContentType` | 字段名不同 |
 | 类型值 | 只有 3 种 | 支持 12 种 | 缺少 gallery/repost/link 等 |
 
@@ -1002,7 +1002,7 @@ export interface ComposeFormState { ... };
 #### 问题 2：媒体资源格式不匹配
 
 | 当前格式 | 新架构 (MediaAsset) |
-|----------|--------------------|
+| ---------- | -------------------- |
 | `images: [{description}]` | `media: MediaAsset[]` |
 | 无 `id` 字段 | 必须有 `id` |
 | 无 `type` 字段 | 必须指定 `'image'/'video'/'audio'` |
@@ -1285,7 +1285,7 @@ export async function saveSinglePostToDatabase(
 ### 10.3 文件变更清单
 
 | 文件 | 变更类型 | 说明 |
-|------|----------|------|
+| ------ | ---------- | ------ |
 | `src/apps/weibo/prompts.ts` | **更新** | 更新 systemPrompt 指导 LLM 输出新格式 |
 | `src/apps/weibo/stores/llm/postTransformer.ts` | **新增** | LLM 输出到 UniversalPost 的转换层 |
 | `src/apps/weibo/stores/llm/outputHandlers.ts` | **重构** | 迁移到新账号系统，使用转换层 |
@@ -1778,7 +1778,7 @@ src/apps/weibo/stores/llm/parsers/
 ### 11.9 架构优势
 
 | 方面 | 旧架构 (switch-case) | 新架构 (总部-分部) |
-|------|---------------------|-------------------|
+| ------ | --------------------- | ------------------- |
 | **扩展性** | 新类型需改核心代码 | 只需注册新 Parser |
 | **复合输出** | 需特殊 handler | 自动识别分发 |
 | **依赖处理** | 手动管理 | 拓扑排序自动处理 |
@@ -1790,7 +1790,7 @@ src/apps/weibo/stores/llm/parsers/
 ### 11.10 实施步骤
 
 | 步骤 | 内容 | 优先级 | 状态 |
-|------|------|--------|------|
+| ------ | ------ | -------- | ------ |
 | 1 | 创建 `parsers/` 目录，实现 `types.ts` 和 `dispatcher.ts` | 高 | ✅ 完成 |
 | 2 | 实现 `PostParser`（含 ensureAuthorAccount） | 高 | ✅ 完成 |
 | 3 | 实现 `CommentParser`（含 tempId 解析） | 高 | ✅ 完成 |

@@ -12,7 +12,7 @@
 ### 1.1 提示词列表
 
 | 场景 ID | 名称 | 用途 |
-|---------|------|------|
+| --------- | ------ | ------ |
 | `social.event.generate` | 生成世界事件 | DirectorService 调用 |
 | `social.post.generate` | 生成社交博文 | ContentFactory 调用 |
 | `social.comment.batch` | 批量生成评论 | ContentFactory 调用 |
@@ -56,7 +56,7 @@
 #### 可用变量
 
 | 变量名 | 类型 | 必填 | 默认值 | 说明 |
-|--------|------|------|--------|------|
+| -------- | ------ | ------ | -------- | ------ |
 | `timeContext` | `string` | ✅ | - | 当前世界时间字符串 |
 | `eventType` | `string` | ❌ | `'随机'` | 事件类型 |
 | `intensity` | `string` | ❌ | `'中'` | 轰动程度 |
@@ -112,7 +112,7 @@
 #### 可用变量
 
 | 变量名 | 类型 | 必填 | 默认值 | 说明 |
-|--------|------|------|--------|------|
+| -------- | ------ | ------ | -------- | ------ |
 | `platformName` | `string` | ✅ | - | 平台名称 |
 | `platformCulture` | `string` | ✅ | - | 平台文化描述 |
 | `topic` | `string` | ✅ | - | 关联话题 |
@@ -172,7 +172,7 @@
 #### 可用变量
 
 | 变量名 | 类型 | 必填 | 默认值 | 说明 |
-|--------|------|------|--------|------|
+| -------- | ------ | ------ | -------- | ------ |
 | `platformName` | `string` | ✅ | - | 平台名称 |
 | `postContent` | `string` | ✅ | - | 原博文内容 |
 | `count` | `number` | ❌ | `5` | 生成数量 |
@@ -234,7 +234,7 @@
 #### 可用变量
 
 | 变量名 | 类型 | 必填 | 默认值 | 说明 |
-|--------|------|------|--------|------|
+| -------- | ------ | ------ | -------- | ------ |
 | `platformName` | `string` | ✅ | - | 平台名称 |
 | `context` | `string` | ❌ | `'随机路人'` | 生成上下文 |
 
@@ -319,7 +319,7 @@ PromptService.renderPrompt(prompt, {
 ## 5. 相关服务
 
 | 服务 | 文档 | 说明 |
-|------|------|------|
+| ------ | ------ | ------ |
 | **PlatformRegistry** | [platform-registry.md](./platform-registry.md) | 注册这些提示词 |
 | **ContentFactory** | [content-factory.md](./content-factory.md) | 使用 post/comment 提示词 |
 | **DirectorService** | [director-service.md](./director-service.md) | 使用 event 提示词 |
@@ -330,5 +330,5 @@ PromptService.renderPrompt(prompt, {
 ## 6. 版本历史
 
 | 版本 | 日期 | 变更内容 |
-|------|------|----------|
+| ------ | ------ | ---------- |
 | 1.0 | 2026-01-16 | 初始文档，基于代码实现整理 |

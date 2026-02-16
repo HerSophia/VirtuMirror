@@ -18,8 +18,13 @@ import AIGenerateService from '../aiGenerateService'
 import { PromptService } from '../prompt/promptService'
 import { PlatformRegistry } from './registry'
 import { loggerService } from '@/services/logger'
+import { archiveService } from '@/services/archive'
+import { sessionService } from '@/services/database'
+import type { InjectionResult } from '@/types/archive'
 
 const logger = loggerService.child('service:contentFactory')
+const POST_ARCHIVE_BUDGET = 800
+const COMMENT_ARCHIVE_BUDGET = 400
 
 interface GenerationTask {
   id: string
@@ -61,6 +66,14 @@ export class ContentFactory {
       }
     }
 
+    const scene = platform.aiSetting.promptTemplate || 'social.post.generate'
+    const archiveInjection = await this.getArchiveInjection({
+      account,
+      scene,
+      sourceText: `${topic.keyword} ${topic.summary}`,
+      maxTotalTokens: POST_ARCHIVE_BUDGET,
+    })
+
     // 尝试从 PromptService 获取提示词
     // 优先使用平台特定的提示词 (如 social.post.generate.weibo)
     // 如果未找到，回退到通用提示词 (social.post.generate)
@@ -76,17 +89,21 @@ export class ContentFactory {
     let userPrompt = ''
 
     if (prompt) {
-      const rendered = PromptService.renderPrompt(prompt, {
+      const rendered = await PromptService.renderPromptAsync(prompt, {
         platformName: platform.name,
         platformCulture: `${platform.aiSetting.tone}. 常用语: ${platform.aiSetting.slang.join(', ')}`,
         topic: `${topic.keyword} (${topic.summary})`,
         authorIdentity: persona,
         length: platform.content.maxLength,
       })
-      systemPrompt = rendered.systemPrompt || ''
-      userPrompt = rendered.userPrompt
+      const withArchiveContext = this.injectArchiveContext(
+        rendered.systemPrompt || '',
+        rendered.userPrompt,
+        archiveInjection
+      )
+      systemPrompt = withArchiveContext.systemPrompt
+      userPrompt = withArchiveContext.userPrompt
     } else {
-      // Fallback (保留原有逻辑作为后备)
       logger.warn('Prompt social.post.generate not found, using fallback.')
       systemPrompt = `
 你是一个专业的社交媒体内容生成引擎。
@@ -115,6 +132,10 @@ payload 结构如下:
 
 JSON Output:
 `.trim()
+
+      const withArchiveContext = this.injectArchiveContext(systemPrompt, userPrompt, archiveInjection)
+      systemPrompt = withArchiveContext.systemPrompt
+      userPrompt = withArchiveContext.userPrompt
     }
 
     const result = await AIGenerateService.generate(
@@ -152,24 +173,37 @@ JSON Output:
     // 尝试从 PromptService 获取提示词
     // 优先查找特定平台的评论生成提示词
     let prompt = PromptService.getPromptByScene(`social.comment.batch.${platformId}`)
+    let scene = `social.comment.batch.${platformId}`
 
     if (!prompt) {
       prompt = PromptService.getPromptByScene('social.comment.batch')
+      scene = 'social.comment.batch'
     }
+
+    const archiveInjection = await this.getArchiveInjection({
+      scene,
+      sourceText: postContent,
+      maxTotalTokens: COMMENT_ARCHIVE_BUDGET,
+    })
 
     let systemPrompt = ''
     let userPrompt = ''
 
     if (prompt) {
-      const rendered = PromptService.renderPrompt(prompt, {
+      const rendered = await PromptService.renderPromptAsync(prompt, {
         platformName: platform.name,
         postContent: postContent.slice(0, 500), // 截断防止过长
         count: count,
         // 添加额外上下文，虽然 template 可能没显式用到，但便于后续扩展
         platformCulture: platform.aiSetting.tone,
       })
-      systemPrompt = rendered.systemPrompt || ''
-      userPrompt = rendered.userPrompt
+      const withArchiveContext = this.injectArchiveContext(
+        rendered.systemPrompt || '',
+        rendered.userPrompt,
+        archiveInjection
+      )
+      systemPrompt = withArchiveContext.systemPrompt
+      userPrompt = withArchiveContext.userPrompt
     } else {
       // Fallback
       logger.warn('Prompt social.comment.batch not found, using fallback.')
@@ -195,6 +229,10 @@ JSON Output:
 
 JSON Array Output:
 `.trim()
+
+      const withArchiveContext = this.injectArchiveContext(systemPrompt, userPrompt, archiveInjection)
+      systemPrompt = withArchiveContext.systemPrompt
+      userPrompt = withArchiveContext.userPrompt
     }
 
     const result = await AIGenerateService.generate(
@@ -274,6 +312,103 @@ JSON Array Output:
 
     logger.debug(`Created commenter account: ${nickname} (${account.id})`)
     return account.id
+  }
+
+  private resolveArchiveSessionId(account?: PlatformAccount): string | null {
+    if (account?.scopeSessionId) {
+      return account.scopeSessionId
+    }
+
+    const context = accountService.getSessionContext()
+    if (context?.sessionId) {
+      return context.sessionId
+    }
+
+    return sessionService.getCurrentSessionIdOrNull()
+  }
+
+  private extractKeywords(text: string, limit = 12): string[] {
+    const keywords: string[] = []
+
+    const hashtagMatches = text.match(/#([^#\s]{2,24})#/g) || []
+    for (const tag of hashtagMatches) {
+      keywords.push(tag.replace(/#/g, '').trim())
+    }
+
+    const rawWords = text
+      .replace(/[#"'`~]/g, ' ')
+      .split(/[\s,，。！？!?；;、|/:()\[\]{}<>]+/)
+      .map((word) => word.trim())
+      .filter((word) => word.length >= 2 && word.length <= 24)
+
+    for (const word of rawWords) {
+      keywords.push(word)
+    }
+
+    return Array.from(new Set(keywords)).slice(0, limit)
+  }
+
+  private async getArchiveInjection(options: {
+    scene: string
+    sourceText: string
+    account?: PlatformAccount
+    maxTotalTokens: number
+  }): Promise<InjectionResult | null> {
+    const sessionId = this.resolveArchiveSessionId(options.account)
+    if (!sessionId) {
+      return null
+    }
+
+    try {
+      return await archiveService.getInjection({
+        sessionId,
+        scene: options.scene,
+        accountId: options.account?.id,
+        keywords: this.extractKeywords(options.sourceText),
+        maxTotalTokens: options.maxTotalTokens,
+      })
+    } catch (error) {
+      logger.warn('Archive injection failed, continue without archive context', error)
+      return null
+    }
+  }
+
+  private injectArchiveContext(
+    systemPrompt: string,
+    userPrompt: string,
+    injection: InjectionResult | null
+  ): { systemPrompt: string; userPrompt: string } {
+    if (!injection) {
+      return { systemPrompt, userPrompt }
+    }
+
+    const sections: string[] = []
+    if (injection.coreKnowledge.trim()) {
+      sections.push(`【核心知识】\n${injection.coreKnowledge}`)
+    }
+    if (injection.accountContext.trim()) {
+      sections.push(`【账号上下文】\n${injection.accountContext}`)
+    }
+    if (injection.relevantArchives.trim()) {
+      sections.push(`【相关档案】\n${injection.relevantArchives}`)
+    }
+
+    if (sections.length === 0) {
+      return { systemPrompt, userPrompt }
+    }
+
+    const archiveBlock = sections.join('\n\n')
+    if (systemPrompt.trim()) {
+      return {
+        systemPrompt: `${systemPrompt}\n\n${archiveBlock}`,
+        userPrompt,
+      }
+    }
+
+    return {
+      systemPrompt: archiveBlock,
+      userPrompt,
+    }
   }
 
   /**

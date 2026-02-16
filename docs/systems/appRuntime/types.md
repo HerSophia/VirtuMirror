@@ -124,7 +124,7 @@ interface ScopedStorage {
 
 | 方法 | 返回类型 | 说明 |
 | ---- | ---- | ---- |
-| `get<T>(key)` | `Promise<T \| undefined>` | 获取指定键的值 |
+| `get<T>(key)` | `Promise<T \ | undefined>` | 获取指定键的值 |
 | `set<T>(key, value)` | `Promise<void>` | 存储键值对 |
 | `delete(key)` | `Promise<void>` | 删除指定键 |
 | `keys()` | `Promise<string[]>` | 列出所有键名 |

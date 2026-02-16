@@ -53,7 +53,7 @@ storage/{sessionId}/
 ### 应用到数据表的映射
 
 | 应用ID | 包含的数据表 | 说明 |
-|--------|-------------|------|
+| -------- | ------------- | ------ |
 | contacts | contacts | 通讯录 |
 | messages | messages | 短信 |
 | moments | moments | 朋友圈 |
@@ -107,7 +107,7 @@ filter: (table, value) => {
 ### 需要支持备份的数据类型
 
 | 类型 | 应用/表 | 当前状态 | 备份策略 |
-|------|---------|----------|----------|
+| ------ | --------- | ---------- | ---------- |
 | **应用数据** | contacts, messages, moments, phone, email, forum, browser, live, weibo | ✅ 已支持 | 按应用分类存储 |
 | **全局设置** | global/settings | 🔄 进行中 | 全量备份 |
 | **桌面布局** | global/desktop | 🔄 进行中 | 全量备份 |
@@ -186,7 +186,7 @@ interface RestoreOptions {
 ### 会话相关表（有 sessionId）→ 按应用分类
 
 | 旧表名 | 应用ID | 说明 |
-|--------|--------|------|
+| -------- | -------- | ------ |
 | contacts | contacts | 联系人 |
 | messages | messages | 消息 |
 | moments | moments | 朋友圈 |

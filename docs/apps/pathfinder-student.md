@@ -102,7 +102,7 @@ src/apps/pathfinder-student/
 ## 核心概念
 
 | 概念 | 说明 | 对应颜色 |
-|------|------|----------|
+| ------ | ------ | ---------- |
 | **PP** | Pathfinder Points，学员综合能力评分 | Blue |
 | **Artemis Eye** | 训练数据分析系统 | - |
 | **Hermes** | 任务悬赏与微订单系统 | Purple |

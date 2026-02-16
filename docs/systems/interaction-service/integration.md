@@ -310,7 +310,7 @@ class NotificationService {
 ### 3.3 通知类型映射
 
 | 互动类型 | 通知类型 | 通知标题 | 是否聚合 |
-|----------|----------|----------|----------|
+| ---------- | ---------- | ---------- | ---------- |
 | `like` | `like` | 收到新的赞 | ✅ 是 |
 | `comment` | `comment` | 收到新评论 | ❌ 否 |
 | `repost` | `repost` | 被转发了 | ❌ 否 |
@@ -601,7 +601,7 @@ eventBus.on('interaction:any', (event) => {
 ### 6.3 事件名称规范
 
 | 事件名称 | 说明 |
-|----------|------|
+| ---------- | ------ |
 | `interaction:like` | 点赞事件 |
 | `interaction:unlike` | 取消点赞事件 |
 | `interaction:favorite` | 收藏事件 |

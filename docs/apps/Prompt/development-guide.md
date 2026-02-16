@@ -138,7 +138,7 @@ onMounted(async () => {
 ### 标准变量
 
 | 变量名 | 类型 | 说明 |
-|:-------|:-----|:-----|
+| :------- | :----- | :----- |
 | `narrative` | string | 叙事内容（主要变量） |
 | `narrativeMessageId` | number | 来源楼层号 |
 | `narrativeSwipeId` | number | 来源 Swipe ID |
@@ -225,7 +225,7 @@ const value = await dialog.input({
 ### 可用图标
 
 | 图标 | 说明 | 颜色 |
-|:-----|:-----|:-----|
+| :----- | :----- | :----- |
 | `warning` | 警告 | 黄色 |
 | `danger` | 错误/危险 | 红色 |
 | `info` | 信息 | 蓝色 |

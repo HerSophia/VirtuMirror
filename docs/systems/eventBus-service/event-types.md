@@ -17,7 +17,7 @@
 ### 1.2 命名示例
 
 | 事件名 | 说明 |
-|--------|------|
+| -------- | ------ |
 | `content:post:created` | 帖子创建 |
 | `interaction:like` | 点赞行为 |
 | `session:changed` | 会话切换 |
@@ -49,7 +49,7 @@ type SystemEvent =
 ### 3.1 事件列表
 
 | 事件名 | 说明 | 触机 |
-|--------|------|----------|
+| -------- | ------ | ---------- |
 | `session:changed` | 会话切换 | 用户切换到另一个角色卡会话 |
 | `session:message:new` | 新消息 | 收到新的聊天消息 |
 | `session:message:updated` | 消息更新 | 消息内容被编辑 |
@@ -110,7 +110,7 @@ interface SessionSwipeChangedEvent {
 ### 4.1 事件列表
 
 | 事件名 | 说明 | 触发时机 |
-|--------|------|----------|
+| -------- | ------ | ---------- |
 | `content:post:created` | 帖子创建 | 新帖子被生成或发布 |
 | `content:post:updated` | 帖子更新 | 帖子内容或状态更新 |
 | `content:post:deleted` | 帖子删除 | 帖子被删除 |
@@ -203,7 +203,7 @@ interface FeedRefreshedEvent {
 ### 5.1 事件列表
 
 | 事件名 | 说明 | 触发时机 |
-|--------|------|----------|
+| -------- | ------ | ---------- |
 | `interaction:like` | 点赞 | 用户点赞内容 |
 | `interaction:unlike` | 取消点赞 | 用户取消点赞 |
 | `interaction:favorite` | 收藏 | 用户收藏内容 |
@@ -296,7 +296,7 @@ interface ViewEvent extends BaseInteractionEvent {
 ### 6.1 事件列表
 
 | 事件名 | 说明 | 触发时机 |
-|--------|------|----------|
+| -------- | ------ | ---------- |
 | `account:created` | 账号创建 | 新账号注册 |
 | `account:updated` | 账号更新 | 账号信息变更 |
 | `account:avatar:changed` | 头像更换 | 账号头像变更 |
@@ -357,7 +357,7 @@ interface AccountStatsChangedEvent {
 ### 7.1 事件列表
 
 | 事件名 | 说明 | 触发时机 |
-|--------|------|----------|
+| -------- | ------ | ---------- |
 | `time:tick` | 时间流逝 | 模拟时间更新 |
 | `llm:task:started` | LLM 任务开始 | 任务开始执行 |
 | `llm:task:completed` | LLM 任务完成 | 任务执行完成 |
@@ -543,7 +543,7 @@ eventBus.emit('my:custom:event', {
 ### 9.2 命名建议
 
 | 场景 | 推荐命名 | 示例 |
-|------|----------|------|
+| ------ | ---------- | ------ |
 | App 内部事件 | `{appId}:{entity}:{action}` | `weibo:post:liked` |
 | 通道隔离事件 | 使用 channel API | `weiboChannel.emit('post:liked', ...)` |
 | 跨服务事件 | 使用标准系统事件 | `content:post:created` |

@@ -210,7 +210,7 @@ type NotificationPriority = 'low' | 'normal' | 'high' | 'urgent'
 ```
 
 | 值 | 权重 | 说明 | Toast 行为 |
-|----|------|------|------------|
+| ---- | ------ | ------ | ------------ |
 | `low` | 1 | 低优先级 | 通常不显示 Toast |
 | `normal` | 2 | 普通优先级 | 正常显示 Toast |
 | `high` | 3 | 高优先级 | 可抢占普通 Toast |

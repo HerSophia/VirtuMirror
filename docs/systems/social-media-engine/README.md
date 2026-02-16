@@ -7,7 +7,7 @@
 ## 服务模块列表
 
 | 服务 | 文档 | 代码位置 | 说明 |
-|------|------|----------|------|
+| ------ | ------ | ---------- | ------ |
 | **TrendService** | [trend-service.md](./trend-service.md) | `trendService.ts` | 热搜话题管理、惰性内容填充 |
 | **TrafficEngine** | [traffic-engine.md](./traffic-engine.md) | `algorithm.ts` | 热度计算、互动概率算法 |
 | **ContentFactory** | [content-factory.md](./content-factory.md) | `contentFactory.ts` | LLM 内容生成、JSON 解析修复 |
@@ -118,7 +118,7 @@ IndexedDB.socialPosts
 ## 相关文档
 
 | 文档 | 说明 |
-|------|------|
+| ------ | ------ |
 | [social-media-engine.md](../social-media-engine.md) | 引擎总体设计 |
 | [account-service.md](../account-service.md) | 账号系统（UserPool 所在） |
 | [架构概览](../architecture/Service-for-social-media-platform.md) | 社交平台系统服务架构 |
@@ -126,5 +126,5 @@ IndexedDB.socialPosts
 ## 版本历史
 
 | 版本 | 日期 | 变更内容 |
-|------|------|----------|
+| ------ | ------ | ---------- |
 | 1.0 | 2026-01-16 | 创建服务文档目录，包含 6 个服务模块文档 |

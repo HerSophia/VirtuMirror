@@ -1,7 +1,7 @@
 # 档案服务 - 集成指南
 
 > **版本**: 1.0  
-> **最后更新**: 2026-01-16
+> **最后更新**: 2026-02-08
 
 ## 1. 概述
 
@@ -16,69 +16,85 @@
 ### 2.1 事件定义
 
 ```typescript
-// src/adapters/bridgeAdapter.ts
+// Archive 侧消费的 Bridge 事件（现网口径）
+// src/adapters/bridgeAdapter.ts + src/adapters/types.ts
 
 interface BridgeEvents {
-  // 请求楼层内容
-  'floors:request': (range: { start: number; end: number }) => void;
-  
-  // 接收楼层数据
-  'floors:response': (floors: FloorData[]) => void;
-  
-  // 楼层变化通知（用于触发自动提取检查）
-  'floors:updated': (info: { 
-    totalFloors: number; 
-    lastFloorId: number;
-  }) => void;
+  'message_received': (payload: SyncPayload) => void;
+  'message_edited': (payload: SyncPayload) => void;
+  'message_deleted': (payload: MessageDeletedEvent) => void;
+  'swipe_changed': (payload: SwipeChangedEvent) => void;
+  'chat_changed': (chatId: string) => void;
 }
+```
 
-interface FloorData {
-  messageId: number;              // 楼层号
-  swipeId: number;                // 消息页 ID
+### 2.2 Archive 事件映射表
+
+文档历史上使用过 `floors:request/response/updated` 口径。当前实现统一映射到 Bridge 现有事件：
+
+| 旧口径（设计） | 当前事件（实现） | 触发来源 | Archive 使用方式 |
+| ------------- | ---------------- | -------- | ---------------- |
+| `floors:request` | `request_sync`（socket emit） | Phone -> Bridge | 主动拉取最近楼层窗口 |
+| `floors:response` | `sync(type='full_sync')` | Bridge -> Phone | 获取完整楼层窗口并转换为 `ArchiveFloorData[]` |
+| `floors:updated` | `message_received` / `message_edited` / `swipe_changed` | Bridge -> Phone | 增量更新后触发提取窗口检查 |
+| `session:changed`（隐式） | `chat_changed` | Bridge -> Phone | 切会话后重置提取游标与上下文 |
+
+### 2.3 ArchiveFloorData 统一结构
+
+```typescript
+interface ArchiveFloorData {
+  messageId: number;              // 楼层号（message_id）
+  swipeId: number;                // 消息页 ID（swipe_id）
   role: 'user' | 'assistant' | 'system';
-  content: string;                // 消息内容
+  content: string;                // 消息文本
   timestamp: number;              // 时间戳
 }
 ```
 
-### 2.2 获取楼层数据
+### 2.4 获取楼层数据
 
 ```typescript
-// src/services/archiveService.ts
+// 通过 request_sync + full_sync 拉取窗口楼层
 
 class ArchiveService {
-  /**
-   * 从 Bridge 获取楼层数据
-   */
-  async fetchFloors(range: { start: number; end: number }): Promise<FloorData[]> {
+  async fetchFloors(range: { start: number; end: number }): Promise<ArchiveFloorData[]> {
     return new Promise((resolve, reject) => {
       const timeout = setTimeout(() => {
-        reject(new Error('Floors request timeout'));
+        reject(new Error('Bridge sync timeout'));
       }, 10000);
-      
-      // 监听响应
-      bridgeAdapter.once('floors:response', (floors) => {
+
+      const off = bridgeAdapter.on('bridge:full_sync', (payload: SyncPayload) => {
         clearTimeout(timeout);
-        resolve(floors);
+        off();
+
+        const floors = (payload.messages ?? []).map((item) => ({
+          messageId: item.message_id,
+          swipeId: item.swipe_id ?? 0,
+          role: item.role,
+          content: item.message,
+          timestamp: Date.now(),
+        }));
+
+        resolve(floors.slice(range.start - 1, range.end));
       });
-      
-      // 发送请求
-      bridgeAdapter.emit('floors:request', range);
+
+      bridgeAdapter.requestSync(range.end - range.start + 1);
     });
   }
 }
 ```
 
-### 2.3 监听楼层更新
+### 2.5 监听楼层更新
 
 ```typescript
 // 初始化时注册监听
 function initArchiveService(): void {
-  bridgeAdapter.on('floors:updated', async (info) => {
-    const sessionId = await bridgeAdapter.getSessionId();
-    
-    // 检查是否需要触发自动提取
-    archiveAutoScheduler.checkAutoExtract(sessionId, info.lastFloorId);
+  bridgeAdapter.on('message_received', () => archiveAutoScheduler.checkAutoExtract());
+  bridgeAdapter.on('message_edited', () => archiveAutoScheduler.checkAutoExtract());
+  bridgeAdapter.on('swipe_changed', () => archiveAutoScheduler.checkAutoExtract());
+
+  bridgeAdapter.on('chat_changed', (chatId) => {
+    archiveAutoScheduler.resetSessionCursor(chatId);
   });
 }
 ```
@@ -272,46 +288,40 @@ class SystemPromptService {
 
 ### 4.2 变量注册
 
-将档案变量注册到提示词变量系统：
+当前实现不再使用独立 PromptVariableRegistry，直接使用 `shared-context`：
 
 ```typescript
-// src/services/promptVariableRegistry.ts
+// 1) 注入服务发布上下文
+contextSharingService.publish({
+  id: 'archive:pinned',
+  type: 'archive:pinned',
+  description: 'Archive 核心知识（always）',
+  value: coreKnowledge,
+})
 
-import { ARCHIVE_VARIABLES } from '@/services/archiveVariables';
+contextSharingService.publish({
+  id: 'archive:relevant',
+  type: 'archive:relevant',
+  description: 'Archive 上下文匹配结果',
+  value: relevantArchives,
+})
 
-class PromptVariableRegistry {
-  private variables: Map<string, VariableDefinition> = new Map();
-  
-  constructor() {
-    // 注册档案变量
-    this.registerArchiveVariables();
-  }
-  
-  private registerArchiveVariables(): void {
-    for (const [key, def] of Object.entries(ARCHIVE_VARIABLES)) {
-      this.register(def.name, {
-        description: def.description,
-        resolver: def.resolver,
-        format: def.format,
-      });
-    }
-  }
-  
-  /**
-   * 解析变量
-   */
-  async resolve(
-    variableName: string,
-    context: VariableContext
-  ): Promise<string> {
-    const def = this.variables.get(variableName);
-    if (!def) return '';
-    
-    const rawValue = await def.resolver(context);
-    return this.format(rawValue, def.format);
-  }
+// 2) Prompt 模板变量声明 shared-context 来源
+const variable = {
+  name: 'coreKnowledge',
+  source: 'shared-context',
+  sharedContextConfig: {
+    contextId: 'archive:pinned',
+    format: 'text',
+  },
 }
 ```
+
+参考实现：
+
+- `src/services/archive/injectionService.ts`
+- `src/services/social/prompts.ts`
+- `src/apps/weibo/prompts.ts`
 
 ---
 

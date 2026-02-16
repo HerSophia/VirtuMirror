@@ -104,4 +104,14 @@ export type {
   NotificationCreatedEvent,
   AppReadyEvent,
   AppErrorEvent,
+  // Scheduler 事件
+  SchedulerExecutionResult,
+  SchedulerTaskBaseEvent,
+  SchedulerTaskStateChangedEvent,
+  SchedulerTaskStartedEvent,
+  SchedulerTaskResultEvent,
+  SchedulerTaskCompletedEvent,
+  SchedulerTaskFailedEvent,
+  SchedulerTaskTimeoutEvent,
+  SchedulerTaskSkippedEvent,
 } from '@/types/eventBus'

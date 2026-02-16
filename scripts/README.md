@@ -1,5 +1,19 @@
 # 酒馆桥接脚本
 
+## Markdown 表格修复脚本
+
+### fix-markdown-table-spacing.mjs
+
+用于批量修复文档中的 Markdown 表格格式（MD060，紧凑风格）。
+
+```bash
+# 修复仓库下所有 markdown 文档（默认）
+pnpm lint:md:fix
+
+# 修复指定目录/文件
+node scripts/fix-markdown-table-spacing.mjs docs/systems README.md
+```
+
 ## phone-bridge.js
 
 用于在酒馆助手（TavernHelper）中运行的桥接脚本，将酒馆的消息事件同步到独立的小手机应用。
@@ -43,7 +57,7 @@
 所有配置修改后会自动保存到脚本变量，下次启动时自动恢复。
 
 | 配置项 | 说明 | 默认值 |
-|--------|------|--------|
+| -------- | ------ | -------- |
 | 服务器地址 | Bridge Server 的 URL | `http://localhost:3001` |
 | API Key | 可选的鉴权密钥（留空禁用鉴权） | 空 |
 | 同步楼层数 | 每次同步的消息数量 | 10 |
@@ -100,7 +114,7 @@ $(() => {
 脚本会自动监听以下酒馆事件并同步：
 
 | 事件 | 说明 |
-|------|------|
+| ------ | ------ |
 | `MESSAGE_RECEIVED` | 新消息接收 |
 | `MESSAGE_EDITED` | 消息被编辑 |
 | `MESSAGE_DELETED` | 消息被删除 |
@@ -246,7 +260,7 @@ socket.on('floors:request', (request) => {
 #### 使用场景
 
 | 场景 | 请求方式 | 说明 |
-|------|----------|------|
+| ------ | ---------- | ------ |
 | 档案提取 | `{ range: { start: 10, end: 20 } }` | 提取指定范围楼层 |
 | 首次分析 | `{ range: 'all' }` | 获取全部历史 |
 | 增量同步 | `{ range: { last: 5 } }` | 获取最新几楼 |

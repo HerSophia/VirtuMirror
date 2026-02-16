@@ -13,7 +13,7 @@
 ## 文档目录
 
 | 文档 | 说明 |
-|------|------|
+| ------ | ------ |
 | [data-isolation.md](./data-isolation.md) | 数据隔离与 AppRuntime 设计 |
 | [write-queue.md](./write-queue.md) | 写入队列机制设计 |
 | [multi-device-sync.md](./multi-device-sync.md) | 多设备同步与冲突检测 |
@@ -25,16 +25,16 @@
 #### 前端服务
 
 | 模块 | 路径 | 说明 |
-|------|------|------|
+| ------ | ------ | ------ |
 | WriteQueue | `src/services/database/writeQueue.ts` | 统一写入队列 |
 | AppRuntime | `src/services/appRuntime/` | 应用运行时与隔离存储 |
 | DeviceSync | `src/services/sync/deviceSync.ts` | 设备心跳管理 |
-| ChangeTracker | `src/services/sync/changeTracker.ts` | 变更追踪|
+| ChangeTracker | `src/services/sync/changeTracker.ts` | 变更追踪 |
 
 #### 后端服务
 
 | 模块 | 路径 | 说明 |
-|------|------|------|
+| ------ | ------ | ------ |
 | DeviceManager | `server/src/services/deviceManager.ts` | 多设备心跳管理 |
 | ConflictDetector | `server/src/services/conflictDetector.ts` | 数据级冲突检测 |
 | SessionWriteQueue | `server/src/services/sessionWriteQueue.ts` | 按 session 隔离的写入队列 |
@@ -42,7 +42,7 @@
 #### UI 组件
 
 | 组件 | 路径 | 说明 |
-|------|------|------|
+| ------ | ------ | ------ |
 | WriteQueueIndicator | `src/components/common/WriteQueueIndicator.vue` | 写入状态指示器 |
 | EditingBanner | `src/components/common/EditingBanner.vue` | 实时编辑提示 |
 | MultiDeviceIndicator | `src/components/sync/MultiDeviceIndicator.vue` | 多设备在线指示 |
@@ -200,7 +200,7 @@ import { AppSourceBadge } from '@/components/apps'
 ## 数据隔离策略
 
 | 来源 | 命名空间格式 | 示例 |
-|------|-------------|------|
+| ------ | ------------- | ------ |
 | 内置应用 | `builtin/{appId}` | `builtin/calculator` |
 | 商店应用 | `repo/{repoId}/{developerId}/{appId}` | `repo/official/dev1/notes` |
 | URL 导入 | `url/{domain}/{hash}` | `url/example.com/a1b2c3d4` |
@@ -211,7 +211,7 @@ import { AppSourceBadge } from '@/components/apps'
 写入队列支持三个优先级：
 
 | 来源 | 优先级值 | 说明 |
-|------|---------|------|
+| ------ | --------- | ------ |
 | system | 0 | 系统级操作，最高优先 |
 | app | 10 | 应用写入操作 |
 | sync | 20 | 云同步写入，最低优先 |

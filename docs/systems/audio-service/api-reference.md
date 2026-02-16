@@ -47,7 +47,7 @@ play(options: SoundOption): PlaybackControl
 **参数** `SoundOption`：
 
 | 属性 | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
+| ------ | ------ | -------- | ------ |
 | `source` | `string` | 必填 | 音频文件 URL |
 | `channel` | `AudioChannelType` | `'media'` | 目标通道 |
 | `volume` | `number` | `1.0` | 相对音量 (0.0-1.0) |
@@ -58,7 +58,7 @@ play(options: SoundOption): PlaybackControl
 **返回值** `PlaybackControl`：
 
 | 属性/方法 | 类型 | 说明 |
-|-----------|------|------|
+| ----------- | ------ | ------ |
 | `id` | `string` | 播放实例唯一标识 |
 | `stop()` | `() => void` | 停止播放并释放资源 |
 | `pause()` | `() => void` | 暂停播放 |
@@ -111,7 +111,7 @@ playSystemSound(key: SystemSoundKey): void
 **参数**：
 
 | 值 | 说明 | 配置状态 |
-|----|------|----------|
+| ---- | ------ | ---------- |
 | `'CLICK'` | 屏幕点击 | 🔇 未配置 |
 | `'LOCK'` | 锁屏 | 🔇 未配置 |
 | `'UNLOCK'` | 解锁 | 🔇 未配置 |
@@ -254,7 +254,7 @@ const audioStore = useAudioStore()
 ### 2.2 State
 
 | 状态 | 类型 | 说明 |
-|------|------|------|
+| ------ | ------ | ------ |
 | `volumes` | `Record<AudioChannelType, number>` | 各通道音量 |
 | `muted` | `Record<AudioChannelType, boolean>` | 各通道静音状态 |
 

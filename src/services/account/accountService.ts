@@ -725,11 +725,42 @@ export class AccountService {
    * 删除平台账号
    */
   async deletePlatformAccount(id: string): Promise<void> {
-    // 删除相关的社交关系
-    await db.socialRelations.where('fromAccountId').equals(id).delete()
-    await db.socialRelations.where('toAccountId').equals(id).delete()
-    // 删除账号
-    await db.platformAccounts.delete(id)
+    await db.transaction(
+      'rw',
+      [db.platformAccounts, db.socialRelations, db.archives],
+      async () => {
+        const account = await db.platformAccounts.get(id)
+        if (!account) {
+          return
+        }
+
+        const now = Date.now()
+        const boundArchiveIds = account.boundArchiveIds ?? []
+        for (const archiveId of boundArchiveIds) {
+          const archive = await db.archives.get(archiveId)
+          if (!archive) {
+            continue
+          }
+
+          const nextBoundAccounts = (archive.boundAccountIds ?? []).filter(
+            (accountId) => accountId !== id
+          )
+
+          await db.archives.put({
+            ...archive,
+            boundAccountIds: nextBoundAccounts.length > 0 ? nextBoundAccounts : undefined,
+            lastUpdated: now,
+          })
+        }
+
+        // 删除相关的社交关系
+        await db.socialRelations.where('fromAccountId').equals(id).delete()
+        await db.socialRelations.where('toAccountId').equals(id).delete()
+
+        // 删除账号
+        await db.platformAccounts.delete(id)
+      }
+    )
   }
 
   // ==================== 社交关系管理（基于账号） ====================

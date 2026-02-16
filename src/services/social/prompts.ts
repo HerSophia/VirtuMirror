@@ -67,6 +67,11 @@ export const socialEnginePrompts: AppPromptDefinition[] = [
 作者身份：{{authorIdentity}}
 
 请生成一条符合上述要求的博文。
+
+【档案上下文】
+{{coreKnowledge}}
+{{accountContext}}
+{{relevantArchives}}
 要求：
 1. 语气口吻必须符合{{platformName}}的用户习惯。
 2. {{platformName}}的典型特征：{{platformCulture}}。
@@ -107,6 +112,42 @@ export const socialEnginePrompts: AppPromptDefinition[] = [
         required: false,
         defaultValue: 140,
       },
+      {
+        name: 'coreKnowledge',
+        description: '核心知识档案上下文',
+        type: 'string',
+        required: false,
+        defaultValue: '',
+        source: 'shared-context',
+        sharedContextConfig: {
+          contextId: 'archive:pinned',
+          format: 'text',
+        },
+      },
+      {
+        name: 'accountContext',
+        description: '账号角色档案上下文',
+        type: 'string',
+        required: false,
+        defaultValue: '',
+        source: 'shared-context',
+        sharedContextConfig: {
+          contextId: 'archive:characters',
+          format: 'text',
+        },
+      },
+      {
+        name: 'relevantArchives',
+        description: '相关档案上下文',
+        type: 'string',
+        required: false,
+        defaultValue: '',
+        source: 'shared-context',
+        sharedContextConfig: {
+          contextId: 'archive:relevant',
+          format: 'text',
+        },
+      },
     ],
   },
 
@@ -133,6 +174,10 @@ export const socialEnginePrompts: AppPromptDefinition[] = [
 {{postContent}}
 """
 
+【档案上下文】
+{{coreKnowledge}}
+{{relevantArchives}}
+
 请生成 {{count}} 条评论。
 要求：
 1. 混合不同的立场（支持、反对、调侃、无关）。
@@ -157,6 +202,30 @@ export const socialEnginePrompts: AppPromptDefinition[] = [
         type: 'number',
         required: false,
         defaultValue: 5,
+      },
+      {
+        name: 'coreKnowledge',
+        description: '核心知识档案上下文',
+        type: 'string',
+        required: false,
+        defaultValue: '',
+        source: 'shared-context',
+        sharedContextConfig: {
+          contextId: 'archive:pinned',
+          format: 'text',
+        },
+      },
+      {
+        name: 'relevantArchives',
+        description: '相关档案上下文',
+        type: 'string',
+        required: false,
+        defaultValue: '',
+        source: 'shared-context',
+        sharedContextConfig: {
+          contextId: 'archive:relevant',
+          format: 'text',
+        },
       },
     ],
   },

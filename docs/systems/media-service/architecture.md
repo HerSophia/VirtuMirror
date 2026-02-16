@@ -67,7 +67,7 @@
 各 App 作为「Skin」，只负责 UI 渲染和用户交互，不直接操作媒体数据。
 
 | App | 职责 | 与媒体服务的交互 |
-|-----|------|------------------|
+| ----- | ------ | ------------------ |
 | **图库 (Gallery)** | 展示、管理所有媒体资源 | 全量读写 |
 | **相机 (Camera)** | 拍照、录像 | 只写（保存新资源） |
 | **聊天 (Chat)** | 选择图片发送 | 只读（通过选择器） |
@@ -271,42 +271,42 @@ interface AssetMetadata {
 **media_assets**：媒体资源元数据
 
 | 字段 | 类型 | 索引 | 说明 |
-|------|------|------|------|
+| ------ | ------ | ------ | ------ |
 | id | string | PK | UUID |
 | type | string | Index | 'image' / 'video' / 'audio' |
-| uri | string | | 内部 URI |
-| thumbnailUri | string | | 缩略图 URI |
-| width | number | | 宽度 |
-| height | number | | 高度 |
-| size | number | | 文件大小 (bytes) |
-| mimeType | string | | MIME 类型 |
+| uri | string |  | 内部 URI |
+| thumbnailUri | string |  | 缩略图 URI |
+| width | number |  | 宽度 |
+| height | number |  | 高度 |
+| size | number |  | 文件大小 (bytes) |
+| mimeType | string |  | MIME 类型 |
 | createdAt | number | Index | 创建时间 |
-| modifiedAt | number | | 修改时间 |
+| modifiedAt | number |  | 修改时间 |
 | albumIds | string[] | MultiEntry | 所属相册 |
 | tags | string[] | MultiEntry | 标签 |
 | sourceAppId | string | Index | 来源 App |
-| metadata | object | | 扩展元数据 |
+| metadata | object |  | 扩展元数据 |
 
 **media_albums**：相册
 
 | 字段 | 类型 | 索引 | 说明 |
-|------|------|------|------|
+| ------ | ------ | ------ | ------ |
 | id | string | PK | UUID |
-| name | string | | 相册名称 |
-| description | string | | 描述 |
-| coverAssetId | string | | 封面资源 ID |
+| name | string |  | 相册名称 |
+| description | string |  | 描述 |
+| coverAssetId | string |  | 封面资源 ID |
 | type | string | Index | 'user' / 'smart' / 'system' |
-| rule | object | | 智能相册规则 |
-| createdAt | number | | 创建时间 |
-| updatedAt | number | | 更新时间 |
+| rule | object |  | 智能相册规则 |
+| createdAt | number |  | 创建时间 |
+| updatedAt | number |  | 更新时间 |
 
 **media_thumbnails**：缩略图缓存
 
 | 字段 | 类型 | 索引 | 说明 |
-|------|------|------|------|
+| ------ | ------ | ------ | ------ |
 | assetId | string | PK | 对应的资源 ID |
-| blob | Blob | | 缩略图二进制数据 |
-| createdAt | number | | 生成时间 |
+| blob | Blob |  | 缩略图二进制数据 |
+| createdAt | number |  | 生成时间 |
 
 #### 2.4.2 Blob Storage
 

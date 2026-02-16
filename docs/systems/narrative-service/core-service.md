@@ -97,7 +97,7 @@ setupBridgeListener(): void {
 ### 3.2 监听的事件类型
 
 | 事件 | 触发时机 | 处理方式 |
-|------|----------|----------|
+| ------ | ---------- | ---------- |
 | `bridge:full_sync` | 首次加载或刷新 | 拼接所有消息为完整叙事 |
 | `message_received` | 收到新消息 | 发布单条消息内容 |
 | `swipe_changed` | 切换消息页 | 发布新 Swipe 内容，标记 `isSwipeChange` |

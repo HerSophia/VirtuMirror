@@ -29,7 +29,7 @@ loggerService.debug(message: string, ...args: any[]): void
 
 | 参数 | 类型 | 说明 |
 | ---- | ---- | ---- |
-| message | string| 日志消息 |
+| message | string | 日志消息 |
 | args | any[] | 附加参数，会被序列化显示 |
 
 **示例**：

@@ -19,13 +19,13 @@
 
 ### 设计目标
 
-| 维度       | 说明                                        |
+| 维度 | 说明 |
 | ---------- | ------------------------------------------- |
-| 跨平台复用 | 微博的点赞/收藏逻辑可复用到 B站、知乎       |
-| 事件驱动   | 粉丝服务、通知系统可统一监听互动事件        |
-| 数据一致   | 点赞状态在所有 App 中保持同步               |
-| 可扩展     | 支持平台特定互动行为的注册                  |
-| 解耦       | App 只调用服务接口，不直接操作底层存储      |
+| 跨平台复用 | 微博的点赞/收藏逻辑可复用到 B站、知乎 |
+| 事件驱动 | 粉丝服务、通知系统可统一监听互动事件 |
+| 数据一致 | 点赞状态在所有 App 中保持同步 |
+| 可扩展 | 支持平台特定互动行为的注册 |
+| 解耦 | App 只调用服务接口，不直接操作底层存储 |
 
 ### 问题背景
 
@@ -40,13 +40,13 @@
 
 ## 文档导航
 
-| 文档                                | 说明                                   |
+| 文档 | 说明 |
 | ----------------------------------- | -------------------------------------- |
-| [架构设计](./architecture.md)       | 分层架构、核心组件、数据流             |
-| [类型定义](./types.md)              | InteractionEvent、InteractionStats 等 |
-| [使用示例](./usage.md)              | 点赞、收藏、评论、事件订阅示例         |
-| [平台扩展](./platform-extension.md) | 如何注册平台特有互动行为               |
-| [系统集成](./integration.md)        | 与粉丝服务、通知系统、社交引擎的交互   |
+| [架构设计](./architecture.md) | 分层架构、核心组件、数据流 |
+| [类型定义](./types.md) | InteractionEvent、InteractionStats 等 |
+| [使用示例](./usage.md) | 点赞、收藏、评论、事件订阅示例 |
+| [平台扩展](./platform-extension.md) | 如何注册平台特有互动行为 |
+| [系统集成](./integration.md) | 与粉丝服务、通知系统、社交引擎的交互 |
 
 ---
 
@@ -297,44 +297,44 @@ interface InteractionStats {
 
 ### InteractionService 主要方法
 
-| 方法                         | 说明                 |
+| 方法 | 说明 |
 | ---------------------------- | -------------------- |
-| **点赞相关**                 |                      |
-| `like()`                     | 点赞内容             |
-| `unlike()`                   | 取消点赞             |
-| `isLiked()`                  | 检查是否已点赞       |
-| `getUserLikes()`             | 获取用户点赞列表     |
-| **收藏相关**                 |                      |
-| `favorite()`                 | 收藏内容             |
-| `unfavorite()`               | 取消收藏             |
-| `isFavorited()`              | 检查是否已收藏       |
-| `getUserFavorites()`         | 获取用户收藏列表     |
-| `getFavoriteCollections()`   | 获取用户收藏夹列表   |
-| **评论相关**                 |                      |
-| `comment()`                  | 发表评论             |
-| `deleteComment()`            | 删除评论             |
-| `getComments()`              | 获取内容评论列表     |
-| `getUserComments()`          | 获取用户发表的评论   |
-| **转发相关**                 |                      |
-| `repost()`                   | 转发内容             |
-| `getReposts()`               | 获取转发列表         |
-| **浏览记录**                 |                      |
-| `recordView()`               | 记录浏览行为         |
-| `getViewHistory()`           | 获取浏览历史         |
-| `clearViewHistory()`         | 清除浏览历史         |
-| **统计相关**                 |                      |
-| `getStats()`                 | 获取内容互动统计     |
-| `batchGetStats()`            | 批量获取统计         |
-| `incrementStats()`           | 增加统计计数         |
-| **事件相关**                 |                      |
-| `onInteraction()`            | 订阅所有互动事件     |
-| `on()`                       | 订阅特定类型事件     |
-| `off()`                      | 取消订阅             |
-| **平台扩展**                 |                      |
+| **点赞相关** |  |
+| `like()` | 点赞内容 |
+| `unlike()` | 取消点赞 |
+| `isLiked()` | 检查是否已点赞 |
+| `getUserLikes()` | 获取用户点赞列表 |
+| **收藏相关** |  |
+| `favorite()` | 收藏内容 |
+| `unfavorite()` | 取消收藏 |
+| `isFavorited()` | 检查是否已收藏 |
+| `getUserFavorites()` | 获取用户收藏列表 |
+| `getFavoriteCollections()` | 获取用户收藏夹列表 |
+| **评论相关** |  |
+| `comment()` | 发表评论 |
+| `deleteComment()` | 删除评论 |
+| `getComments()` | 获取内容评论列表 |
+| `getUserComments()` | 获取用户发表的评论 |
+| **转发相关** |  |
+| `repost()` | 转发内容 |
+| `getReposts()` | 获取转发列表 |
+| **浏览记录** |  |
+| `recordView()` | 记录浏览行为 |
+| `getViewHistory()` | 获取浏览历史 |
+| `clearViewHistory()` | 清除浏览历史 |
+| **统计相关** |  |
+| `getStats()` | 获取内容互动统计 |
+| `batchGetStats()` | 批量获取统计 |
+| `incrementStats()` | 增加统计计数 |
+| **事件相关** |  |
+| `onInteraction()` | 订阅所有互动事件 |
+| `on()` | 订阅特定类型事件 |
+| `off()` | 取消订阅 |
+| **平台扩展** |  |
 | `registerPlatformBehavior()` | 注册平台特有互动行为 |
-| `getPlatformBehavior()`      | 获取平台扩展行为     |
-| `getPlatformBehaviors()`     | 获取平台所有扩展行为 |
-| `executePlatformBehavior()`  | 执行平台扩展行为     |
+| `getPlatformBehavior()` | 获取平台扩展行为 |
+| `getPlatformBehaviors()` | 获取平台所有扩展行为 |
+| `executePlatformBehavior()` | 执行平台扩展行为 |
 
 ---
 
@@ -380,14 +380,14 @@ interface InteractionStats {
 
 ## 实施状态
 
-| Phase   | 内容                        | 状态      |
+| Phase | 内容 | 状态 |
 | ------- | --------------------------- | --------- |
-| Phase 1 | 核心接口设计                | ✅ 已完成 |
-| Phase 2 | 核心服务实现                | ✅ 已完成 |
-| Phase 3 | 事件系统实现                | ✅ 已完成 |
-| Phase 4 | 平台扩展机制                | ✅ 已完成 |
-| Phase 5 | 单元测试（77 个测试用例）   | ✅ 已完成 |
-| Phase 6 | 与粉丝服务集成              | ⏳ 待实现 |
+| Phase 1 | 核心接口设计 | ✅ 已完成 |
+| Phase 2 | 核心服务实现 | ✅ 已完成 |
+| Phase 3 | 事件系统实现 | ✅ 已完成 |
+| Phase 4 | 平台扩展机制 | ✅ 已完成 |
+| Phase 5 | 单元测试（77 个测试用例） | ✅ 已完成 |
+| Phase 6 | 与粉丝服务集成 | ⏳ 待实现 |
 | Phase 7 | 从微博 userActionStore 迁移 | ⏳ 待实现 |
 
 ---
@@ -425,34 +425,34 @@ src/
 
 ### 微博 (Weibo)
 
-| 行为              | 动作名称           | 说明             |
+| 行为 | 动作名称 | 说明 |
 | ----------------- | ------------------ | ---------------- |
-| 超话签到          | `superTopicCheckIn`| 超话社区每日签到 |
-| 打赏              | `reward`           | 对内容进行打赏   |
-| 举报              | `report`           | 举报违规内容     |
-| 快转              | `quickRepost`      | 不带评论的转发   |
+| 超话签到 | `superTopicCheckIn` | 超话社区每日签到 |
+| 打赏 | `reward` | 对内容进行打赏 |
+| 举报 | `report` | 举报违规内容 |
+| 快转 | `quickRepost` | 不带评论的转发 |
 
 ### B站 (Bilibili)
 
-| 行为       | 动作名称        | 说明                   |
+| 行为 | 动作名称 | 说明 |
 | ---------- | --------------- | ---------------------- |
-| 投币       | `coin`          | 给视频投币（1-2个）    |
-| 一键三连   | `tripleAction`  | 同时点赞、投币、收藏   |
-| 发送弹幕   | `danmaku`       | 在视频上发送弹幕       |
-| 充电       | `charge`        | 给UP主充电             |
-| 追番       | `followBangumi` | 追番/追剧              |
+| 投币 | `coin` | 给视频投币（1-2个） |
+| 一键三连 | `tripleAction` | 同时点赞、投币、收藏 |
+| 发送弹幕 | `danmaku` | 在视频上发送弹幕 |
+| 充电 | `charge` | 给UP主充电 |
+| 追番 | `followBangumi` | 追番/追剧 |
 
 ### 知乎 (Zhihu)
 
-| 行为       | 动作名称         | 说明                 |
+| 行为 | 动作名称 | 说明 |
 | ---------- | ---------------- | -------------------- |
-| 赞同       | `agree`          | 赞同回答             |
-| 反对       | `disagree`       | 反对回答             |
-| 没有帮助   | `notHelpful`     | 标记回答没有帮助     |
-| 感谢       | `thank`          | 感谢作者             |
-| 邀请回答   | `inviteAnswer`   | 邀请用户回答问题     |
-| 关注问题   | `followQuestion` | 关注问题以获取更新   |
-| 写回答     | `writeAnswer`    | 为问题写回答         |
+| 赞同 | `agree` | 赞同回答 |
+| 反对 | `disagree` | 反对回答 |
+| 没有帮助 | `notHelpful` | 标记回答没有帮助 |
+| 感谢 | `thank` | 感谢作者 |
+| 邀请回答 | `inviteAnswer` | 邀请用户回答问题 |
+| 关注问题 | `followQuestion` | 关注问题以获取更新 |
+| 写回答 | `writeAnswer` | 为问题写回答 |
 
 ---
 

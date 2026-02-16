@@ -9,6 +9,7 @@ import { useRouter } from 'vue-router'
 import { useNotificationStore } from '@/stores/notificationStore'
 import { useTheme } from '@/composables/useTheme'
 import DynamicAppIcon from './DynamicAppIcon.vue'
+import { eventBus } from '@/services/eventBus'
 
 const router = useRouter()
 const notificationStore = useNotificationStore()
@@ -50,6 +51,20 @@ function handleClick() {
 
 // 关闭
 function handleDismiss() {
+  notificationStore.dismissToast()
+}
+
+function handleAction(actionId: string) {
+  if (!notification.value) return
+
+  eventBus.emit('notification:action', {
+    notificationId: notification.value.id,
+    actionId,
+    appId: notification.value.appId,
+    data: notification.value.data,
+  })
+
+  notificationStore.markAsRead(notification.value.id)
   notificationStore.dismissToast()
 }
 </script>
@@ -103,6 +118,7 @@ function handleDismiss() {
           :key="action.id"
           class="toast-action"
           :class="{ destructive: action.destructive }"
+          @click.stop="handleAction(action.id)"
         >
           <i v-if="action.icon" :class="action.icon"></i>
           <span>{{ action.label }}</span>

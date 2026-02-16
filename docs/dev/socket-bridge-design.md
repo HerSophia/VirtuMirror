@@ -673,10 +673,10 @@ this.socket.on('ping', (data: { timestamp: number }) => {
 
 ### 8.5 配置参数
 
-| 参数                 | 默认值 | 说明                 |
+| 参数 | 默认值 | 说明 |
 | -------------------- | ------ | -------------------- |
-| `heartbeatInterval`  | 30000  | 心跳发送间隔（毫秒） |
-| `heartbeatTimeout`   | 90000  | 心跳超时时间（毫秒） |
+| `heartbeatInterval` | 30000 | 心跳发送间隔（毫秒） |
+| `heartbeatTimeout` | 90000 | 心跳超时时间（毫秒） |
 
 可通过环境变量配置：
 
@@ -745,7 +745,7 @@ function getOrCreateSessionId() {
 
 ### 9.3 优势
 
-| 特性     | 说明                                       |
+| 特性 | 说明 |
 | -------- | ------------------------------------------ |
 | **持久化** | UUID 存储在聊天变量中，切换聊天再切回来还是同一个 |
 | **可靠** | 不依赖可能变化的文件名或其他标识 |
@@ -778,7 +778,7 @@ interface SyncedMessage {
 #### 监听的事件
 
 | 事件 | 触发时机 | 处理 |
-|------|----------|------|
+| ------ | ---------- | ------ |
 | `GENERATION_STARTED` | AI 开始生成 | 标记 `isGenerating = true`，暂停数据同步 |
 | `GENERATION_ENDED` | AI 生成完成 | 标记 `isGenerating = false`，立即同步最新数据 |
 | `GENERATION_STOPPED` | 用户中断生成 | 标记 `isGenerating = false`，同步数据 |
@@ -893,7 +893,7 @@ const adapter = createBridgeAdapter({
 ### 10.4 环境变量
 
 | 变量 | 默认值 | 说明 |
-|------|--------|------|
+| ------ | -------- | ------ |
 | `AUTH_ENABLED` | true | 是否启用鉴权 |
 | `API_KEY` | (自动生成) | 指定 API Key |
 | `KEY_FILE_PATH` | ./data/api.key | Key 文件路径 |
@@ -937,7 +937,7 @@ export class StorageManager {
 ### 11.3 API 端点
 
 | 端点 | 说明 |
-|------|------|
+| ------ | ------ |
 | `GET /api/sessions` | 获取所有会话 |
 | `GET /api/sessions/:id` | 获取会话数据 |
 | `DELETE /api/sessions/:id` | 删除会话 |
@@ -946,14 +946,14 @@ export class StorageManager {
 ### 11.4 环境变量
 
 | 变量 | 默认值 | 说明 |
-|------|--------|------|
+| ------ | -------- | ------ |
 | `STORAGE_PERSISTENT` | false | 是否启用持久化 |
 | `STORAGE_DATA_FILE` | ./data/cache.json | 持久化文件路径 |
 
 ## 12. 优势总结
 
 | 特性 | 说明 |
-|------|------|
+| ------ | ------ |
 | **完全独立** | 小手机可作为独立 Web 应用运行 |
 | **数据自主** | IndexedDB 存储，不依赖宿主环境 |
 | **单平台模式** | 同时只允许一个平台连接，避免冲突 |
@@ -1051,7 +1051,7 @@ function getVisibleData(state: PhoneState): PhoneDataItem[] {
 ### 13.5 事件处理
 
 | 场景 | 处理方式 |
-|------|----------|
+| ------ | ---------- |
 | AI 生成新消息（新楼层） | 固化之前的最后楼层到 permanentData，解析新消息设为新的 lastFloor |
 | 用户切换最后一楼的 swipe | 从 swipeData 读取对应数据，首次切换时按需解析 |
 | AI 在当前 swipe 上继续生成 | 更新 lastFloor.swipeData 中对应的数据 |
@@ -1186,7 +1186,7 @@ eventOn(tavern_events.MESSAGE_DELETED, (messageId) => {
 时序问题在实际场景中影响较小：
 
 | 场景 | 时序情况 | 说明 |
-|------|---------|------|
+| ------ | --------- | ------ |
 | 触发生成 | `MESSAGE_SWIPED` 先于 `GENERATION_STARTED` | 基本无时序问题 |
 | 不触发生成 | 可能存在时序问题 | 但酒馆只提供叙事内容，不提供计算结果 |
 
@@ -1198,13 +1198,13 @@ eventOn(tavern_events.MESSAGE_DELETED, (messageId) => {
 
 本功能涉及以下模块：
 
-| 模块                                      | 说明                                 |
+| 模块 | 说明 |
 | ----------------------------------------- | ------------------------------------ |
-| `src/types/swipe.ts`                      | `PhoneDataItem` 类型定义，含来源追踪字段；`PhoneState` 分层存储结构 |
-| `scripts/phone-bridge.js`                 | 桥接脚本，监听 `MESSAGE_SWIPED` 事件 |
-| `server/index.ts`, `server/src/types.ts`  | 服务端 `swipe_changed` 事件类型支持  |
-| `src/adapters/bridgeAdapter.ts`           | 前端适配器，处理 swipe 切换          |
-| `src/stores/swipeStore.ts`                | Swipe 状态管理 Store                 |
-| `src/services/database/schema.ts`         | IndexedDB schema，含 swipe 相关索引  |
-| `src/components/common/GlobalDialog.vue`  | 楼层删除确认对话框 UI 组件           |
-| `src/stores/dialogStore.ts`               | 对话框状态管理                       |
+| `src/types/swipe.ts` | `PhoneDataItem` 类型定义，含来源追踪字段；`PhoneState` 分层存储结构 |
+| `scripts/phone-bridge.js` | 桥接脚本，监听 `MESSAGE_SWIPED` 事件 |
+| `server/index.ts`, `server/src/types.ts` | 服务端 `swipe_changed` 事件类型支持 |
+| `src/adapters/bridgeAdapter.ts` | 前端适配器，处理 swipe 切换 |
+| `src/stores/swipeStore.ts` | Swipe 状态管理 Store |
+| `src/services/database/schema.ts` | IndexedDB schema，含 swipe 相关索引 |
+| `src/components/common/GlobalDialog.vue` | 楼层删除确认对话框 UI 组件 |
+| `src/stores/dialogStore.ts` | 对话框状态管理 |

@@ -63,15 +63,15 @@
 
 ## 核心组件
 
-| 组件                      | 职责                         | 通用/扩展 |
+| 组件 | 职责 | 通用/扩展 |
 | ------------------------- | ---------------------------- | --------- |
-| `LLMTaskService`          | 服务入口，协调各组件         | 通用      |
-| `TaskRegistry`            | 管理任务定义（来自各 App）   | 通用      |
-| `TaskExecutor`            | 执行任务、变量替换、LLM 调用 | 通用      |
-| `TaskScheduler`           | 自动执行调度、定时器管理     | 通用      |
-| `ContextProviderRegistry` | 管理上下文提供器             | 通用      |
-| `OutputHandlerRegistry`   | 管理输出处理器               | 通用      |
-| `WeiboPlugin`             | 微博专用任务、处理器、提供器 | 扩展      |
+| `LLMTaskService` | 服务入口，协调各组件 | 通用 |
+| `TaskRegistry` | 管理任务定义（来自各 App） | 通用 |
+| `TaskExecutor` | 执行任务、变量替换、LLM 调用 | 通用 |
+| `TaskScheduler` | 自动执行调度、定时器管理 | 通用 |
+| `ContextProviderRegistry` | 管理上下文提供器 | 通用 |
+| `OutputHandlerRegistry` | 管理输出处理器 | 通用 |
+| `WeiboPlugin` | 微博专用任务、处理器、提供器 | 扩展 |
 
 ---
 

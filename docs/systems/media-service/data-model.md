@@ -382,7 +382,7 @@ interface CameraMetadata {
 ### 3.1 类型映射表
 
 | Gallery App 类型 | 媒体服务类型 | 映射说明 |
-|-----------------|-------------|----------|
+| ----------------- | ------------- | ---------- |
 | `GalleryImage` | `MediaAsset` | 基础图片类型 |
 | `LocalImage` | `MediaAsset` (sourceType: 'local') | 本地图片 |
 | `GeneratedImage` | `MediaAsset` (sourceType: 'generated') | AI 生成图片 |
@@ -554,7 +554,7 @@ const mediaAssetsSchema = {
 ### 5.2 常用查询优化
 
 | 查询场景 | 使用的索引 | 说明 |
-|----------|-----------|------|
+| ---------- | ----------- | ------ |
 | 按时间倒序列表 | `createdAt` | 默认列表展示 |
 | 筛选图片类型 | `type` | 只看图片/视频 |
 | 查看相册内容 | `albumIds` (MultiEntry) | 相册详情页 |

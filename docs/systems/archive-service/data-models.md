@@ -21,7 +21,7 @@ type InjectionLevel = 'none' | 'contextual' | 'always';
 /**
  * 档案类型
  */
-type ArchiveType = 'event' | 'character' | 'world' | 'dialogue' | 'discovery';
+type ArchiveType = 'event' | 'character' | 'world';
 
 /**
  * 档案基础接口
@@ -58,7 +58,7 @@ interface ArchiveBase {
 /**
  * 事件档案子类型
  */
-type EventSubType = 'event' | 'dialogue' | 'discovery' | 'decision';
+type EventSubType = 'plot' | 'dialogue' | 'discovery' | 'decision';
 
 /**
  * 事件重要性
@@ -115,7 +115,7 @@ interface ChatArchive extends ArchiveBase {
 
 | 子类型 | 说明 | 示例 |
 | ------ | ---- | ---- |
-| `event` | 剧情事件 | 主角获得神秘宝物 |
+| `plot` | 剧情事件 | 主角获得神秘宝物 |
 | `dialogue` | 重要对话 | 与导师的关键谈话 |
 | `discovery` | 发现/揭示 | 发现隐藏通道 |
 | `decision` | 重要决策 | 主角决定离开学院 |

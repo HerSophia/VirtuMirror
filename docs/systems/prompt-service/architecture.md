@@ -273,7 +273,7 @@ interface PromptSystemConfig {
 **环境适配**:
 
 | 环境 | 存储方式 |
-|------|----------|
+| ------ | ---------- |
 | 开发环境 | localStorage |
 | 生产环境 | 酒馆变量系统 (`getVariables` / `insertOrAssignVariables`) |
 
@@ -315,7 +315,7 @@ interface ChainExecutionHistory {
 ### 5.1 来源与权限映射
 
 | 来源 | 可编辑字段 | 可删除 | 说明 |
-|------|------------|--------|------|
+| ------ | ------------ | -------- | ------ |
 | `builtin` | `enabled`, `priority` | ❌ | 系统内置，核心逻辑不可改 |
 | `app` | `enabled`, `priority` | ❌ | App 注册，由 App 管理 |
 | `user` | 全部 (`*`) | ✅ | 用户完全控制 |
@@ -337,7 +337,7 @@ interface PromptEditPermission {
 ### 6.1 内置分类
 
 | 分类 | ID | 说明 |
-|------|----|----- |
+| ------ | ---- | ----- |
 | 全部 | `all` | 所有提示词 |
 | 聊天 | `chat` | 聊天消息生成 |
 | 社交 | `social` | 社交媒体内容 |

@@ -97,7 +97,7 @@ Mock Provider 会自动检查全局配置（`localStorage` 中的 `phone_global_
 当回退到 Mock 模式时，Provider 会分析提示词中的关键词，选择合适的场景模板：
 
 | 场景 ID | 描述 | 触发关键词 |
-|---------|------|------------|
+| --------- | ------ | ------------ |
 | `chat.reply` | 聊天回复 | reply, 回复 |
 | `chat.new_conversation` | 新对话开场 | conversation, 开场 |
 | `live.danmaku` | 直播弹幕 | danmaku, 弹幕 |

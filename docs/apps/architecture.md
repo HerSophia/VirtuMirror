@@ -49,7 +49,7 @@ src/apps/{app-name}/
 ### 目录说明
 
 | 目录 | 用途 | 必需 |
-|------|------|------|
+| ------ | ------ | ------ |
 | `components/` | App 内可复用的 UI 组件 | ✅ |
 | `composables/` | 提取的业务逻辑和工具函数 | 可选 |
 | `views/` | 子页面/子路由视图 | 可选 |
@@ -184,7 +184,7 @@ App 内部复用的 UI 组件。
 **常见组件**：
 
 | 组件类型 | 示例 | 用途 |
-|----------|------|------|
+| ---------- | ------ | ------ |
 | 头部组件 | `ChatHeader.vue` | 统一的导航头部 |
 | 列表项组件 | `ListItem.vue` | 通用列表项 |
 | 分组容器 | `SettingsGroup.vue` | 设置项分组 |
@@ -228,7 +228,7 @@ App 内部复用的 UI 组件。
 ### 文件命名
 
 | 类型 | 命名规范 | 示例 |
-|------|----------|------|
+| ------ | ---------- | ------ |
 | 入口组件 | `{AppName}App.vue` | `ChatApp.vue`, `SettingsApp.vue` |
 | 视图组件 | `{FeatureName}.vue` | `ChatConversation.vue`, `GroupMembers.vue` |
 | 共享组件 | `{ComponentName}.vue` | `ListItem.vue`, `ChatHeader.vue` |
@@ -355,7 +355,7 @@ export type { MessageType, TabName } from './types'
 ### 路由命名约定
 
 | 类型 | 命名规范 | 示例 |
-|------|----------|------|
+| ------ | ---------- | ------ |
 | 主应用 | `{AppName}` | `ChatApp`, `Settings` |
 | 子页面 | `{Feature}` | `ChatConversation`, `GroupMembers` |
 | 编辑页 | `{Feature}Editor` | `ThemeEditor` |
@@ -431,7 +431,7 @@ Store 依赖：
 ### 标准 CSS 变量
 
 | 变量名 | 用途 |
-|--------|------|
+| -------- | ------ |
 | `--color-background` | 页面背景 |
 | `--color-surface` | 卡片/分组背景 |
 | `--color-surface-variant` | 变体表面 |
@@ -579,7 +579,7 @@ const routes = [
 动态应用支持多种安装来源，每种来源有不同的信任级别：
 
 | 来源类型 | 信任级别 | 身份验证 | 数据隔离 |
-|----------|----------|----------|----------|
+| ---------- | ---------- | ---------- | ---------- |
 | 内置应用 | `full` | ✅ 编译保证 | `builtin/{appId}` |
 | 官方仓库 | `repository` | ✅ 仓库签名 | `repo/{repoId}/{developerId}/{appId}` |
 | 第三方仓库 | `repository` | ✅ 仓库签名 | `repo/{repoId}/{developerId}/{appId}` |
@@ -661,7 +661,7 @@ function calculateDataNamespace(app: InstalledApp): string {
 支持的迁移动作：
 
 | 动作类型 | 说明 | 示例 |
-|----------|------|------|
+| ---------- | ------ | ------ |
 | `rename` | 重命名字段 | `{ "type": "rename", "from": "old", "to": "new" }` |
 | `delete` | 删除字段 | `{ "type": "delete", "fields": ["obsolete"] }` |
 | `setDefault` | 设置默认值 | `{ "type": "setDefault", "field": "x", "value": 0 }` |

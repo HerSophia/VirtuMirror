@@ -9,7 +9,7 @@
 当前已有的基础设施：
 
 | 模块 | 文件 | 功能 |
-|------|------|------|
+| ------ | ------ | ------ |
 | Swipe 类型定义 | `src/types/swipe.ts` | `PhoneDataItem`、`TrackedDataItem`、`SourceTracking` 等 |
 | Swipe 状态管理 | `src/stores/swipeStore.ts` | 分层存储（permanentData + lastFloor.swipeData） |
 | 叙事订阅 | `src/apps/weibo/composables/useNarrativeSubscription.ts` | 已追踪 `source: { messageId, swipeId, sessionId }` |

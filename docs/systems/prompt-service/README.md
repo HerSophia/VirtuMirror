@@ -11,7 +11,7 @@
 ### 1.1 核心能力
 
 | 能力 | 说明 | 服务 |
-|------|------|------|
+| ------ | ------ | ------ |
 | **提示词管理** | 模板 CRUD、变量定义、渲染引擎 | `PromptService` |
 | **系统提示词** | 全局/App 级约束注入、作用域继承 | `SystemPromptService` |
 | **提示词链** | 多步骤编排、变量传递、循环执行 | `PromptChainService` |
@@ -88,15 +88,15 @@ src/services/prompt/
 **职责**: 提示词模板的核心管理服务
 
 | 功能 | 方法 | 说明 |
-|------|------|------|
+| ------ | ------ | ------ |
 | 获取模板 | `getPromptByScene(scene)` | 按场景标识获取 |
-| | `getPromptById(id)` | 按 ID 获取 |
-| | `getAllPrompts()` | 获取全部 |
-| | `getPromptsByCategory(category)` | 按分类获取 |
+|  | `getPromptById(id)` | 按 ID 获取 |
+|  | `getAllPrompts()` | 获取全部 |
+|  | `getPromptsByCategory(category)` | 按分类获取 |
 | 渲染 | `renderPrompt(template, variables)` | 变量替换 |
 | CRUD | `addPrompt()` / `updatePrompt()` / `deletePrompt()` | 增删改 |
 | App 注册 | `registerAppPrompts(appId, prompts)` | 注册 App 提示词 |
-| | `unregisterAppPrompts(appId)` | 注销 App 提示词 |
+|  | `unregisterAppPrompts(appId)` | 注销 App 提示词 |
 
 **详见**: [architecture.md](./architecture.md)
 
@@ -105,10 +105,10 @@ src/services/prompt/
 **职责**: 管理全局和 App 级系统提示词
 
 | 功能 | 方法 | 说明 |
-|------|------|------|
+| ------ | ------ | ------ |
 | 组装 | `assemble(options)` | 组装最终系统提示词 |
 | 获取 | `getGlobalSystemPrompts()` | 获取全局系统提示词 |
-| | `getAppSystemPrompts(appId)` | 获取 App 级系统提示词 |
+|  | `getAppSystemPrompts(appId)` | 获取 App 级系统提示词 |
 | CRUD | `create()` / `update()` / `delete()` | 增删改 |
 
 **详见**: [system-prompts.md](./system-prompts.md)
@@ -118,9 +118,9 @@ src/services/prompt/
 **职责**: 提示词链的 CRUD 和持久化
 
 | 功能 | 方法 | 说明 |
-|------|------|------|
+| ------ | ------ | ------ |
 | 获取 | `getAllChains()` | 获取所有链 |
-| | `getChainById(id)` | 按 ID 获取 |
+|  | `getChainById(id)` | 按 ID 获取 |
 | CRUD | `createChain()` / `updateChain()` / `deleteChain()` | 增删改 |
 | 步骤管理 | `addStep()` / `updateStep()` / `deleteStep()` | 步骤操作 |
 | 历史 | `getExecutionHistory(chainId)` | 获取执行历史 |
@@ -133,7 +133,7 @@ src/services/prompt/
 **职责**: 链的执行引擎（已拆分为模块化结构）
 
 | 文件 | 职责 | 主要导出 |
-|------|------|----------|
+| ------ | ------ | ---------- |
 | `executor.ts` | 核心执行器类 | `PromptChainExecutor`, `promptChainExecutor` |
 | `stepExecutors.ts` | 各类步骤执行器 | `executePromptStep`, `executeTransformStep`, `executeLoopStep` |
 | `utils.ts` | 工具函数 | `renderTemplate`, `parseJSON`, `evaluateExpression` 等 |
@@ -144,7 +144,7 @@ src/services/prompt/
 ## 5. 文档导航
 
 | 文档 | 说明 |
-|------|------|
+| ------ | ------ |
 | [架构设计](./architecture.md) | 服务架构、数据流、类型定义 |
 | [系统提示词](./system-prompts.md) | 全局/App 级系统提示词管理 |
 | [提示词链](./prompt-chain.md) | 多步骤编排、执行模式 |
@@ -247,7 +247,7 @@ console.log('输出:', result.outputs);
 ## 7. 相关服务
 
 | 服务 | 路径 | 说明 |
-|------|------|------|
+| ------ | ------ | ------ |
 | `AIGenerateService` | `@/services/aiGenerateService` | AI 生成服务 |
 | `LLMTaskService` | `@/services/llmTask` | LLM 任务调度服务 |
 | `NarrativeService` | `@/services/narrativeService` | 酒馆叙事获取服务 |
@@ -255,6 +255,6 @@ console.log('输出:', result.outputs);
 ## 8. 版本历史
 
 | 版本 | 日期 | 变更内容 |
-|------|------|----------|
+| ------ | ------ | ---------- |
 | 1.1 | 2026-01-08 | 重组文件结构，拆分执行器为模块化架构，添加统一导出入口 |
 | 1.0 | 2026-01-08 | 初始版本，包含完整的提示词管理能力 |

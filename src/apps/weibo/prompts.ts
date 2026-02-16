@@ -125,6 +125,11 @@ export const weiboPrompts: AppPromptDefinition[] = [
 作者身份：{{authorIdentity}}
 语气风格：{{platformCulture}}
 
+【档案上下文】
+{{coreKnowledge}}
+{{accountContext}}
+{{relevantArchives}}
+
 请根据博文类型生成相应的微博内容。
 
 【通用要求】
@@ -177,6 +182,42 @@ export const weiboPrompts: AppPromptDefinition[] = [
         required: false,
         defaultValue: '吃瓜',
       },
+      {
+        name: 'coreKnowledge',
+        description: '核心知识档案上下文',
+        type: 'string',
+        required: false,
+        defaultValue: '',
+        source: 'shared-context',
+        sharedContextConfig: {
+          contextId: 'archive:pinned',
+          format: 'text',
+        },
+      },
+      {
+        name: 'accountContext',
+        description: '账号角色档案上下文',
+        type: 'string',
+        required: false,
+        defaultValue: '',
+        source: 'shared-context',
+        sharedContextConfig: {
+          contextId: 'archive:characters',
+          format: 'text',
+        },
+      },
+      {
+        name: 'relevantArchives',
+        description: '相关档案上下文',
+        type: 'string',
+        required: false,
+        defaultValue: '',
+        source: 'shared-context',
+        sharedContextConfig: {
+          contextId: 'archive:relevant',
+          format: 'text',
+        },
+      },
     ],
   },
 
@@ -201,6 +242,10 @@ export const weiboPrompts: AppPromptDefinition[] = [
 {{postContent}}
 """
 
+【档案上下文】
+{{coreKnowledge}}
+{{relevantArchives}}
+
 请生成 {{count}} 条微博评论。
 要求：
 1. 风格特点：极短、情绪化、使用缩写 (yyds, nsdd, xswl)、大量 Emoji。
@@ -223,6 +268,30 @@ export const weiboPrompts: AppPromptDefinition[] = [
         type: 'number',
         required: false,
         defaultValue: 5,
+      },
+      {
+        name: 'coreKnowledge',
+        description: '核心知识档案上下文',
+        type: 'string',
+        required: false,
+        defaultValue: '',
+        source: 'shared-context',
+        sharedContextConfig: {
+          contextId: 'archive:pinned',
+          format: 'text',
+        },
+      },
+      {
+        name: 'relevantArchives',
+        description: '相关档案上下文',
+        type: 'string',
+        required: false,
+        defaultValue: '',
+        source: 'shared-context',
+        sharedContextConfig: {
+          contextId: 'archive:relevant',
+          format: 'text',
+        },
       },
     ],
   },

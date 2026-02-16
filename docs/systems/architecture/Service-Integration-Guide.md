@@ -19,7 +19,7 @@
 ### 1.2 设计原则
 
 | 原则 | 说明 |
-|------|------|
+| ------ | ------ |
 | **单向依赖** | 上层服务可依赖下层，下层不可依赖上层 |
 | **接口隔离** | 服务只暴露必要的公共接口 |
 | **事件解耦** | 跨层通信优先使用事件总线 |
@@ -85,11 +85,11 @@
 ### 2.2 层级依赖规则
 
 | 规则 | 说明 | 示例 |
-|------|------|------|
+| ------ | ------ | ------ |
 | **L4 → L3** | 应用层可调用领域服务 | 微博 App 调用 Social Media Engine |
 | **L4 → L2** | 应用层可调用能力服务 | 设置 App 调用 Account Service |
 | **L3 → L2** | 领域服务可调用能力服务 | Fans Service 调用 LLM Task Service |
-| **L3 → L3** | 同层服务可相互调用（需注意方向）| Feed Service 调用 Interaction Service |
+| **L3 → L3** | 同层服务可相互调用（需注意方向） | Feed Service 调用 Interaction Service |
 | **L2 → L1** | 能力服务可调用基础设施 | LLM Task Service 调用 AI Service |
 | **L1 → L1** | 基础设施层内部可相互调用 | Logger 使用 Time Service 获取时间戳 |
 | **❌ L1 → L2/L3** | 基础设施不可依赖上层 | Event Bus 不可调用 Account Service |
@@ -100,7 +100,7 @@
 #### Layer 1: 基础设施层
 
 | 服务 | 职责 | 状态 | 零依赖 |
-|------|------|------|--------|
+| ------ | ------ | ------ | -------- |
 | **Event Bus Service** | 事件发布/订阅 | ✅ 已实现 | ✅ |
 | **Logger Service** | 统一日志 | ✅ 已实现 | ✅ |
 | **Time Service** | 时间管理 | ✅ 已实现 | ✅ |
@@ -113,7 +113,7 @@
 #### Layer 2: 能力服务层
 
 | 服务 | 职责 | 状态 | 主要依赖 |
-|------|------|------|----------|
+| ------ | ------ | ------ | ---------- |
 | **Account Service** | 账号管理 | ✅ 已实现 | Database, EventBus |
 | **Session Context Service** | 会话上下文 | ✅ 已实现 | EventBus, Bridge |
 | **LLM Task Service** | LLM 任务调度 | ✅ 已实现 | AI, Prompt, Scheduler |
@@ -129,7 +129,7 @@
 #### Layer 3: 领域服务层
 
 | 服务 | 职责 | 状态 | 主要依赖 |
-|------|------|------|----------|
+| ------ | ------ | ------ | ---------- |
 | **Social Media Engine** | 社交媒体核心 | ✅ 已实现 | Account, LLMTask, Time |
 | **Interaction Service** | 互动行为 | ✅ 已实现 | Account, EventBus, Notification |
 | **Fans Service** | 粉丝管理 | 📋 设计完成 | Account, Interaction, LLMTask |
@@ -455,7 +455,7 @@ class FansGrowthEngine {
 **集成点**：
 
 | 子模块 | 集成服务 | 集成方式 | 说明 |
-|--------|----------|----------|------|
+| -------- | ---------- | ---------- | ------ |
 | ContentFactory | LLM Task Service | 直接调用 | 生成博文、评论 |
 | ContentFactory | JSON Parser Service | 直接调用 | 解析 LLM 输出 |
 | ContentFactory | Account Service | 直接调用 | 获取作者信息 |
@@ -488,7 +488,7 @@ class FansGrowthEngine {
 **集成点**：
 
 | 子模块 | 集成服务 | 集成方式 | 说明 |
-|--------|----------|----------|------|
+| -------- | ---------- | ---------- | ------ |
 | FollowerManager | Account Service | 直接调用 | 粉丝账号管理 |
 | FollowerManager | Event Bus | 事件发布 | 关注/取关事件 |
 | GrowthEngine | Interaction Service | 事件订阅 | 监听互动事件触发涨粉 |
@@ -525,7 +525,7 @@ LLM 任务服务是 AI 能力的核心调度器：
 **集成点**：
 
 | 子模块 | 集成服务 | 集成方式 | 说明 |
-|--------|----------|----------|------|
+| -------- | ---------- | ---------- | ------ |
 | TaskRegistry | Prompt Service | 直接调用 | 获取任务提示词 |
 | VariableEngine | Context Sharing | 扩展点 | 获取共享上下文 |
 | VariableEngine | Narrative Service | 扩展点 | 获取酒馆叙事 |
@@ -567,7 +567,7 @@ LLM 任务服务是 AI 能力的核心调度器：
 **集成点**：
 
 | 服务 | 集成对象 | 集成方式 | 说明 |
-|------|----------|----------|------|
+| ------ | ---------- | ---------- | ------ |
 | Session Context | Bridge Adapter | 事件订阅 | 响应酒馆消息 |
 | Session Context | Event Bus | 事件发布 | 广播会话变化 |
 | Session Context | Context Sharing | 发布/订阅 | 同步会话状态 |
@@ -594,7 +594,7 @@ LLM 任务服务是 AI 能力的核心调度器：
 #### 会话相关事件
 
 | 事件名 | 触发时机 | Payload | 消费者 |
-|--------|----------|---------|--------|
+| -------- | ---------- | --------- | -------- |
 | `session:changed` | 会话切换 | `{ sessionId, previousId }` | Archive, ContextSharing |
 | `session:message:new` | 新消息 | `{ sessionId, messageId, content }` | Archive, SME |
 | `session:swipe:changed` | Swipe 切换 | `{ messageId, swipeId }` | ContextSharing |
@@ -602,7 +602,7 @@ LLM 任务服务是 AI 能力的核心调度器：
 #### 互动相关事件
 
 | 事件名 | 触发时机 | Payload | 消费者 |
-|--------|----------|---------|--------|
+| -------- | ---------- | --------- | -------- |
 | `interaction:like` | 点赞 | `{ contentId, userId, platformId }` | Fans, Notification |
 | `interaction:unlike` | 取消点赞 | `{ contentId, userId }` | Fans |
 | `interaction:favorite` | 收藏 | `{ contentId, userId, collection? }` | Notification |
@@ -614,7 +614,7 @@ LLM 任务服务是 AI 能力的核心调度器：
 #### 内容相关事件
 
 | 事件名 | 触发时机 | Payload | 消费者 |
-|--------|----------|---------|--------|
+| -------- | ---------- | --------- | -------- |
 | `content:post:created` | 新帖子 | `{ postId, authorId, platformId }` | Feed, Search |
 | `content:post:deleted` | 删除帖子 | `{ postId }` | Feed, Search |
 | `content:trending:updated` | 热搜更新 | `{ platformId, items[] }` | ContextSharing, Feed |
@@ -622,7 +622,7 @@ LLM 任务服务是 AI 能力的核心调度器：
 #### 账号相关事件
 
 | 事件名 | 触发时机 | Payload | 消费者 |
-|--------|----------|---------|--------|
+| -------- | ---------- | --------- | -------- |
 | `account:created` | 新账号 | `{ accountId, type }` | Search |
 | `account:updated` | 账号更新 | `{ accountId, changes }` | ContextSharing |
 | `account:profile:updated` | 档案更新 | `{ accountId, profile }` | Search |
@@ -630,7 +630,7 @@ LLM 任务服务是 AI 能力的核心调度器：
 #### 系统相关事件
 
 | 事件名 | 触发时机 | Payload | 消费者 |
-|--------|----------|---------|--------|
+| -------- | ---------- | --------- | -------- |
 | `time:tick` | 时间流逝 | `{ timestamp, delta }` | SME, Scheduler |
 | `time:day:changed` | 跨天 | `{ date, previousDate }` | Scheduler |
 | `llm:task:started` | 任务开始 | `{ taskId, taskType }` | Logger |
@@ -662,7 +662,7 @@ class FansService {
 ### 7.1 共享上下文类型
 
 | 上下文 ID | 类型 | 发布者 | 典型消费者 |
-|-----------|------|--------|------------|
+| ----------- | ------ | -------- | ------------ |
 | `system:time` | 系统时间 | Time Service | 各服务 |
 | `system:session` | 会话信息 | Session Context | LLM Task |
 | `narrative:content` | 酒馆叙事 | Narrative Service | LLM Task, Archive |
@@ -922,7 +922,7 @@ class LLMTaskService {
 ### 10.1 服务设计原则
 
 | 原则 | 说明 | 示例 |
-|------|------|------|
+| ------ | ------ | ------ |
 | **单一职责** | 每个服务只负责一个领域 | Account 只管账号，不管粉丝逻辑 |
 | **依赖注入** | 通过构造函数注入依赖 | `new FansService({ accountService })` |
 | **接口优先** | 依赖接口而非实现 | `IAccountService` 而非 `AccountService` |
@@ -1023,7 +1023,7 @@ describe('FansService', () => {
 ### 11.1 服务状态速查表
 
 | 服务 | 层级 | 状态 | 文档位置 |
-|------|------|------|----------|
+| ------ | ------ | ------ | ---------- |
 | Event Bus | L1 | ✅ 已实现 | `eventBus-service/` |
 | Logger | L1 | ✅ 已实现 | `logger-service/` |
 | Time | L1 | ✅ 已实现 | `time-service/` |
@@ -1059,5 +1059,5 @@ describe('FansService', () => {
 ### 11.3 版本历史
 
 | 版本 | 日期 | 变更内容 |
-|------|------|----------|
+| ------ | ------ | ---------- |
 | 1.0 | 2025-01-08 | 初始版本，定义服务分层和集成模式 |

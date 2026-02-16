@@ -7,7 +7,16 @@ import './assets/styles/index.css'
 
 // 导入适配器和服务
 import { createAdapter, getAdapter } from './adapters'
-import { initChatSyncService, destroyChatSyncService, getGlobalConfigService, registerBuiltinApps, DirectorService, PlatformRegistry } from './services'
+import {
+  initArchiveAutoExtractService,
+  initChatSyncService,
+  destroyArchiveAutoExtractService,
+  destroyChatSyncService,
+  getGlobalConfigService,
+  registerBuiltinApps,
+  DirectorService,
+  PlatformRegistry,
+} from './services'
 import { registerBuiltinNarrativePrompts } from './services/builtinNarrativePrompts'
 // 导入 App 注册清单
 import { registerWeiboApp } from '@/apps/weibo/manifest'
@@ -49,8 +58,8 @@ async function initializeServices() {
   
   // 初始化聊天同步服务
   initChatSyncService()
-  
-  // 注意：叙事服务在 Bridge 适配器初始化时自动设置
+
+  initArchiveAutoExtractService()
   // 见 src/apps/bridge/composables/useBridge.ts
   
   // 初始化社交媒体导演服务 (启动时间监听)
@@ -92,6 +101,7 @@ initializeServices().then(() => {
 
 // 页面卸载时清理
 window.addEventListener('beforeunload', () => {
+  destroyArchiveAutoExtractService()
   destroyChatSyncService()
 })
 

@@ -79,7 +79,7 @@ server/
 ⚠️ **酒馆消息 vs 小手机消息**
 
 | 类型 | 存储位置 | 说明 |
-|------|----------|------|
+| ------ | ---------- | ------ |
 | 酒馆 RP 楼层 | `tavern-cache/messages.json` | 酒馆用户/AI 对话内容，用于桥接缓存 |
 | 小手机短信 | `apps/messages/data.json` | 从 RP 中解析出的模拟手机短信 |
 
@@ -97,7 +97,7 @@ server/
 新版存储将数据按「应用」进行组织，每个应用有独立的数据目录：
 
 | 应用ID | 包含的数据表 | 说明 |
-|--------|-------------|------|
+| -------- | ------------- | ------ |
 | contacts | contacts | 通讯录（小手机内的联系人） |
 | messages | messages | 短信/微信（小手机内的聊天，不是酒馆楼层！） |
 | moments | moments | 朋友圈 |
@@ -180,7 +180,7 @@ server/
 ### 公开路由
 
 | 路径 | 说明 |
-|------|------|
+| ------ | ------ |
 | `GET /` | 状态页面 (HTML) |
 | `GET /health` | 健康检查 |
 | `GET /status` | 详细状态 (JSON) |
@@ -192,13 +192,13 @@ server/
 #### 设备  (V2)
 
 | 路径 | 说明 |
-|------|------|
+| ------ | ------ |
 | `POST /api/v2/devices/heartbeat` | 设备心跳 |
 
 #### 存储 API
 
 | 路径 | 说明 |
-|------|------|
+| ------ | ------ |
 | `GET /api/v1/storage/:sessionId` | 获取备份数据 |
 | `POST /api/v1/storage/:sessionId` | 上传备份数据 |
 | `GET /api/v1/storage/:sessionId/meta` | 获取备份元信息 |
@@ -206,7 +206,7 @@ server/
 #### 会话 API
 
 | 路径 | 说明 |
-|------|------|
+| ------ | ------ |
 | `GET /api/sessions` | 获取会话列表 |
 | `GET /api/sessions/:sessionId` | 获取会话详情 |
 | `DELETE /api/sessions/:sessionId` | 删除会话 |
@@ -215,7 +215,7 @@ server/
 #### 鉴权 API
 
 | 路径 | 说明 |
-|------|------|
+| ------ | ------ |
 | `GET /api/auth/key` | 获取 API Key |
 | `POST /api/auth/regenerate` | 重新生成 Key |
 
@@ -224,7 +224,7 @@ server/
 ### 平台端 → 服务器
 
 | 事件 | 说明 |
-|------|------|
+| ------ | ------ |
 | `sync` | 同步消息/联系人等数据 |
 | `config_update` | 配置更新 |
 | `generation_status` | LLM 生成状态 |
@@ -234,7 +234,7 @@ server/
 ### 服务器 → 平台端
 
 | 事件 | 说明 |
-|------|------|
+| ------ | ------ |
 | `request_sync` | 请求同步 |
 | `config_sync` | 配置同步 |
 | `command` | 手机端命令 |
@@ -244,7 +244,7 @@ server/
 ### 手机端 ↔ 服务器
 
 | 事件 | 说明 |
-|------|------|
+| ------ | ------ |
 | `connected_platforms` | 已连接的平台列表 |
 | `platform_connected` | 平台已连接 |
 | `platform_disconnected` | 平台已断开 |
@@ -292,7 +292,7 @@ POST /api/v2/devices/heartbeat
 ## 环境变量
 
 | 变量 | 默认值 | 说明 |
-|------|--------|------|
+| ------ | -------- | ------ |
 | `PORT` | 3001 | 服务端口 |
 | `HEARTBEAT_INTERVAL` | 30000 | 心跳间隔 (ms) |
 | `HEARTBEAT_TIMEOUT` | 90000 | 心跳超时 (ms) |

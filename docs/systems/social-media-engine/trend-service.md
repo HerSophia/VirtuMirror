@@ -37,7 +37,7 @@ graph TD
 ### 2.2 设计原则
 
 | 原则 | 说明 |
-|------|------|
+| ------ | ------ |
 | **单例模式** | 全局唯一实例，通过 `getInstance()` 获取 |
 | **惰性填充** | 用户点击话题时才生成内容，节省 LLM 调用 |
 | **实时热度** | 每次获取榜单时实时计算热度，而非定时更新 |
@@ -66,7 +66,7 @@ async createTopicFromEvent(event: WorldEvent): Promise<TrendingTopic[]>
 **参数**:
 
 | 参数 | 类型 | 说明 |
-|------|------|------|
+| ------ | ------ | ------ |
 | `event` | `WorldEvent` | 世界事件对象 |
 
 **WorldEvent 结构**:
@@ -85,7 +85,7 @@ interface WorldEvent {
 **热度计算规则**:
 
 | 优先级 | baseScore | 说明 |
-|--------|-----------|------|
+| -------- | ----------- | ------ |
 | `breaking` | 90 | 突发事件，立即置顶 |
 | `normal` | 60 | 普通热点 |
 | `minor` | 30 | 低热度话题 |
@@ -115,14 +115,14 @@ async getTrendingList(platformId: string, limit?: number): Promise<TrendingTopic
 **参数**:
 
 | 参数 | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
+| ------ | ------ | -------- | ------ |
 | `platformId` | `string` | - | 平台 ID（如 `'weibo'`） |
 | `limit` | `number` | `20` | 返回数量上限 |
 
 **返回值**: 按热度排序的话题数组，包含以下运行时字段：
 
 | 字段 | 类型 | 说明 |
-|------|------|------|
+| ------ | ------ | ------ |
 | `currentHeat` | `number` | 实时计算的热度值 |
 | `isHot` | `boolean` | 是否为热门（前 3 名且热度 > 10000） |
 | `isNew` | `boolean` | 是否为新话题（1 小时内创建） |
@@ -158,7 +158,7 @@ async ensureTopicContent(topicId: string): Promise<void>
 **参数**:
 
 | 参数 | 类型 | 说明 |
-|------|------|------|
+| ------ | ------ | ------ |
 | `topicId` | `string` | 话题 ID |
 
 **行为**:
@@ -294,7 +294,7 @@ const generateCount = 3 + Math.floor(Math.random() * 3);
 ## 7. 相关服务
 
 | 服务 | 文档 | 说明 |
-|------|------|------|
+| ------ | ------ | ------ |
 | **TrafficEngine** | [algorithm.md](./traffic-engine.md) | 热度计算算法 |
 | **ContentFactory** | [content-factory.md](./content-factory.md) | 内容生成工厂 |
 | **DirectorService** | [director-service.md](./director-service.md) | 世界事件导演 |
@@ -306,5 +306,5 @@ const generateCount = 3 + Math.floor(Math.random() * 3);
 ## 8. 版本历史
 
 | 版本 | 日期 | 变更内容 |
-|------|------|----------|
+| ------ | ------ | ---------- |
 | 1.0 | 2026-01-16 | 初始文档，基于代码实现整理 |

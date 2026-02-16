@@ -1,7 +1,7 @@
 # Feed Service 系统集成
 
 > **版本**: v1.0  
-> **最后更新**: 2025-01-19
+> **最后更新**: 2026-02-07
 
 本文档说明 Feed Service 与其他系统服务的集成方式。
 
@@ -18,11 +18,11 @@
           │                        │                        │
           ▼                        ▼                        ▼
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│  Social Media   │    │   Interaction   │    │    Account      │
+│  Social Media   │    │   Interaction   │    │  Social Graph   │
 │     Engine      │    │    Service      │    │    Service      │
 │                 │    │                 │    │                 │
 │ • 内容获取      │    │ • 互动数据      │    │ • 关注关系      │
-│ • 热度计算      │    │ • 用户偏好      │    │ • 用户画像      │
+│ • 热度计算      │    │ • 用户偏好      │    │ • 互关与统计    │
 └─────────────────┘    └─────────────────┘    └─────────────────┘
           │                        │                        │
           └────────────────────────┼────────────────────────┘
@@ -31,7 +31,7 @@
           │                        │                        │
           ▼                        ▼                        ▼
 ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
-│  Trend Service  │    │  Lazy Loader    │    │   Event Bus     │
+│ Trending Service│    │  Lazy Loader    │    │   Event Bus     │
 │                 │    │                 │    │                 │
 │ • 热搜数据      │    │ • 缓存管理      │    │ • 事件发布      │
 │ • 话题内容      │    │ • 预加载        │    │ • 事件订阅      │
@@ -195,20 +195,20 @@ class FeedService {
 
 ---
 
-## Account Service 集成
+## Social Graph Service 集成
 
 ### 职责
 
-Account Service 提供用户关系数据：
+Social Graph Service 提供用户关系数据：
 
 - 关注列表
 - 粉丝列表
-- 用户画像
+- 互关与关系统计
 
 ### 集成方式
 
 ```typescript
-import { accountService } from '@/services/account'
+import { socialGraphService } from '@/services/socialGraph'
 
 class FeedAggregator {
   /**
@@ -218,8 +218,8 @@ class FeedAggregator {
     userId: string,
     platformId: string
   ): Promise<string[]> {
-    const following = await accountService.getFollowing(userId, platformId)
-    return following.map(f => f.id)
+    const page = await socialGraphService.getFollowing(userId, { platformId, limit: 200 })
+    return page.items.map((item) => item.accountId)
   }
   
   /**
@@ -256,7 +256,7 @@ class ScoreCalculator {
     let score = 0
     
     // 是否关注
-    const isFollowing = await accountService.isFollowing(
+    const isFollowing = await socialGraphService.isFollowing(
       userId, authorId, platformId
     )
     if (isFollowing) score += 0.5
@@ -268,15 +268,18 @@ class ScoreCalculator {
     return score
   }
 }
+
+// 推荐：FeedService 默认使用 SystemContentProvider，
+// 该 provider 已内建 socialGraphService.getFollowing() 调用链。
 ```
 
 ---
 
-## Trend Service 集成
+## Trending Service 集成
 
 ### 职责
 
-Trend Service 提供热搜和话题数据：
+Trending Service 提供热搜和话题数据：
 
 - 热搜榜单
 - 话题内容
@@ -285,7 +288,7 @@ Trend Service 提供热搜和话题数据：
 ### 集成方式
 
 ```typescript
-import { trendService } from '@/services/social/trendService'
+import { trendingService } from '@/services/trending'
 
 class FeedAggregator {
   /**
@@ -296,14 +299,14 @@ class FeedAggregator {
     options: TrendingOptions
   ): Promise<UniversalPost[]> {
     // 获取热搜话题
-    const trending = await trendService.getTrending(platformId, {
+    const trending = await trendingService.getTrending(platformId, {
       limit: 10,
     })
     
     // 获取话题相关帖子
     const posts: UniversalPost[] = []
     for (const topic of trending) {
-      const topicPosts = await trendService.getTopicPosts(topic.id, {
+      const topicPosts = await trendingService.ensureTopicContent(topic.id)
         limit: 5,
       })
       posts.push(...topicPosts)
@@ -320,12 +323,10 @@ class FeedAggregator {
     options: FeedOptions
   ): Promise<UniversalPost[]> {
     // 确保话题内容已生成（惰性加载）
-    await trendService.ensureTopicContent(topicId)
+    await trendingService.ensureTopicContent(topicId)
     
-    return trendService.getTopicPosts(topicId, {
-      limit: options.limit,
-      offset: options.offset,
-    })
+    const posts = await trendingService.ensureTopicContent(topicId)
+    return posts.slice(options.offset ?? 0, (options.offset ?? 0) + (options.limit ?? 20))
   }
 }
 ```
@@ -459,12 +460,12 @@ class FeedService {
     })
     
     // 关注关系变化时，使关注流缓存失效
-    eventBus.on('social:follow', (event) => {
-      this.invalidateFollowingFeed(event.userId)
+    eventBus.on('social:relation:followed', (event) => {
+      this.invalidateFollowingFeed(event.fromId)
     })
     
-    eventBus.on('social:unfollow', (event) => {
-      this.invalidateFollowingFeed(event.userId)
+    eventBus.on('social:relation:unfollowed', (event) => {
+      this.invalidateFollowingFeed(event.fromId)
     })
     
     // 热搜更新时，使热门流缓存失效
@@ -537,11 +538,12 @@ export async function initializeServices() {
   
   // 2. 数据服务
   await accountService.initialize()
+  await socialGraphService.initialize?.()
   await interactionService.initialize()
   
   // 3. 内容服务
   await socialMediaEngine.initialize()
-  await trendService.initialize()
+  await trendingService.initialize?.()
   
   // 4. Feed Service（依赖上述服务）
   await feedService.initialize()
@@ -605,7 +607,9 @@ class FeedService {
 - [README](./README.md) - Feed Service 概述
 - [架构设计](./architecture.md) - 服务架构
 - [Social Media Engine](../social-media-engine/README.md)
+- [Social Graph Service](../social-graph-service/README.md)
 - [Interaction Service](../interaction-service/README.md)
+- [Trending Service](../trending-service/README.md)
 - [Account Service](../account-service/README.md)
 - [Lazy Loader Service](../lazy-loader-service/README.md)
 - [Event Bus Service](../eventBus-service/README.md)

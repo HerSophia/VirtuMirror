@@ -26,7 +26,7 @@ interface NarrativeVariables {
 ### 1.2 变量说明
 
 | 变量名 | 类型 | 必填 | 说明 |
-|--------|------|------|------|
+| -------- | ------ | ------ | ------ |
 | `narrative` | string | ✅ | 叙事内容（主要变量） |
 | `narrativeMessageId` | number | - | 来源楼层号 |
 | `narrativeSwipeId` | number | - | 来源 Swipe ID |
@@ -144,7 +144,7 @@ containsNarrativeContent(text, narrative)  // true
 **参数**：
 
 | 参数 | 类型 | 说明 |
-|------|------|------|
+| ------ | ------ | ------ |
 | `text` | string | 要检测的文本 |
 | `narrativeContent` | string | 叙事内容 |
 | `sampleLength` | number | 用于比对的样本长度（默认 100） |

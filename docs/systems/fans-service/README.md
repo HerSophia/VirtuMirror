@@ -46,7 +46,7 @@
 ### 1.3 核心能力
 
 | 能力模块 | 说明 | 文档 |
-|----------|------|------|
+| ---------- | ------ | ------ |
 | **粉丝管理** | 关注/取关、粉丝列表、互粉检测 | [fans-management.md](./fans-management.md) |
 | **增长引擎** | 六大涨粉渠道、数值算法 | [growth-engine.md](./growth-engine.md) |
 | **画像系统** | 粉丝特征、兴趣标签、活跃度 | [profile-system.md](./profile-system.md) |
@@ -94,7 +94,7 @@
 ### 2.2 核心模块职责
 
 | 模块 | 职责 | 对外接口 |
-|------|------|----------|
+| ------ | ------ | ---------- |
 | **FansManager** | 粉丝关系的增删查改 | `follow()`, `unfollow()`, `getFollowers()` |
 | **GrowthEngine** | 涨粉算法计算与事件处理 | `processEvent()`, `calculateGain()` |
 | **ProfileGenerator** | 生成/更新粉丝画像 | `generateProfile()`, `batchGenerate()` |
@@ -144,7 +144,7 @@ graph TD
 粉丝服务与社交图谱服务（Social Graph Service）有重叠但职责不同：
 
 | 方面 | Fans Service | Social Graph Service |
-|------|--------------|----------------------|
+| ------ | -------------- | ---------------------- |
 | **关注点** | 粉丝增长模拟、画像生成 | 通用社交关系管理 |
 | **数据** | 粉丝特有数据（画像、来源） | 关系数据（关注、互粉） |
 | **算法** | 涨粉算法、质量评估 | 图遍历、推荐算法 |
@@ -213,7 +213,7 @@ enum FollowerSource {
 ### 4.2 数据库表设计
 
 | 表名 | 说明 | 主键 |
-|------|------|------|
+| ------ | ------ | ------ |
 | `fan_relations` | 粉丝关系表 | `id` |
 | `fan_profiles` | 粉丝画像表 | `accountId` |
 | `follower_gain_events` | 涨粉事件表 | `id` |
@@ -306,7 +306,7 @@ const config: FansServiceConfig = {
 ## 7. 实施状态
 
 | 模块 | 状态 | 优先级 | 预估工作量 |
-|------|------|--------|------------|
+| ------ | ------ | -------- | ------------ |
 | 粉丝管理 (FansManager) | 📋 待实现 | 🔴 高 | 3-4h |
 | 增长引擎 (GrowthEngine) | 📋 待实现 | 🔴 高 | 6-8h |
 | 画像系统 (ProfileGenerator) | 📋 待实现 | 🟡 中 | 4-5h |

@@ -29,7 +29,7 @@ type SystemPromptScope = 'global' | 'app';
 ```
 
 | 值 | 说明 |
-|----| ---- |
+| ---- | ---- |
 | `global` | 全局作用域，影响所有 LLM 调用 |
 | `app` | App 级作用域，仅影响特定 App |
 
@@ -42,7 +42,7 @@ type SystemPromptMode = 'append' | 'override';
 ```
 
 | 值 | 说明 |
-|----|------|
+| ---- | ------ |
 | `append` | 追加到上层系统提示词之后 |
 | `override` | 覆盖上层系统提示词 |
 
@@ -279,7 +279,7 @@ type ChainExecutionMode = 'multi-step' | 'single-shot';
 ```
 
 | 值 | 说明 |
-|----|------|
+| ---- | ------ |
 | `multi-step` | 多步模式，逐步执行每个步骤 |
 | `single-shot` | 单次模式，组装为一个复合提示词一次调用 |
 
@@ -292,7 +292,7 @@ type ChainStepType = 'prompt' | 'transform' | 'condition' | 'loop';
 ```
 
 | 值 | 说明 |
-|----|------|
+| ---- | ------ |
 | `prompt` | 调用 LLM 生成 |
 | `transform` | 数据转换（不调用 LLM） |
 | `condition` | 条件分支（规划中） |

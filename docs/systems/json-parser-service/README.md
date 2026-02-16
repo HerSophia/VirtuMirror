@@ -12,7 +12,7 @@
 LLM 输出的 JSON 经常存在格式问题，导致标准 `JSON.parse()` 无法解析：
 
 | 问题类型 | 示例 | 出现频率 |
-|----------|------|----------|
+| ---------- | ------ | ---------- |
 | Markdown 代码块包裹 | `` ```json\n{...}\n``` `` | 🔴 高 |
 | 多余前缀/后缀文本 | `Sure! Here's the JSON: {...}` | 🔴 高 |
 | 尾部逗号 | `{"a": 1, "b": 2,}` | 🟡 中 |
@@ -25,7 +25,7 @@ LLM 输出的 JSON 经常存在格式问题，导致标准 `JSON.parse()` 无法
 代码库中存在 **多处重复** 的 JSON 清理逻辑：
 
 | 位置 | 实现方式 | 能力 |
-|------|----------|------|
+| ------ | ---------- | ------ |
 | `llmTask/utils.ts` | `cleanJsonOutput()` + `safeParseJson()` | 移除 Markdown 标记 |
 | `prompt/chainExecutor/utils.ts` | `parseJSON()` | 提取代码块 + 对象/数组匹配 |
 | `social/contentFactory.ts` | `parseAndRepairJSON()` | JSON5 + 边界修复 |
@@ -52,7 +52,7 @@ LLM 输出的 JSON 经常存在格式问题，导致标准 `JSON.parse()` 无法
 ## 2. 文档结构
 
 | 文档 | 说明 |
-|------|------|
+| ------ | ------ |
 | [types.md](./types.md) | 类型定义 |
 | [implementation.md](./implementation.md) | 实现设计 |
 | [strategies.md](./strategies.md) | 内置修复策略 |
@@ -144,7 +144,7 @@ interface JsonParserService {
 服务内置以下修复策略（按优先级排序）：
 
 | 策略 | 优先级 | 说明 |
-|------|--------|------|
+| ------ | -------- | ------ |
 | `extract-boundaries` | 10 | 提取 JSON 对象/数组边界 |
 | `remove-trailing-commas` | 20 | 移除尾部逗号 |
 | `single-to-double-quotes` | 30 | 单引号转双引号 |
@@ -161,7 +161,7 @@ interface JsonParserService {
 ### 6.1 迁移计划
 
 | 阶段 | 内容 | 状态 |
-|------|------|------|
+| ------ | ------ | ------ |
 | Phase 1 | 创建服务，实现核心功能 | 📋 待实现 |
 | Phase 2 | 迁移 `llmTask/utils.ts` | 📋 待实现 |
 | Phase 3 | 迁移 `prompt/chainExecutor/utils.ts` | 📋 待实现 |
@@ -204,7 +204,7 @@ interface JsonParserService {
 ## 8. 工作量预估
 
 | 任务 | 预估时间 |
-|------|----------|
+| ------ | ---------- |
 | 核心服务实现 | 3-4h |
 | 修复策略实现 | 2-3h |
 | 单元测试 | 2h |

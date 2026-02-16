@@ -71,7 +71,7 @@ getPlatform(id: string): PlatformConfig | undefined
 **参数**:
 
 | 参数 | 类型 | 说明 |
-|------|------|------|
+| ------ | ------ | ------ |
 | `id` | `string` | 平台 ID |
 
 **示例**:
@@ -212,7 +212,7 @@ interface DMConfig {
 ### 5.1 微博 (weibo)
 
 | 配置项 | 值 |
-|--------|----|
+| -------- | ---- |
 | **内容类型** | 图文 (`text_image`) |
 | **标题** | 不需要 |
 | **字数限制** | 140 字 |
@@ -225,7 +225,7 @@ interface DMConfig {
 ### 5.2 B站 (bilibili)
 
 | 配置项 | 值 |
-|--------|----|
+| -------- | ---- |
 | **内容类型** | 视频 (`video`) |
 | **标题** | 需要 |
 | **字数限制** | 1000 字（简介） |
@@ -238,7 +238,7 @@ interface DMConfig {
 ### 5.3 知乎 (zhihu)
 
 | 配置项 | 值 |
-|--------|----|
+| -------- | ---- |
 | **内容类型** | 问答 (`qa`) |
 | **标题** | 需要（问题标题） |
 | **字数限制** | 5000 字 |
@@ -251,7 +251,7 @@ interface DMConfig {
 ### 5.4 小红书 (redbook)
 
 | 配置项 | 值 |
-|--------|----|
+| -------- | ---- |
 | **内容类型** | 图文 (`text_image`) |
 | **标题** | 需要 |
 | **字数限制** | 1000 字 |
@@ -282,7 +282,7 @@ private registerPrompts() {
 ### 6.2 注册的提示词
 
 | 场景 ID | 说明 |
-|---------|------|
+| --------- | ------ |
 | `social.event.generate` | 生成世界事件 |
 | `social.post.generate` | 生成通用博文 |
 | `social.comment.batch` | 批量生成评论 |
@@ -349,7 +349,7 @@ export function registerDouyinPlatform() {
 ## 8. 相关服务
 
 | 服务 | 文档 | 说明 |
-|------|------|------|
+| ------ | ------ | ------ |
 | **ContentFactory** | [content-factory.md](./content-factory.md) | 使用平台配置生成内容 |
 | **TrendService** | [trend-service.md](./trend-service.md) | 获取平台列表创建话题 |
 | **PromptService** | [../prompt-service/](../prompt-service/) | 提示词管理 |
@@ -359,5 +359,5 @@ export function registerDouyinPlatform() {
 ## 9. 版本历史
 
 | 版本 | 日期 | 变更内容 |
-|------|------|----------|
+| ------ | ------ | ---------- |
 | 1.0 | 2026-01-16 | 初始文档，基于代码实现整理 |

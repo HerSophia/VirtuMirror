@@ -70,17 +70,17 @@ function fetchModels(
 #### FetchModelsOptions
 
 | 参数 | 类型 | 必填 | 说明 |
-|------|------|------|------|
+| ------ | ------ | ------ | ------ |
 | `apiUrl` | `string` | ✅ | API 地址 |
 | `apiKey` | `string` | - | API 密钥 |
-| `source` | `ProviderSource \| 'custom'` | - | API 来源类型，默认 `'openai'` |
+| `source` | `ProviderSource \ | 'custom'` | - | API 来源类型，默认 `'openai'` |
 | `timeout` | `number` | - | 超时时间（毫秒），默认 10000 |
 | `chatModelsOnly` | `boolean` | - | 是否只返回聊天模型，默认 `false` |
 
 #### FetchModelsResult
 
 | 字段 | 类型 | 说明 |
-|------|------|------|
+| ------ | ------ | ------ |
 | `success` | `boolean` | 是否成功 |
 | `models` | `ModelInfo[]` | 模型列表 |
 | `error` | `string?` | 错误信息（如果失败） |
@@ -89,13 +89,13 @@ function fetchModels(
 #### ModelInfo
 
 | 字段 | 类型 | 说明 |
-|------|------|------|
+| ------ | ------ | ------ |
 | `id` | `string` | 模型 ID |
 | `name` | `string?` | 模型名称（用于显示） |
 | `description` | `string?` | 模型描述 |
 | `ownedBy` | `string?` | 模型所有者/创建者 |
 | `created` | `number?` | 创建时间戳 |
-| `type` | `'chat' \| 'completion' \| 'embedding' \| 'image' \| 'audio' \| 'other'` | 模型类型 |
+| `type` | `'chat' \ | 'completion' \ | 'embedding' \ | 'image' \ | 'audio' \ | 'other'` | 模型类型 |
 | `multimodal` | `boolean?` | 是否支持多模态 |
 | `contextLength` | `number?` | 上下文长度 |
 | `raw` | `Record<string, unknown>?` | 原始数据 |

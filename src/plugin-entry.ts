@@ -18,6 +18,8 @@ import {
   initChatSyncService,
   destroyChatSyncService,
   getGlobalConfigService,
+  destroyArchiveAutoExtractService,
+  initArchiveAutoExtractService,
   getChatDataService,
 } from './services'
 
@@ -78,6 +80,9 @@ async function initializeApp(): Promise<void> {
 
     // 创建挂载点
     const mountPoint = document.createElement('div')
+
+    initArchiveAutoExtractService()
+
     mountPoint.id = 'phone-sim-vue-app'
     document.body.appendChild(mountPoint)
 
@@ -177,6 +182,7 @@ function destroyApp(): void {
   destroyChatSyncService()
   console.log(`${loggingPrefix} Chat sync service destroyed`)
 
+  destroyArchiveAutoExtractService()
   if (app) {
     app.unmount()
     app = null

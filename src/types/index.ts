@@ -50,6 +50,38 @@ export {
   type TokenBudget,
 } from './social'
 
+// Archive 服务类型
+export type {
+  ActionEntry,
+  ArchiveBase,
+  ArchiveConfig,
+  ArchiveFloorData,
+  ArchiveInjectionHistory,
+  ArchiveQueryFilter,
+  ArchiveRecord,
+  ArchiveStatus,
+  ArchiveType,
+  CharacterProfile,
+  CharacterRole,
+  CharacterUpdate,
+  ChatArchive,
+  EventImportance,
+  EventStatus,
+  EventSubType,
+  ExtractOptions,
+  ExtractResult,
+  FactConfidence,
+  FactEntry,
+  FloorReference,
+  InjectionLevel,
+  InjectionRequest,
+  InjectionResult,
+  Keyword,
+  UpdateRecord,
+  WorldEntry,
+  WorldEntryCategory,
+} from './archive'
+
 export * from './ai'
 export * from './appIdentity'
 export * from './appPackage'
@@ -169,3 +201,28 @@ export type {
   // 服务接口
   IFeedService,
 } from './feed'
+
+// Social Graph 服务类型
+export type {
+  BatchFollowOptions,
+  BatchFollowResult,
+  BlockOptions,
+  FollowOptions,
+  FollowRecommendation,
+  GraphAccountNode,
+  ISocialGraphService,
+  MuteOptions,
+  RecommendationOptions,
+  RecommendationReason,
+  RecommendationReasonType,
+  RelationshipStats,
+  SocialGraphErrorCode,
+  SocialGraphEvent,
+  SocialGraphEventType,
+  SocialGraphPageResult,
+  SocialGraphQueryOptions,
+  SocialGraphRelation,
+  SocialGraphRelationScope,
+  SocialGraphRelationStatus,
+  SocialGraphRelationType,
+} from './socialGraph'

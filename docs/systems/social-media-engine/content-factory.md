@@ -75,7 +75,7 @@ async generatePost(
 **参数**:
 
 | 参数 | 类型 | 必填 | 说明 |
-|------|------|------|------|
+| ------ | ------ | ------ | ------ |
 | `platformId` | `string` | ✅ | 平台 ID（如 `'weibo'`） |
 | `topic` | `TrendingTopic` | ✅ | 话题对象 |
 | `account` | `PlatformAccount` | ❌ | 发帖账号（可选） |
@@ -93,7 +93,7 @@ interface PostPayload {
 **提示词变量**:
 
 | 变量名 | 来源 | 说明 |
-|--------|------|------|
+| -------- | ------ | ------ |
 | `platformName` | `platform.name` | 平台名称 |
 | `platformCulture` | `platform.aiSetting` | 平台风格描述 |
 | `topic` | 参数 | 话题关键词和背景 |
@@ -134,7 +134,7 @@ async generateComments(
 **参数**:
 
 | 参数 | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
+| ------ | ------ | -------- | ------ |
 | `platformId` | `string` | - | 平台 ID |
 | `postContent` | `string` | - | 原博文内容 |
 | `count` | `number` | `5` | 生成数量 |
@@ -153,7 +153,7 @@ interface Comment {
 **用户类型说明**:
 
 | 类型 | 说明 | 典型行为 |
-|------|------|----------|
+| ------ | ------ | ---------- |
 | `fan` | 粉丝 | 支持、赞美、追捧 |
 | `hater` | 杠精 | 质疑、反驳、挑刺 |
 | `passerby` | 路人 | 中立、好奇、吃瓜 |
@@ -162,7 +162,7 @@ interface Comment {
 **LLM 参数**:
 
 | 参数 | 值 | 说明 |
-|------|-----|------|
+| ------ | ----- | ------ |
 | `temperature` | `1.0` | 高随机性，增加评论多样性 |
 
 **副作用**:
@@ -208,7 +208,7 @@ flowchart TD
 **修复能力**:
 
 | 问题 | 处理方式 |
-|------|----------|
+| ------ | ---------- |
 | `` ```json ... ``` `` 包裹 | 正则移除 |
 | 前后有多余文本 | 提取 `{...}` 或 `[...]` 部分 |
 | 尾逗号、单引号等 | JSON5 库容错解析 |
@@ -236,7 +236,7 @@ sequenceDiagram
 **账号属性**:
 
 | 属性 | 值 | 说明 |
-|------|-----|------|
+| ------ | ----- | ------ |
 | `entity.type` | `'npc'` | 非玩家角色 |
 | `entity.source` | `'social'` | 来源：社交引擎 |
 | `account.scope` | `'session'` | 会话级作用域 |
@@ -358,7 +358,7 @@ async function loadComments(postId: string) {
 ### 7.1 常见错误
 
 | 错误 | 原因 | 处理 |
-|------|------|------|
+| ------ | ------ | ------ |
 | `Platform xxx not found` | 未注册的平台 ID | 检查 PlatformRegistry |
 | `Failed to parse JSON content` | LLM 输出格式严重错误 | 重试或使用 fallback |
 | `No JSON object or array found` | LLM 输出无 JSON 结构 | 检查提示词设计 |
@@ -374,7 +374,7 @@ async function loadComments(postId: string) {
 ## 8. 相关服务
 
 | 服务 | 文档 | 说明 |
-|------|------|------|
+| ------ | ------ | ------ |
 | **TrendService** | [trend-service.md](./trend-service.md) | 调用生成博文 |
 | **TrafficEngine** | [traffic-engine.md](./traffic-engine.md) | 计算互动数据 |
 | **PlatformRegistry** | [platform-registry.md](./platform-registry.md) | 平台配置 |
@@ -386,6 +386,6 @@ async function loadComments(postId: string) {
 ## 9. 版本历史
 
 | 版本 | 日期 | 变更内容 |
-|------|------|----------|
+| ------ | ------ | ---------- |
 | 1.0 | 2026-01-16 | 初始文档，基于代码实现整理 |
 | - | - | Phase 2: 迁移到新账号系统 |

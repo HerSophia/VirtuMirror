@@ -39,6 +39,12 @@ import type {
   StoredPromptChain,
   ChainExecutionHistory
 } from '@/types/promptChain'
+import type {
+  ArchiveRecord,
+  Keyword,
+  ArchiveConfig,
+  ArchiveInjectionHistory,
+} from '@/types/archive'
 
 // ============ 数据库实体类型 ============
 
@@ -247,6 +253,12 @@ export class PhoneDatabase extends Dexie {
   // 提示词链系统
   promptChains!: Table<StoredPromptChain>
   chainExecutionHistory!: Table<ChainExecutionHistory>
+
+  // 档案系统
+  archives!: Table<ArchiveRecord>
+  archiveKeywords!: Table<Keyword>
+  archiveConfigs!: Table<ArchiveConfig>
+  archiveInjectionHistory!: Table<ArchiveInjectionHistory>
 
   constructor() {
     super('PhoneSimulator')
@@ -642,6 +654,79 @@ export class PhoneDatabase extends Dexie {
       promptChains: 'id, source, *tags, enabled, createdAt, updatedAt',
       chainExecutionHistory: 'executionId, chainId, status, executedAt'
     })
+
+    // 版本9：新增 Archive Service 表结构
+    // 最小迁移策略：历史版本没有档案数据，直接增表即可
+    this.version(9)
+      .stores({
+        sessions: 'id, platform, chatId, characterCardId, lastActiveAt',
+        contacts: '[sessionId+id], sessionId, name, type, [sessionId+sourceMessageId], [sessionId+sourceMessageId+sourceSwipeId]',
+        messages: '[sessionId+uid], [sessionId+contactId], sessionId, timestamp, type, [sessionId+sourceMessageId], [sessionId+sourceMessageId+sourceSwipeId]',
+        moments: '[sessionId+id], sessionId, authorId, timestamp, [sessionId+sourceMessageId], [sessionId+sourceMessageId+sourceSwipeId]',
+        calls: '[sessionId+id], sessionId, contactId, startTime, [sessionId+sourceMessageId], [sessionId+sourceMessageId+sourceSwipeId]',
+        emails: '[sessionId+id], [sessionId+folder], sessionId, timestamp, read, [sessionId+sourceMessageId], [sessionId+sourceMessageId+sourceSwipeId]',
+        forumBoards: '[sessionId+id], sessionId',
+        forumPosts: '[sessionId+id], [sessionId+boardId], sessionId, timestamp, [sessionId+sourceMessageId], [sessionId+sourceMessageId+sourceSwipeId]',
+        liveStreams: '[sessionId+id], [sessionId+boardId], sessionId, status, [sessionId+sourceMessageId], [sessionId+sourceMessageId+sourceSwipeId]',
+        bookmarks: '[sessionId+id], sessionId, createdAt',
+        browsingHistory: '[sessionId+url+timestamp], sessionId, timestamp',
+        appSettings: 'key',
+        desktopLayouts: 'sessionId',
+        appData: '[namespace+key], namespace, updatedAt',
+        trustedRepositories: 'id, trustLevel, addedAt',
+        socialPosts: 'id, platformId, namespace, [platformId+timestamp], *topicTags, authorId',
+        socialComments: 'id, [postId+timestamp], platformId, namespace, authorId',
+        socialTopics: 'id, platformId, namespace, [platformId+isHot], [platformId+isNew], [platformId+createdAt], *categories, createdAt',
+        socialAccounts: 'id, [platformId+identityId], platformId, handle',
+        socialIdentities: 'id, type',
+        socialSuperTopics: 'id, category, *keywords',
+        characterEntities: `
+          id,
+          type,
+          displayName,
+          scope,
+          scopeSessionId,
+          scopeCharacterCardId,
+          linkedCharacterCardId,
+          source,
+          createdAt,
+          [scope+scopeSessionId],
+          [scope+scopeCharacterCardId]
+        `,
+        platformAccounts: `
+          id,
+          entityId,
+          platformId,
+          scope,
+          scopeSessionId,
+          scopeCharacterCardId,
+          [platformId+handle],
+          [platformId+scope],
+          [platformId+scopeCharacterCardId],
+          [entityId+platformId],
+          createdAt
+        `,
+        socialRelations: `
+          id,
+          fromAccountId,
+          toAccountId,
+          type,
+          [fromAccountId+type],
+          [toAccountId+type],
+          createdAt
+        `,
+        promptChains: 'id, source, *tags, enabled, createdAt, updatedAt',
+        chainExecutionHistory: 'executionId, chainId, status, executedAt',
+
+        // Archive Service
+        archives: 'id, sessionId, type, [sessionId+type], injectionLevel, *keywords, *boundAccountIds, importance, status, createdAt, lastUpdated',
+        archiveKeywords: 'id, sessionId, text, [sessionId+text], category, *linkedArchives, createdAt',
+        archiveConfigs: 'sessionId, updatedAt',
+        archiveInjectionHistory: 'id, sessionId, [sessionId+round], [sessionId+injectedAt], round, injectedAt, *archiveIds',
+      })
+      .upgrade(() => {
+        // no-op: 新增表在迁移时自动创建
+      })
   }
 }
 

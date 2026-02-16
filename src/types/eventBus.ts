@@ -1,4 +1,4 @@
-1/**
+/**
  * 事件总线服务类型定义
  */
 
@@ -398,6 +398,60 @@ export interface AppErrorEvent {
 }
 
 // ============================================================================
+// Scheduler 事件
+// ============================================================================
+
+/** Scheduler 执行结果 */
+export interface SchedulerExecutionResult {
+  taskId: string
+  outcome: 'success' | 'failed' | 'timeout' | 'skipped'
+  success: boolean
+  attempt: number
+  startedAt: number
+  finishedAt: number
+  duration: number
+  error?: string
+  skipped?: boolean
+  reason?: 'reentry'
+}
+
+/** Scheduler 任务基础事件 */
+export interface SchedulerTaskBaseEvent {
+  taskId: string
+  taskName: string
+  appId: string
+  scheduleType: 'interval' | 'cron' | 'event'
+  timestamp: number
+}
+
+/** Scheduler 任务状态变化事件 */
+export interface SchedulerTaskStateChangedEvent extends SchedulerTaskBaseEvent {
+  enabled: boolean
+}
+
+/** Scheduler 任务开始事件 */
+export interface SchedulerTaskStartedEvent extends SchedulerTaskBaseEvent {
+  attempt: number
+}
+
+/** Scheduler 任务执行结果事件 */
+export interface SchedulerTaskResultEvent extends SchedulerTaskBaseEvent {
+  result: SchedulerExecutionResult
+}
+
+/** Scheduler 任务完成事件 */
+export interface SchedulerTaskCompletedEvent extends SchedulerTaskResultEvent {}
+
+/** Scheduler 任务失败事件 */
+export interface SchedulerTaskFailedEvent extends SchedulerTaskResultEvent {}
+
+/** Scheduler 任务超时事件 */
+export interface SchedulerTaskTimeoutEvent extends SchedulerTaskResultEvent {}
+
+/** Scheduler 任务跳过事件 */
+export interface SchedulerTaskSkippedEvent extends SchedulerTaskResultEvent {}
+
+// ============================================================================
 // Context Sharing 事件
 // ============================================================================
 
@@ -471,6 +525,17 @@ export interface EventMap {
   'notification:created': NotificationCreatedEvent
   'app:ready': AppReadyEvent
   'app:error': AppErrorEvent
+
+  // Scheduler 事件
+  'scheduler:task:registered': SchedulerTaskBaseEvent
+  'scheduler:task:unregistered': SchedulerTaskBaseEvent
+  'scheduler:task:paused': SchedulerTaskStateChangedEvent
+  'scheduler:task:resumed': SchedulerTaskStateChangedEvent
+  'scheduler:task:started': SchedulerTaskStartedEvent
+  'scheduler:task:completed': SchedulerTaskCompletedEvent
+  'scheduler:task:failed': SchedulerTaskFailedEvent
+  'scheduler:task:timeout': SchedulerTaskTimeoutEvent
+  'scheduler:task:skipped': SchedulerTaskSkippedEvent
 
   // Context Sharing 事件
   'contextSharing:published': ContextPublishedEvent

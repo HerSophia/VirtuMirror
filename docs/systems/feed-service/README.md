@@ -1,9 +1,9 @@
 # 信息流服务 (Feed Service)
 
-> **状态**: 📋 设计中  
+> **状态**: ✅ v1.0 已实现（核心能力 + 默认系统数据源）  
 > **版本**: v1.0  
 > **优先级**: 🟡 中  
-> **最后更新**: 2025-01-19
+> **最后更新**: 2026-02-07
 
 ## 概述
 
@@ -19,13 +19,13 @@
 
 ### 设计目标
 
-| 维度       | 说明                                        |
+| 维度 | 说明 |
 | ---------- | ------------------------------------------- |
-| 跨平台复用 | 微博、B站、知乎等平台共享信息流服务         |
-| 算法可配   | 不同平台可以配置不同的推荐算法参数          |
-| 性能优化   | 支持分页加载、缓存策略、预加载              |
-| 可扩展     | 支持自定义排序规则和过滤器                  |
-| 解耦       | App 只调用服务接口，不直接操作排序逻辑      |
+| 跨平台复用 | 微博、B站、知乎等平台共享信息流服务 |
+| 算法可配 | 不同平台可以配置不同的推荐算法参数 |
+| 性能优化 | 支持分页加载、缓存策略、预加载 |
+| 可扩展 | 支持自定义排序规则和过滤器 |
+| 解耦 | App 只调用服务接口，不直接操作排序逻辑 |
 
 ### 问题背景
 
@@ -40,13 +40,13 @@
 
 ## 文档导航
 
-| 文档                                | 说明                                   |
+| 文档 | 说明 |
 | ----------------------------------- | -------------------------------------- |
-| [架构设计](./architecture.md)       | 分层架构、核心组件、数据流             |
-| [类型定义](./types.md)              | FeedItem、FeedOptions、AlgorithmConfig |
-| [使用示例](./usage.md)              | 获取信息流、配置算法、自定义过滤       |
-| [算法配置](./algorithm.md)          | 各平台算法参数、权重配置               |
-| [系统集成](./integration.md)        | 与社交引擎、互动服务、账号服务的交互   |
+| [架构设计](./architecture.md) | 分层架构、核心组件、数据流 |
+| [类型定义](./types.md) | FeedItem、FeedOptions、AlgorithmConfig |
+| [使用示例](./usage.md) | 获取信息流、配置算法、自定义过滤 |
+| [算法配置](./algorithm.md) | 各平台算法参数、权重配置 |
+| [系统集成](./integration.md) | 与社交引擎、互动服务、账号服务的交互 |
 
 ---
 
@@ -256,31 +256,31 @@ interface AlgorithmConfig {
 
 ### FeedService 主要方法
 
-| 方法                         | 说明                 |
+| 方法 | 说明 |
 | ---------------------------- | -------------------- |
-| **信息流获取**               |                      |
-| `getPersonalizedFeed()`      | 获取个性化首页流     |
-| `getFollowingFeed()`         | 获取关注流           |
-| `getTrendingContent()`       | 获取热门内容         |
-| `getDiscoverContent()`       | 获取发现页内容       |
-| `getCategoryFeed()`          | 获取分类信息流       |
-| `getTopicFeed()`             | 获取话题信息流       |
-| **刷新与分页**               |                      |
-| `refreshFeed()`              | 刷新信息流           |
-| `loadMore()`                 | 加载更多             |
-| `preloadNextPage()`          | 预加载下一页         |
-| **算法配置**                 |                      |
-| `registerAlgorithm()`        | 注册平台算法配置     |
-| `getAlgorithmConfig()`       | 获取算法配置         |
-| `updateAlgorithmWeights()`   | 更新算法权重         |
-| **过滤器**                   |                      |
-| `addFilter()`                | 添加内容过滤器       |
-| `removeFilter()`             | 移除过滤器           |
-| `clearFilters()`             | 清除所有过滤器       |
-| **缓存管理**                 |                      |
-| `invalidateCache()`          | 使缓存失效           |
-| `clearCache()`               | 清除缓存             |
-| `getCacheStats()`            | 获取缓存统计         |
+| **信息流获取** |  |
+| `getPersonalizedFeed()` | 获取个性化首页流 |
+| `getFollowingFeed()` | 获取关注流 |
+| `getTrendingContent()` | 获取热门内容 |
+| `getDiscoverContent()` | 获取发现页内容 |
+| `getCategoryFeed()` | 获取分类信息流 |
+| `getTopicFeed()` | 获取话题信息流 |
+| **刷新与分页** |  |
+| `refreshFeed()` | 刷新信息流 |
+| `loadMore()` | 加载更多 |
+| `preloadNextPage()` | 预加载下一页 |
+| **算法配置** |  |
+| `registerAlgorithm()` | 注册平台算法配置 |
+| `getAlgorithmConfig()` | 获取算法配置 |
+| `updateAlgorithmWeights()` | 更新算法权重 |
+| **过滤器** |  |
+| `addFilter()` | 添加内容过滤器 |
+| `removeFilter()` | 移除过滤器 |
+| `clearFilters()` | 清除所有过滤器 |
+| **缓存管理** |  |
+| `invalidateCache()` | 使缓存失效 |
+| `clearCache()` | 清除缓存 |
+| `getCacheStats()` | 获取缓存统计 |
 
 ---
 
@@ -294,12 +294,12 @@ interface AlgorithmConfig {
          │              │              │              │
          ▼              ▼              ▼              ▼
 ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐
-│ Social      │ │ Interaction │ │ Account     │ │ Trend       │
+│ Social      │ │ Interaction │ │ Social Graph│ │ Trending    │
 │ Media Engine│ │ Service     │ │ Service     │ │ Service     │
-│ (社交引擎)  │ │ (互动服务)  │ │ (账号服务)  │ │ (热搜服务)  │
+│ (社交引擎)  │ │ (互动服务)  │ │ (社交图谱)  │ │ (热搜服务)  │
 │             │ │             │ │             │ │             │
-│ 获取内容    │ │ 获取互动数  │ │ 获取关注    │ │ 获取热门    │
-│ 热度计算    │ │ 用户偏好    │ │ 社交关系    │ │ 话题内容    │
+│ 获取内容    │ │ 互动历史    │ │ 关注关系    │ │ 热门话题    │
+│ 热度计算    │ │ 兴趣标签    │ │ 关系统计    │ │ 话题内容    │
 └─────────────┘ └─────────────┘ └─────────────┘ └─────────────┘
          │              │              │              │
          └──────────────┴──────────────┴──────────────┘
@@ -317,10 +317,12 @@ interface AlgorithmConfig {
 **核心依赖**：
 
 * **社交媒体引擎**：获取内容、计算热度
-* **互动服务**：获取内容互动数据，用于排序
-* **账号服务**：获取用户关注关系，用于关注流
-* **热搜服务**：获取热门话题内容
+* **互动服务**：获取用户互动历史，用于兴趣标签和社交特征
+* **社交图谱服务**：获取用户关注关系、互关关系和关系统计
+* **Trending 服务**：获取热门话题内容并映射到帖子
 * **Lazy Loader**：信息流的惰性加载和缓存
+
+> 当前默认数据接入由 `SystemContentProvider` 提供，已内建在 `FeedService` 构造函数中。
 
 ---
 
@@ -380,21 +382,19 @@ function applyDiversityRules(items: FeedItem[], rules: DiversityRules): FeedItem
 
 ---
 
-## 实施计划
+## 当前实现进展
 
-| Phase   | 内容                        | 状态      | 工作量   |
-| ------- | --------------------------- | --------- | -------- |
-| Phase 1 | 核心接口设计                | ✅ 已完成 | 1h       |
-| Phase 2 | 类型定义                    | ⏳ 待实现 | 1h       |
-| Phase 3 | 核心服务实现                | ⏳ 待实现 | 4-6h     |
-| Phase 4 | 算法配置系统                | ⏳ 待实现 | 2h       |
-| Phase 5 | 与社交引擎集成              | ⏳ 待实现 | 2h       |
-| Phase 6 | 单元测试                    | ⏳ 待实现 | 2h       |
-| **总计**|                             |           | **12-14h** |
+| 模块 | 状态 | 说明 |
+| ---- | ---- | ---- |
+| 核心接口与类型 | ✅ 已完成 | `types/feed.ts` + `FeedService` API |
+| 算法与过滤组件 | ✅ 已完成 | `AlgorithmRegistry` / `ScoreCalculator` / `FilterChain` / `DiversityController` |
+| 缓存机制 | ✅ 已完成 | `FeedCache` |
+| 默认系统数据源 | ✅ 已完成 | `SystemContentProvider`，接入 SocialGraph + Interaction + Trending |
+| 单元测试 | ✅ 已完成 | `src/services/feed/__tests__/` |
 
 ---
 
-## 文件结构（规划）
+## 文件结构（当前）
 
 ```text
 src/
@@ -404,18 +404,17 @@ src/
 │   └── feed/
 │       ├── index.ts                  # 模块入口
 │       ├── FeedService.ts            # 核心服务（单例）
+│       ├── SystemContentProvider.ts  # 默认系统数据提供器
+│       ├── AlgorithmRegistry.ts      # 平台算法配置注册表
 │       ├── ScoreCalculator.ts        # 分数计算器
 │       ├── DiversityController.ts    # 多样性控制
+│       ├── FilterChain.ts            # 过滤器链
 │       ├── FeedCache.ts              # 信息流缓存
-│       ├── algorithms/               # 算法配置
-│       │   ├── index.ts
-│       │   ├── weibo.ts              # 微博算法配置
-│       │   ├── bilibili.ts           # B站算法配置
-│       │   └── zhihu.ts              # 知乎算法配置
 │       └── __tests__/                # 单元测试
-│           ├── FeedService.test.ts
+│           ├── SystemContentProvider.test.ts
 │           ├── ScoreCalculator.test.ts
-│           └── DiversityController.test.ts
+│           ├── DiversityController.test.ts
+│           └── ...
 ```
 
 ---
@@ -425,6 +424,8 @@ src/
 * [服务开发指南](../service-development-guide.md)
 * [社交内容平台架构](../architecture/Service-for-social-media-platform.md)
 * [社交媒体引擎](../social-media-engine/README.md)
+* [社交图谱服务](../social-graph-service/README.md)
+* [Trending 服务](../trending-service/README.md)
 * [互动服务](../interaction-service/README.md)
-* [账号服务](../account-service/README.md)
+* [账号服务](../account-service/README.md)（账号实体与基础身份）
 * [Lazy Loader 服务](../lazy-loader-service/README.md)

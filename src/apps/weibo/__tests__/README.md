@@ -32,7 +32,7 @@ __tests__/
 ### Stores 测试
 
 | Store | 测试文件 | 覆盖功能 |
-|-------|---------|----------|
+| ------- | --------- | ---------- |
 | `useHotSearchStore` | `hotSearchStore.test.ts` | 热搜刷新、LLM 热搜生成应用、JSON 解析、热度计算、清除功能 |
 | `useFeedStore` | `feedStore.test.ts` | 信息流加载、博文获取、评论获取、点赞、关注、删除、更新 |
 | `useComposeStore` | `composeStore.test.ts` | 草稿 CRUD、AI 扩展、发布博文、类型判断 |
@@ -41,7 +41,7 @@ __tests__/
 ### LLM 模块测试
 
 | 模块 | 测试文件 | 覆盖功能 |
-|------|---------|----------|
+| ------ | --------- | ---------- |
 | `postTransformer` | `postTransformer.test.ts` | 新旧格式转换、图片/投票/视频/转发转换、话题提取、验证 |
 | `ContentDispatcher` | `dispatcher.test.ts` | 解析器注册、别名、拓扑排序、JSON 解析、错误处理 |
 | `PostParser` | `postParser.test.ts` | 博文验证、转换、tempId 映射、账号创建、持久化 |
@@ -51,13 +51,13 @@ __tests__/
 ### Composables 测试
 
 | Composable | 测试文件 | 覆盖功能 |
-|------------|---------|----------|
+| ------------ | --------- | ---------- |
 | `usePostDisplay` | `usePostDisplay.test.ts` | 类型解析、话题高亮、投票/视频/转发检测、选项归一化 |
 
 ### 类型测试
 
 | 测试文件 | 覆盖范围 |
-|---------|----------|
+| --------- | ---------- |
 | `types.test.ts` | 认证类型配置、getVerifyTypeConfig |
 | `social-types.test.ts` | ContentFlags、Stats、primaryType 判断、媒体转换、时间格式化 |
 

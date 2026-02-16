@@ -69,13 +69,13 @@ timeService.setMode('simulated')
 **参数**：
 
 | 参数 | 类型 | 说明 |
-|------|------|------|
+| ------ | ------ | ------ |
 | `mode` | `TimeMode` | 目标时间模式 |
 
 **TimeMode 取值**：
 
 | 值 | 说明 |
-|-----|------|
+| ----- | ------ |
 | `'system'` | 使用系统时间 |
 | `'offset'` | 系统时间 + 偏移量 |
 | `'virtual'` | 可加速的虚拟时间 |
@@ -122,14 +122,14 @@ const timeWithSeconds = timeService.formatTime(now, { includeSeconds: true })
 **参数**：
 
 | 参数 | 类型 | 说明 |
-|------|------|------|
+| ------ | ------ | ------ |
 | `date` | `Date` | 要格式化的日期对象 |
 | `options` | `FormatOptions` | 可选配置 |
 
 **FormatOptions**：
 
 | 字段 | 类型 | 默认值 | 说明 |
-|------|------|--------|------|
+| ------ | ------ | -------- | ------ |
 | `includeSeconds` | `boolean` | `false` | 是否包含秒 |
 
 **返回值**：
@@ -155,7 +155,7 @@ cleanup()
 **参数**：
 
 | 参数 | 类型 | 说明 |
-|------|------|------|
+| ------ | ------ | ------ |
 | `callback` | `(date: Date) => void` | 时间更新时的回调函数 |
 
 **返回值**：
@@ -182,7 +182,7 @@ timeService.syncFromContent("下午3点半")
 **参数**：
 
 | 参数 | 类型 | 说明 |
-|------|------|------|
+| ------ | ------ | ------ |
 | `content` | `string` | 包含时间信息的文本 |
 
 **行为**：
@@ -297,7 +297,7 @@ const formatted = timeStore.formatTime(timeStore.currentTime)
 Store 自动持久化以下字段：
 
 | 字段 | 存储键 | 说明 |
-|------|--------|------|
+| ------ | -------- | ------ |
 | `mode` | `phone-sim-time-settings.mode` | 时间模式 |
 | `is24Hour` | `phone-sim-time-settings.is24Hour` | 小时制偏好 |
 

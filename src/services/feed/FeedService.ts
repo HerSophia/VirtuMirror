@@ -29,6 +29,7 @@ import { DiversityController } from './DiversityController';
 import { FilterChain } from './FilterChain';
 import { FeedCache } from './FeedCache';
 import { loggerService } from '@/services/logger/loggerService';
+import { SystemContentProvider } from './SystemContentProvider';
 
 /**
  * 生成 FeedItem ID
@@ -99,6 +100,7 @@ export class FeedService implements IFeedService {
     this.diversityController = new DiversityController();
     this.filterChain = new FilterChain();
     this.cache = new FeedCache();
+    this.contentProvider = new SystemContentProvider();
   }
 
   /**

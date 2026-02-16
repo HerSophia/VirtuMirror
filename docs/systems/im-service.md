@@ -56,7 +56,7 @@ graph TD
 ### 2.2 核心模块职责
 
 | 模块 | 职责 |
-|Data Model| 定义统一的 `Conversation` 和 `Message` 结构 |
+| Data Model | 定义统一的 `Conversation` 和 `Message` 结构 |
 | **Session Manager** | 管理会话列表、置顶、免打扰、未读数计算 |
 | **Message Dispatcher** | 消息路由核心，处理发送、接收、存储、状态更新 (Sent/Read) |
 | **Private Director** | **(核心)** 负责生成 NPC 的主动发起行为 (Initiative Behavior) |
